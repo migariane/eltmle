@@ -22,7 +22,7 @@ The following link provides access to a TMLE tutorial:  http://migariane.github.
 
 #Installation note  
 
-NOTE: To install eltmle directly from github you need to use a Stata module for installing Stata packages from GitHub, including previous releases of a package. You can install the latest version of the github command by executing the following code in your Stata sesion:
+NOTE: To install eltmle directly from github you need to use a Stata module for installing Stata packages from GitHub, including previous releases of a package. You can install the latest version of the github command by executing the following code in your Stata session:
 
     net install github, from("https://haghish.github.io/github/")
 
@@ -41,16 +41,17 @@ NOTE: To install eltmle directly from github you need to use a Stata module for 
     ado unistall eltmle  
  
 #Authors  
-Miguel Angel Luque-Fernandez    
+Miguel Angel Luque-Fernandez, LSHTM, London, UK    
 Email: miguel-angel.luque@lshtm.ac.uk  
-Michael Schomaker    
-Email: micheal.schomaker@uct.ac.uk  
-We would like to thank Karla Diaz-Ordaz and Rhian Daniel for their input and comments to improve the program.  
+I would like to thank for their input and comments to improve the program:
+Micheal Schomaker, CIDER, UCT, Cape Twon, South Africa
+Karla Diaz-Ordaz, LSHTM, London, UK
+Rhian Daniel, LSHTM, London, UK  
 
 In case you have updates or changes that you would like to make, please send me a pull request.  
 Alternatively, if you have any questions, please e-mail me.     
 You can cite this repository as:  
-Luque-Fernandez MA, (2017) et al. Ensemble Taregeted Maximum Likelihood Estimation for a Binary Outcome and Treatment. 
+Luque-Fernandez MA, (2017). Ensemble Taregeted Maximum Likelihood Estimation for a Binary Outcome and Treatment. 
 GitHub repository, https://github.com/migariane/STATA-TMLE      
 Miguel Angel Luque-Fernandez    
 E-mail: miguel-angel.luque at lshtm.ac.uk  

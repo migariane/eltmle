@@ -1,5 +1,5 @@
 *! version 1.5 Ensemble Learning Targeted Maximum Likelihodd by MALUQUE 05.APRIL.2017
-*************************************************************************************
+***************************************************************************
 **MIGUEL ANGEL LUQUE FERNANDEZ
 **TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OUTCOME AND TREATMENT 
 **Improved AIPW with Super Learner (ensemble learning machine learning)
@@ -7,7 +7,7 @@
 **IJE-2016-12-1473
 **March 2017 
 **This program requieres R to be installed in your computer (R-3.3)
-*************************************************************************************
+****************************************************************************
 capture program drop eltmle
 program define eltmle
      syntax [varlist] [if] [pw] [, slaipw slaipwgbm slaipwbgam tmle tmlegbm tmlebgam aipw] 
@@ -76,13 +76,10 @@ qui: file write rcode ///
 	`"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
 	`"write.dta(data, "data2.dta")"'  
 qui: file close rcode
- 
+
 // Run R (you have to specify the path of your R executable file)
-forval i = 1/10 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-3.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
-}
+//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
+shell "/usr/local/bin/r" CMD BATCH SLS.R 
 
 // Read Revised Data Back to Stata
 clear
@@ -148,7 +145,7 @@ di "RR:" %9.4f $RRtmle _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
 quietly: rm SLS.R
 //quietly: rm SLS.Rout
 quietly: rm data2.dta
-quietly: rm data.csv
+quietly: rm data.csv 
 end
 
 ///////////////////////////////////////
@@ -192,11 +189,8 @@ qui: file write rcode ///
 qui: file close rcode
  
 // Run R (you have to specify the path of your R executable file)
-forval i = 1/10 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-3.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
-}
+//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
+shell "/usr/local/bin/r" CMD BATCH SLS.R 
 
 // Read Revised Data Back to Stata
 clear
@@ -237,13 +231,13 @@ global RRtmlegbm = $Q1/$Q0
 // Statistical inference ATE and RR
 
 // ATE
-gen double IC = (HAW*(Y - QAW)) + (Q1W - Q0W) - $ATEtmlegbm
+gen double IC = (HAW*(Y - QAW)) + (Q1W - Q0W) - $ATEtmlerf
 qui: sum IC
 global var = r(Var)
 qui: count
 global n = r(N)
 global varICtmlegbm = $var/$n
-global pvalue = 2*(normalden(abs($ATEtmlegbm/sqrt($varICtmlegbm))))
+global pvalue = 2*(normalden(abs($ATEtmlegbm / sqrt($varICtmlegbm))))
 global LCIa =  $ATEtmlegbm -1.96*sqrt($varICtmlegbm)
 global UCIa =  $ATEtmlegbm +1.96*sqrt($varICtmlegbm)
 
@@ -263,8 +257,9 @@ di "RR:" %9.4f $RRtmlegbm _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
 quietly: rm SLS.R
 //quietly: rm SLS.Rout
 quietly: rm data2.dta
-quietly: rm data.csv
+quietly: rm data.csv 
 end
+
 ///////////////////////////////////////
 
 program tmlebgam 
@@ -274,12 +269,11 @@ qui: file close _all
 qui: file open rcode using SLS.R, write replace
 qui: file write rcode ///
 	`"set.seed(123)"' _newline ///
-	`"list.of.packages <- c("foreign","SuperLearner","gam")"' _newline ///
+	`"list.of.packages <- c("foreign","SuperLearner")"' _newline ///
     `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
     `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
 	`"library(SuperLearner)"' _newline ///
 	`"library(foreign)"' _newline ///
-	`"library(gam)"' _newline ///
 	`"data <- read.csv("data.csv", sep=",")"' _newline ///
 	`"attach(data)"' _newline ///
 	`"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.bayesglm")"' _newline ///
@@ -293,7 +287,7 @@ qui: file write rcode ///
 	`"X1[,1] <- 1"' _newline ///
 	`"X0[,1] <- 0"' _newline ///
 	`"newdata <- rbind(X,X1,X0)"' _newline /// 
-	`"Q <- SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method= "method.NNLS")"' _newline ///
+	`"Q <- SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method="method.NNLS")"' _newline ///
 	`"Q <- as.data.frame(Q[[4]])"' _newline ///
 	`"QAW <- Q[1:n,]"' _newline ///
 	`"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
@@ -307,11 +301,8 @@ qui: file write rcode ///
 qui: file close rcode
  
 // Run R (you have to specify the path of your R executable file)
-forval i = 1/10 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-3.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
-}
+//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
+shell "/usr/local/bin/r" CMD BATCH SLS.R 
 
 // Read Revised Data Back to Stata
 clear
@@ -377,7 +368,7 @@ di "RR:" %9.4f $RRtmlebg _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
 quietly: rm SLS.R
 //quietly: rm SLS.Rout
 quietly: rm data2.dta
-quietly: rm data.csv
+quietly: rm data.csv 
 end
 
 ////////////////////////////////////
@@ -421,11 +412,8 @@ qui: file write rcode ///
 qui: file close rcode
  
 // Run R (you have to specify the path of your R executable file)
-forval i = 1/10 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-3.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
-}
+//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
+shell "/usr/local/bin/r" CMD BATCH SLS.R 
 
 // Read Revised Data Back to Stata
 clear
@@ -482,7 +470,7 @@ di "RR:" %9.4f $RRslaipw _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
 quietly: rm SLS.R
 //quietly: rm SLS.Rout
 quietly: rm data2.dta
-quietly: rm data.csv
+quietly: rm data.csv 
 end
 
 ///////////////////////
@@ -501,7 +489,7 @@ qui: file write rcode ///
 	`"library(foreign)"' _newline ///
 	`"data <- read.csv("data.csv", sep=",")"' _newline ///
 	`"attach(data)"' _newline ///
-	`"SL.library <- c("SL.glm","SL.step", "SL.glm.interaction","SL.gbm")"' _newline ///
+	`"SL.library <- c("SL.glm","SL.step", "SL.glm.interaction","SL.randomForest")"' _newline ///
 	`"n <- nrow(data)"' _newline ///
 	`"nvar <- dim(data)[[2]]"' _newline ///
 	`"Y <- data[,1]"' _newline ///
@@ -512,7 +500,7 @@ qui: file write rcode ///
 	`"X1[,1] <- 1"' _newline ///
 	`"X0[,1] <- 0"' _newline ///
 	`"newdata <- rbind(X,X1,X0)"' _newline /// 
-	`"Q <- SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = binomial(), newX=newdata, method="method.NNLS")"' _newline ///
+	`"Q <- SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method="method.NNLS")"' _newline ///
 	`"Q <- as.data.frame(Q[[4]])"' _newline ///
 	`"QAW <- Q[1:n,]"' _newline ///
 	`"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
@@ -526,11 +514,8 @@ qui: file write rcode ///
 qui: file close rcode
  
 // Run R (you have to specify the path of your R executable file)
-forval i = 1/10 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-3.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
-}
+//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
+shell "/usr/local/bin/r" CMD BATCH SLS.R 
 
 // Read Revised Data Back to Stata
 clear
@@ -576,18 +561,18 @@ global LCIr =  exp(log($RRslaipwgbm) -1.96*sqrt(($varICslaipwgbm)/log($RRslaipwg
 global UCIr =  exp(log($RRslaipwgbm) +1.96*sqrt(($varICslaipwgbm)/log($RRslaipwgbm)))
 
 di _newline
-di "AIPW Random Forest : Average Treatment Effect" _newline
+di "AIPW + GMB: Average Treatment Effect" _newline
 di "ATE:" %9.4f $ATEslaipwgbm _col(5) "; SE:" %5.4f sqrt($varICslaipwgbm) _col(5) "; pvalue:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
 
 di _newline
-di "AIPW Random Forest: Relative Risk" _newline 
-di "RR:" %9.4f $RRslaipwgbm _col(5) "; 95%CI:(" %9.4f $LCIr "," %9.4f $UCIr ")"
+di "AIPW + GMB: Relative Risk" _newline 
+di "RR:" %9.4f $RRslaipwgbm _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
 
 // Clean up
 quietly: rm SLS.R
 //quietly: rm SLS.Rout
 quietly: rm data2.dta
-quietly: rm data.csv
+quietly: rm data.csv 
 end
 
 //////////////////////////////
@@ -599,12 +584,11 @@ qui: file close _all
 qui: file open rcode using SLS.R, write replace
 qui: file write rcode ///
 	`"set.seed(123)"' _newline ///
-	`"list.of.packages <- c("foreign","SuperLearner","gam")"' _newline ///
+	`"list.of.packages <- c("foreign","SuperLearner")"' _newline ///
     `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
     `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
 	`"library(SuperLearner)"' _newline ///
 	`"library(foreign)"' _newline ///
-	`"library(gam)"' _newline ///
 	`"data <- read.csv("data.csv", sep=",")"' _newline ///
 	`"attach(data)"' _newline ///
 	`"SL.library <- c("SL.glm","SL.step","SL.bayesglm","SL.gam","SL.glm.interaction")"' _newline ///
@@ -632,11 +616,8 @@ qui: file write rcode ///
 qui: file close rcode
  
 // Run R (you have to specify the path of your R executable file)
-forval i = 1/10 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-3.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
-}
+//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
+shell "/usr/local/bin/r" CMD BATCH SLS.R 
 
 // Read Revised Data Back to Stata
 clear
@@ -693,7 +674,7 @@ di "RR:" %9.4f $RRslaipwbg _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
 quietly: rm SLS.R
 //quietly: rm SLS.Rout
 quietly: rm data2.dta
-quietly: rm data.csv
+quietly: rm data.csv 
 end
 
 program aipw
@@ -731,11 +712,8 @@ qui: file write rcode ///
 qui: file close rcode
  
 // Run R (you have to specify the path of your R executable file)
-forval i = 1/10 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-3.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
-}
+//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
+shell "/usr/local/bin/r" CMD BATCH SLS.R 
 
 // Read Revised Data Back to Stata
 clear
@@ -792,7 +770,7 @@ di "RR:" %9.4f $RR _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
 quietly: rm SLS.R
 //quietly: rm SLS.Rout
 quietly: rm data2.dta
-quietly: rm data.csv
+quietly: rm data.csv 
 end
 
 //program drop eltmle tmle tmlebgam tmlegbm slaipw slaipwgbm slaipwbgam aipw
