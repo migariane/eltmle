@@ -202,9 +202,9 @@ in genetics and molecular biology 6.
 {phang}Miguel Angel Luque-Fernandez{p_end}
 {phang}Department of Epidemiology and Population Health, London School of Hygiene and Tropical Medicine. 
 London, UK.{p_end}
+{phang}E-mail: {browse "mailto:miguel-angel.luque@lshtm.ac.uk":miguel-angel.luque@lshtm.ac.uk}{p_end}  
 
 {title:Coauthors}
-{phang}E-mail: {browse "mailto:miguel-angel.luque@lshtm.ac.uk":miguel-angel.luque@lshtm.ac.uk}{p_end}
 {phang}Micheal Schomaker{p_end}
 {phang}Centre for Infectious Disease Epidemiology and Reseaerch, Univeristy of Cape Town, Cape Town, South Afria.{p_end}
 {phang}E-mail: {browse "mailto:michael.schomaker@uct.ac.uk":michael.schomaker@uct.ac.uk}{p_end}
@@ -212,15 +212,14 @@ London, UK.{p_end}
 {phang}karla Diaz-ordaz{p_end}
 {phang}Department of Medical Statistics, London School of Hygiene and Tropical Medicine.
 London, UK.{p_end}
-{phang}E-mail: {browse "mailto:karla.diaz-ordaz@lshtm.ac.uk":karla.diaz-ordaz@lshtm.ac.uk}{p_end}
-{title:Also see}
+{phang}E-mail: {browse "mailto:karla.diaz-ordaz@lshtm.ac.uk":karla.diaz-ordaz@lshtm.ac.uk}{p_end}  
 
 {phang}Rhian Daniel{p_end}
 {phang}Department of Medical Statistics, London School of Hygiene and Tropical Medicine.
 London, UK.{p_end}
 {phang}E-mail: {browse "mailto:Rhian.daniel@lshtm.ac.uk":Rhian.daniel@lshtm.ac.uk}{p_end}
-{title:Also see}
 
+{title:Also see}
 {psee}
 Online:  {helpb teffects}
-{p_end}
+{p_end}
