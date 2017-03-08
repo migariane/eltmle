@@ -1,0 +1,5 @@
+v 1.5
+d 'ELTML' : Ensemble Learning Targeted Maximum Likelihood Estimation  {break}
+d version (release) 
+d {browse "http://www.github.com/migarinae/weltmle":GitHub} website
+p github
