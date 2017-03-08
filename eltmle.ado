@@ -78,10 +78,12 @@ qui: file write rcode ///
 qui: file close rcode
  
 // Run R (you have to specify the path of your R executable file)
-forval i = 1/15 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-`i’.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
+forval i = 1/3 {
+  forval j = 0/15 {
+	forval k = 0/5 {
+quietly shell "C:\Program Files\R\R-`i’.`j'.`k'\bin\x64\R.exe" CMD BATCH SLS.R 
+	  }
+    }
 }
 
 // Read Revised Data Back to Stata
@@ -192,12 +194,13 @@ qui: file write rcode ///
 qui: file close rcode
  
 // Run R (you have to specify the path of your R executable file)
-forval i = 1/15 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-`i’.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
+forval i = 1/3 {
+  forval j = 0/15 {
+	forval k = 0/5 {
+quietly shell "C:\Program Files\R\R-`i’.`j'.`k'\bin\x64\R.exe" CMD BATCH SLS.R 
+	  }
+    }
 }
-
 // Read Revised Data Back to Stata
 clear
 quietly: use "data2.dta", clear
@@ -308,12 +311,13 @@ qui: file write rcode ///
 qui: file close rcode
  
 // Run R (you have to specify the path of your R executable file)
-forval i = 1/15 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-`i’.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
+forval i = 1/3 {
+  forval j = 0/15 {
+	forval k = 0/5 {
+quietly shell "C:\Program Files\R\R-`i’.`j'.`k'\bin\x64\R.exe" CMD BATCH SLS.R 
+	  }
+    }
 }
-
 
 // Read Revised Data Back to Stata
 clear
@@ -423,12 +427,13 @@ qui: file write rcode ///
 qui: file close rcode
  
 // Run R (you have to specify the path of your R executable file)
-forval i = 1/15 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-`i’.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
+forval i = 1/3 {
+  forval j = 0/15 {
+	forval k = 0/5 {
+quietly shell "C:\Program Files\R\R-`i’.`j'.`k'\bin\x64\R.exe" CMD BATCH SLS.R 
+	  }
+    }
 }
-
 
 // Read Revised Data Back to Stata
 clear
@@ -529,12 +534,13 @@ qui: file write rcode ///
 qui: file close rcode
  
 // Run R (you have to specify the path of your R executable file)
-forval i = 1/15 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-`i’.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
+forval i = 1/3 {
+  forval j = 0/15 {
+	forval k = 0/5 {
+quietly shell "C:\Program Files\R\R-`i’.`j'.`k'\bin\x64\R.exe" CMD BATCH SLS.R 
+	  }
+    }
 }
-
 
 // Read Revised Data Back to Stata
 clear
@@ -636,12 +642,13 @@ qui: file write rcode ///
 qui: file close rcode
  
 // Run R (you have to specify the path of your R executable file)
-forval i = 1/15 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-`i’.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
+forval i = 1/3 {
+  forval j = 0/15 {
+	forval k = 0/5 {
+quietly shell "C:\Program Files\R\R-`i’.`j'.`k'\bin\x64\R.exe" CMD BATCH SLS.R 
+	  }
+    }
 }
-
 
 // Read Revised Data Back to Stata
 clear
@@ -736,10 +743,12 @@ qui: file write rcode ///
 qui: file close rcode
  
 // Run R (you have to specify the path of your R executable file)
-forval i = 1/15 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-`i’.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
+forval i = 1/3 {
+  forval j = 0/15 {
+	forval k = 0/5 {
+quietly shell "C:\Program Files\R\R-`i’.`j'.`k'\bin\x64\R.exe" CMD BATCH SLS.R 
+	  }
+    }
 }
 
 
