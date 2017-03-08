@@ -164,7 +164,7 @@ the following path: "/usr/local/bin/r".
 {pstd} 
 Remember 6: Windows users should have installed R software in their personal computer 
 as eltmle calls R to implement the Super Learner. The R executable file must be located 
-at the following path: "C:\Program Files\R\R-3.1.2\bin\x64\R.exe".
+at the following path: "C:\Program Files\R\R-3.1.2\bin\x64\R.exe" and the version must be v.3.0.0 or later.
 {p_end}
 
 {pstd}
