@@ -41,13 +41,23 @@ NOTE: To install eltmle directly from github you need to use a Stata module for 
     ado unistall eltmle  
  
 #Authors  
+Main author and developer:  
 Miguel Angel Luque-Fernandez, LSHTM, London, UK    
 Email: miguel-angel.luque@lshtm.ac.uk  
-I would like to thank for their input and comments to improve the program:
-Micheal Schomaker, CIDER, UCT, Cape Twon, South Africa
-Karla Diaz-Ordaz, LSHTM, London, UK
-Rhian Daniel, LSHTM, London, UK  
 
+Coauthors:  
+Michael Schomaker, CIDER, UCT, Cape Twon, South Africa.    
+Email: michael.schomaker@uct.ac.za    
+
+Karla Diaz-ordaz, LSHTM, London, UK
+Email: Karla.diaz-ordaz@lshtm.ac.uk  
+
+Rhian Daniel, LSHTM, London, UK  
+Email: Rhian.daniel@lshtm.ac.uk  
+
+Acknowledgements:  
+I would like to thank Bianca De Stavola (LSHTM), Simon Cousens (LSHTM), Aurelio Tobias (CSIC), Aurelien Belot (LSHTM), Camille Maringe (LSHTM), Michel Coleman and Bernard Rachet (LSTHM) for their comments and support.  
+  
 In case you have updates or changes that you would like to make, please send me a pull request.  
 Alternatively, if you have any questions, please e-mail me.     
 You can cite this repository as:  
