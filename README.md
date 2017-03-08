@@ -26,7 +26,7 @@ NOTE: To install eltmle directly from github you need to use a Stata module for 
 
     net install github, from("https://haghish.github.io/github/")
 
-    then, you can install eltmle simply using the following code:
+    then, you can install eltmle simply using the following code in Stata:
 
     1) For MAC users: 
     
@@ -35,8 +35,11 @@ NOTE: To install eltmle directly from github you need to use a Stata module for 
     2) For Windows users:
 
     github install migariane/weltmle
-    
-
+     
+    For both, MAC and Windows users, in case you want to uninstall the packge type:  
+	
+    ado unistall eltmle  
+ 
 #Authors  
 Miguel Angel Luque-Fernandez    
 Email: miguel-angel.luque@lshtm.ac.uk  
