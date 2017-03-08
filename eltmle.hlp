@@ -1,0 +1,215 @@
+{smcl}
+{* 30.MARCH.2017}{...}
+{cmd:help eltmle}
+{hline}
+
+{title:Title}
+
+{p2colset 5 18 20 2}{...}
+{p2col:{hi:eltmle}{hline 1}}Ensemble Learning Targeted Maximum Likelihood Estimation{p2colreset}{...}
+
+{title:Syntax}
+
+{p 8 17 2}
+{cmd:eltmle}
+{hi: Y} 
+{hi: X}
+{hi: Z}
+,
+[slapiw slaipwrf slaipwbgam tmle tmlerf tmlebgam]
+
+where:
+
+{hi:Y}: Outcome: Numeric binary variable
+{hi:X}: Treatment or exposure: Numeric binary variable
+{hi:Z}: Covariates: Vector of numeric variables 
+
+{title:Description}
+
+{pstd} 
+
+Classical epidemiologic methods to control for confounding require making the assumption 
+that the effect measure is constant across levels of confounders included in the model. 
+Alternatively, James Robins in 1986 showed that using standardisation implemented through the 
+use of the G-formula allows obtaining a unconfounded marginal estimation of the causal average 
+treatment effect (ATE) under causal assumptions.    
+
+The most commonly used estimator for a binary treatment effect is the risk difference or ATE.
+The ATE estimation relies on parametric modelling assumptions.Therefore, correct model specification 
+is crucial to obtain unbiased estimates of the true ATE.  
+
+Mark van der Laan and collaborators have developed a double-robust estimation procedure to reduce 
+bias against misspecification. The Targeted Maximum Likelihood Estimation (TMLE) is a semiparametric,
+efficient substitution estimator. TMLE allows for data-adaptive estimation while obtaining valid 
+statistical inference based on the targeted minimum loss-based estimation and machine learning 
+algorithms using ensemble learning to minimise the risk of model misspecification. 
+
+Evidence shows that TMLE provides the less unbiased estimate of the ATE compared with other double
+robust estimators. The following tutorial provides an accessible TMLE step by step introduction: {browse "http://migariane.github.io/TMLE.nb.html":Tutorial}.     
+
+{hi:eltmle} implements the targeted maximum likelihood estimation for a binary outcome and treatment 
+including the ensemble learning algorithm "Super Learner" for three machine learning algorithms: 
+“SL.glm” (logistic regression using A and W as covariates), “SL.step” (stepwise model selection using
+Akaike’s Information Criterion for subsets of the full model as well as inclusion of nonlinear covariates 
+based on second order polynomials) and, “SL.glm.interaction” (a logistic regression variant that includes 
+both second-order polynomials and two-way interactions of the terms included in the model). A common task
+in machine learning is to perform model selection by specifying a number of models with different parameters. 
+The first phase of the Super Learner algorithm is computationally equivalent to performing model selection 
+via 10-folds cross-validation. The latter phase of the Super Learner algorithm (the metalearning step) is 
+just training another single model (no cross-validation) on the level one data.
+    
+{title:Options}
+
+
+{phang} 
+{hi:tmle}: this is the default option. If no-option is specified eltmle by default implements the
+TMLE based on the main three machine learning algorithms described before. 
+{p_end}
+
+{phang} 
+{hi:tmlebgam}: this option may be specified or unspecified. When specified, it does include 
+in addition the Bayes GLM and Generalized Additive Models to the Super Learner for the TMLE estimator. 
+{p_end}
+
+{phang} 
+{hi:slaipw}: this option may be specified or unspecified. When specified, it does estimate the augmented
+inverse probability weighting algorithm plus the Super Learner ensemble learning for the main three machine 
+learning algorithms described before. 
+{p_end}
+
+{phang} 
+{hi:slaipwbgam}: this option may be specified or unspecified. When specified, it does include 
+in addition the Bayes GLM and Generalized Additive Models to the Super Learner for the AIPW 
+implemented with the slaipw estimator. 
+{p_end}
+
+
+{title:Example}
+
+***********************************************************************
+* eltmle Y X Z [if] [,slaipw slaipwbgam tmle tmlebgam] 
+***********************************************************************
+
+.clear
+.use http://www.stata-press.com/data/r14/cattaneo2.dta
+.describe
+.gen lbw = cond(bweight<2500,1,0.)
+.gen lab var lbw “Low birthweight, <2500 g”
+.save "your path/cattaneo2.dta", replace
+.cd “your path”
+
+********************************************************
+.eltmle lbw mbsmoke mage medu prenatal mmarried, tmle
+********************************************************
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+      Q1star |      4,642    .1055429    .0403702   .0205745   .3789994
+      Q0star |      4,642    .0509794    .0249112   .0207113   .1664136
+          ps |      4,642    .1861267     .110755   .0372202   .8494988
+
+
+TMLE: Average Treatment Effect
+
+ATE:   0.0546; SE:0.0122; pvalue:0.0000; 95%CI:(0.030700,0.078427)
+
+TMLE: Relative Risk
+
+RR:   2.0703; 95%CI:(2.0132,2.1290)
+
+*********************************************************
+.eltmle lbw mbsmoke mage medu prenatal mmarried, slaipw
+*********************************************************
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+        aQ1W |      4,642    .0959911    1.717125  -2.481395     20.267
+        aQ0W |      4,642    .0516773    .3212793  -3.679752   1.911056
+          ps |      4,642    .1861267     .110755   .0372202   .8494988
+
+AIPW ensemble learning: Average Treatment Effect
+
+ATE:   0.0542; SE:0.0122; pvalue:0.0000; 95%CI:(0.030299,0.078026)
+
+AIPW ensemble learning: Relative Risk
+
+RR:   1.8575; 95%CI:(1.8020,1.9147)
+************************************************************************
+
+{title:Remarks} 
+
+{pstd} 
+Remember 1: Y must be a binary numeric variable coded (0,1); X must be numeric binary
+variable and, Z a vector of covaraites. 
+{p_end}
+
+{pstd} 
+Remember 2: You must change your working directory to the location of tbe stata dta file.
+{p_end}
+
+{pstd} 
+Remember 3: Mac users install meltmle.ado file. 
+{p_end}
+
+{pstd} 
+Remember 4: Windows users intall weltmle.ado file.
+{p_end}
+
+{pstd} 
+Remember 5: Mac users should have installed R software in their personal computer as 
+eltmle calls R to implement the Super Learner. The R executable file must be located at 
+the following path: "/usr/local/bin/r".
+{p_end}
+
+{pstd} 
+Remember 6: Windows users should have installed R software in their personal computer 
+as eltmle calls R to implement the Super Learner. The R executable file must be located 
+at the following path: "C:\Program Files\R\R-3.1.2\bin\x64\R.exe".
+{p_end}
+
+{pstd}
+Remember 7: Check the SLS.R file for problems with R.
+{p_end}
+
+{title:References}
+
+{phang}
+Luque-Fernandez, Miguel Angel. (2017). Targeted Maximum Likelihood Estimation for a 
+Binary Outcome: Tutorial and Guided Implementation {browse "http://migariane.github.io/TMLE.nb.html":Download here}.
+{p_end}
+
+{phang}
+StataCorp. 2015. Stata Statistical Software: Release 14. College Station, TX: StataCorp LP. cattaneo2.dta {browse: “http://www.stata-press.com/data/r13/cattaneo2.dta”: Download here”}
+{p_end}
+
+{phang}
+Gruber S, Laan M van der. (2011). Tmle: An r package for targeted maximum likelihood
+estimation. UC Berkeley Division of Biostatistics Working Paper Series.
+{p_end}
+
+{phang}
+Laan M van der, Rose S. (2011). Targeted learning: Causal inference for observational 
+and experimental data. Springer Series in Statistics.626p.
+{p_end}
+
+{phang}
+Van der Laan MJ, Polley EC, Hubbard AE. (2007). Super learner. Statistical applications 
+in genetics and molecular biology 6.
+{p_end}
+
+{title:Authors}
+
+{phang}Miguel Angel Luque-Fernandez{p_end}
+{phang}Department of Epidemiology and Population Health, London School of Hygiene and Tropical Medicine. 
+London, UK.{p_end}
+{phang}E-mail: {browse "mailto:miguel-angel.luque@lshtm.ac.uk":miguel-angel.luque@lshtm.ac.uk}{p_end}
+{phang}Micheal Schomaker{p_end}
+{phang}Centre for Infectious Disease Epidemiology and Reseaerch, Univeristy of Cape Town, Cape Town, South Afria.{p_end}
+{phang}E-mail: {browse "mailto:michael.schomaker@uct.ac.uk":michael.schomaker@uct.ac.uk}{p_end}
+{phang}We would like to thank Karla Diaz-Ordaz and Rhian Daniel for their comments and suggestions to improve the program{p_end}
+
+{title:Also see}
+
+{psee}
+Online:  {helpb teffects}
+{p_end}
