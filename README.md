@@ -49,20 +49,20 @@ Coauthors:
 Michael Schomaker, CIDER, UCT, Cape Twon, South Africa.    
 Email: michael.schomaker@uct.ac.za    
 
-Karla Diaz-ordaz, LSHTM, London, UK
+Karla Diaz-ordaz, LSHTM, London, UK  
 Email: Karla.diaz-ordaz@lshtm.ac.uk  
 
 Rhian Daniel, LSHTM, London, UK  
 Email: Rhian.daniel@lshtm.ac.uk  
 
 Acknowledgements:  
-I would like to thank Bianca De Stavola (LSHTM), Simon Cousens (LSHTM), Aurelio Tobias (CSIC), Aurelien Belot (LSHTM), Camille Maringe (LSHTM), Michel Coleman and Bernard Rachet (LSTHM) for their comments and support.  
+I would like to thank Bianca De Stavola (LSHTM), Simon Cousens (LSHTM), Aurelio Tobias (CSIC), Aurelien Belot (LSHTM), Camille Maringe (LSHTM), Michel Coleman (LSHTM) and Bernard Rachet (LSTHM) for their comments and support.  
   
 In case you have updates or changes that you would like to make, please send me a pull request.  
 Alternatively, if you have any questions, please e-mail me.     
 You can cite this repository as:  
 Luque-Fernandez MA, (2017). Ensemble Taregeted Maximum Likelihood Estimation for a Binary Outcome and Treatment. 
-GitHub repository, https://github.com/migariane/STATA-TMLE      
+GitHub repository, https://github.com/migariane/weltmle (Windows users) or https://github.com/migariane/meltmle (MAC users)        
 Miguel Angel Luque-Fernandez    
 E-mail: miguel-angel.luque at lshtm.ac.uk  
 Twitter @WATZILEI  
