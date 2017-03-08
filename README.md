@@ -36,7 +36,7 @@ NOTE: To install eltmle directly from github you need to use a Stata module for 
 
     github install migariane/weltmle
      
-    For both, MAC and Windows users, in case you want to uninstall the packge type:  
+    For both, MAC and Windows users, in case you want to uninstall the package type:  
 	
     ado unistall eltmle  
  
