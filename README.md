@@ -64,7 +64,7 @@ Email: Aurelien.belot at lshtm.ac.uk
 Camille Maringe, LSHTM, NCDE, Cancer Survival Group, London, UK  
 Email: camille.maringe at lshtm.ac.uk  
 
-Karla Diaz-ordaz, LSHTM, Department of Medical Statistics, London, UK    
+Karla Diaz Ordaz, LSHTM, Department of Medical Statistics, London, UK    
 Email: Karla.diaz-ordaz at lshtm.ac.uk    
 
 Rhian Daniel, LSHTM, Department of Medical Statistics, London, UK    
