@@ -1,4 +1,4 @@
-#eltmle: Ensemble Learning Targeted Maximum Likelihood Estimation (Stata program)  
+#eltmle: Ensemble Learning Targeted Maximum Likelihood Estimation (Implementation for Stata software)  
 
 **Modern Epidemiology** has been able to identify significant limitations of classic epidemiological methods when the focus is to explain the main effect of a risk factor on a disease or outcome:   
 
@@ -72,7 +72,7 @@ Email: Rhian.daniel at lshtm.ac.uk
 
 #Acknowledgements  
   
-I would like to thank Professors Bianca De Stavola (LSHTM), Simon Cousens (LSHTM), Aurelio Tobias (CSIC), and Michel Coleman (LSHTM) for their comments and support.  
+I would like to thank Professors Bianca De Stavola (LSHTM), Simon Cousens (LSHTM), Aurelio Tobias (CSIC), Michel Coleman (LSHTM) for their comments and support and Haghish E. F. (CMBMI, Freiburg, Germany) for his wonderful **Github** and **MarkDoc** Stata packages.  
   
 In case you have updates or changes that you would like to make, please send me a pull request.  
 Alternatively, if you have any questions, please e-mail me.     
