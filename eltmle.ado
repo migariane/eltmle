@@ -16,7 +16,7 @@ program define eltmle
          local dir `c(pwd)'
 	 cd "`dir'"
 	 export delimited `var' using "data.csv", nolabel replace 
-	 if "`slaipw'" == "" & "`slaipwgbm'" == "" & "`slaipwbgam'" == "" & "`tmlegbm'" == "" & "`tmlebgam'" == "" & "`aipw'" == ""{
+	 if "`slaipw'" == "" & "`slaipwgbm'" == "" & "`slaipwbgam'" == "" & "`tmlegbm'" == "" & "`tmlebgam'" == "" & "`aipw'" == "" {
 		tmle `varlist'
 	 }
 	 else if "`tmlegbm'" == "tmlegbm" { 
@@ -26,7 +26,7 @@ program define eltmle
 		tmlebgam `varlist'
 	 }
 	 else if "`slaipw'" == "slaipw" { 
-	 slaipw `varlist'
+	        slaipw `varlist'
 	 }
 	 else if "`slaipwgbm'" == "slaipwgbm" {
 		slaipwgbm `varlist'
