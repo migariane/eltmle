@@ -138,7 +138,7 @@ global UCIr =  exp(log($RRtmle) +1.96*sqrt(($varICtmle)/log($RRtmle)))
 
 di _newline
 di "TMLE: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEtmle _col(5) "; SE:" %5.4f sqrt($varICtmle) _col(5) "; p-value:" %5.4f $p-value _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
+di "ATE:" %9.4f $ATEtmle _col(5) "; SE:" %5.4f sqrt($varICtmle) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
 
 di _newline
 di "TMLE: Relative Risk" _newline 
@@ -253,7 +253,7 @@ global UCIr =  exp(log($RRtmlegbm) +1.96*sqrt(($varICtmlegbm)/log($RRtmlegbm)))
 
 di _newline
 di "TMLE + GBM: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEtmlegbm _col(5) "; SE:" %5.4f sqrt($varICtmlegbm) _col(5) "; p-value:" %5.4f $p-value _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
+di "ATE:" %9.4f $ATEtmlegbm _col(5) "; SE:" %5.4f sqrt($varICtmlegbm) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
 
 di _newline
 di "TMLE + GBM: Relative Risk" _newline 
@@ -367,7 +367,7 @@ global UCIr =  exp(log($RRtmlebg) +1.96*sqrt(($varICtmlebg)/log($RRtmlebg)))
 
 di _newline
 di "TMLE + Bayes GLM and GAM: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEtmlebg _col(5) "; SE:" %5.4f sqrt($varICtmlebg) _col(5) "; p-value:" %5.4f $p-value _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
+di "ATE:" %9.4f $ATEtmlebg _col(5) "; SE:" %5.4f sqrt($varICtmlebg) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
 
 di _newline
 di "TMLE + Bayes GLM and GAM: Relative Risk" _newline 
@@ -782,7 +782,7 @@ global UCIr =  exp(log($RR) +1.96*sqrt(($varIC)/log($RR)))
 
 di _newline
 di "AIPW: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATE _col(5) "; SE:" %5.4f sqrt($varIC) _col(5) "; p-value:" %5.4f $p-value _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
+di "ATE:" %9.4f $ATE _col(5) "; SE:" %5.4f sqrt($varIC) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
 
 di _newline
 di "AIPW: Relative Risk" _newline 
