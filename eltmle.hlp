@@ -41,12 +41,12 @@ across levels of confounders included in the model. Alternatively, James Robins 
 implemented through the use of the {hi: G-formula} allows obtaining a unconfounded marginal estimation of the causal average 
 treatment effect (ATE) under causal assumptions.      
 
-The most commonly used estimator for a binary treatment effect is the risk difference or ATE. The ATE estimation relies on parametric 
-modelling assumptions. Therefore, the correct model specification is crucial to obtain unbiased estimates of the true ATE. 
-Professor Mark van der Laan and collaborators have developed a double-robust estimation procedure to reduce bias against misspecification. 
-The targeted maximum likelihood estimation (TMLE) is a semiparametric, efficient substitution estimator. {hi:TMLE} allows for 
-data-adaptive estimation while obtaining valid statistical inference based on the targeted minimum loss-based estimation and 
-machine learning algorithmS to minimise the risk of model misspecification.  
+The most commonly used estimator for a binary treatment effect is the risk difference or ATE. The ATE estimation relies on 
+parametric modelling assumptions. Therefore, the correct model specification is crucial to obtain unbiased estimates of the 
+true ATE. Professor Mark van der Laan and collaborators have developed a double-robust estimation procedure to reduce bias 
+against misspecification. The targeted maximum likelihood estimation (TMLE) is a semiparametric, efficient substitution 
+estimator. {hi:TMLE} allows for data-adaptive estimation while obtaining valid statistical inference based on the targeted 
+minimum loss-based estimation and machine learning algorithmS to minimise the risk of model misspecification.  
 
 Evidence shows that {hi:TMLE] provides the less unbiased estimate of the ATE compared with other double robust estimators.      
 
@@ -90,9 +90,9 @@ the slaipw estimator.
 
 {title:Example}
 
-***********************************************************************
+*******************************************************
 * eltmle Y X Z [if] [,slaipw slaipwbgam tmle tmlebgam] 
-***********************************************************************
+*******************************************************
 
 .clear
 .use http://www.stata-press.com/data/r14/cattaneo2.dta
@@ -102,9 +102,9 @@ the slaipw estimator.
 .save "your path/cattaneo2.dta", replace
 .cd “your path”
 
-********************************************************
+*******************************************************
 .eltmle lbw mbsmoke mage medu prenatal mmarried, tmle
-********************************************************
+*******************************************************
 
     Variable |        Obs        Mean    Std. Dev.       Min        Max
 -------------+---------------------------------------------------------
@@ -115,7 +115,7 @@ the slaipw estimator.
 
 TMLE: Average Treatment Effect
 
-ATE:   0.0546; SE:0.0122; pvalue:0.0000; 95%CI:(0.030700,0.078427)
+ATE:   0.0546; SE:0.0122; p-value: 0.0000; 95%CI:(0.030700,0.078427)
 
 TMLE: Relative Risk
 
@@ -133,7 +133,7 @@ RR:   2.0703; 95%CI:(2.0132,2.1290)
 
 AIPW ensemble learning: Average Treatment Effect
 
-ATE:   0.0542; SE:0.0122; pvalue:0.0000; 95%CI:(0.030299,0.078026)
+ATE:   0.0542; SE:0.0122; p-value: 0.0000; 95%CI:(0.030299,0.078026)
 
 AIPW ensemble learning: Relative Risk
 
@@ -144,41 +144,41 @@ RR:   1.8575; 95%CI:(1.8020,1.9147)
 
 {pstd} 
 Remember 1: Y must be a binary numeric variable coded (0,1); X must be numeric binary
-variable and, Z a vector of covaraites. 
+variable and, Z a vector of covariates. 
 {p_end}
 
 {pstd} 
-Remember 2: You must change your working directory to the location of tbe stata dta file.
+Remember 2: You must change your working directory to the location of the Stata.dta file.
 {p_end}
 
 {pstd} 
-Remember 3: Mac users install meltmle.ado file. 
+Remember 3: Mac users install {hi:meltmle.ado} file. 
 {p_end}
 
 {pstd} 
-Remember 4: Windows users intall weltmle.ado file.
+Remember 4: Windows users intall {hi:weltmle.ado} file.
 {p_end}
 
 {pstd} 
 Remember 5: Mac users must have installed R software in their personal computer as 
 eltmle calls R to implement the Super Learner. The R executable file must be located at 
-the following path: "/usr/local/bin/r".
+the following path: {hi:”/usr/local/bin/r”}.
 {p_end}
 
 {pstd} 
 Remember 6: Windows users must have installed R software in their personal computer 
 as eltmle calls R to implement the Super Learner. The R executable file must be located 
-at the following path: "C:\Program Files\R\R-3.1.2\bin\x64\R.exe" and the version must be v.3.0.0 or later.
+at the following path: {hi:”C:\Program Files\R\R-3.1.2\bin\x64\R.exe”} and the version must be v.3.0.0 or later.
 {p_end}
 
 {pstd} 
-Remember 6: Windows users must have only one version of R software installed in their personal computer  
-at the following path: "C:\Program Files\R\R-3.1.2\bin\x64\R.exe”. In case more than one different version 
+Remember 7: Windows users must have only one version of R software installed in their personal computer  
+at the following path: {hi:”C:\Program Files\R\R-3.1.2\bin\x64\R.exe”}. In case more than one different version 
 are located in the above highlighted path users might want to keep the latest.
 {p_end}
 
 {pstd}
-Remember 7: Check the SLS.R file for problems with R.
+Remember 8: Check the SLS.R file for problems with R.
 {p_end}
 
 {title:References}
@@ -189,7 +189,7 @@ Binary Outcome: Tutorial and Guided Implementation {browse "http://migariane.git
 {p_end}
 
 {phang}
-StataCorp. 2015. Stata Statistical Software: Release 14. College Station, TX: StataCorp LP. cattaneo2.dta {browse: “http://www.stata-press.com/data/r13/cattaneo2.dta”: Download here”}
+StataCorp. 2015. Stata Statistical Software: Release 14. College Station, TX: StataCorp LP.
 {p_end}
 
 {phang}
