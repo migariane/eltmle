@@ -265,6 +265,7 @@ quietly: rm SLS.R
 quietly: rm data2.dta
 quietly: rm data.csv
 end
+
 ///////////////////////////////////////
 
 program tmlebgam 
@@ -282,7 +283,7 @@ qui: file write rcode ///
 	`"library(gam)"' _newline ///
 	`"data <- read.csv("data.csv", sep=",")"' _newline ///
 	`"attach(data)"' _newline ///
-	`"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.bayesglm")"' _newline ///
+	`"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.bayesglm")"' _newline ///
 	`"n <- nrow(data)"' _newline ///
 	`"nvar <- dim(data)[[2]]"' _newline ///
 	`"Y <- data[,1]"' _newline ///
@@ -607,7 +608,7 @@ qui: file write rcode ///
 	`"library(gam)"' _newline ///
 	`"data <- read.csv("data.csv", sep=",")"' _newline ///
 	`"attach(data)"' _newline ///
-	`"SL.library <- c("SL.glm","SL.step","SL.bayesglm","SL.gam","SL.glm.interaction")"' _newline ///
+	`"SL.library <- c("SL.glm","SL.step","SL.bayesglm","SL.glm.interaction")"' _newline ///
 	`"n <- nrow(data)"' _newline ///
 	`"nvar <- dim(data)[[2]]"' _newline ///
 	`"Y <- data[,1]"' _newline ///
