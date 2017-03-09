@@ -47,8 +47,8 @@ qui: file open rcode using SLS.R, write replace
 qui: file write rcode ///
 	`"set.seed(123)"' _newline ///
 	`"list.of.packages <- c("foreign","SuperLearner")"' _newline ///
-    `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-    `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
+        `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
+        `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
 	`"library(SuperLearner)"' _newline ///
 	`"library(foreign)"' _newline ///
 	`"data <- read.csv("data.csv", sep=",")"' _newline ///
@@ -138,7 +138,7 @@ global UCIr =  exp(log($RRtmle) +1.96*sqrt(($varICtmle)/log($RRtmle)))
 
 di _newline
 di "TMLE: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEtmle _col(5) "; SE:" %5.4f sqrt($varICtmle) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
+di "ATE:" %9.4f $ATEtmle _col(5) "; SE:" %5.4f sqrt($varICtmle) _col(5) "; p-value:" %5.4f $p-value _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
 
 di _newline
 di "TMLE: Relative Risk" _newline 
@@ -161,8 +161,8 @@ qui: file open rcode using SLS.R, write replace
 qui: file write rcode ///
 	`"set.seed(123)"' _newline ///
 	`"list.of.packages <- c("foreign","SuperLearner")"' _newline ///
-    `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-    `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
+        `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
+        `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
 	`"library(SuperLearner)"' _newline ///
 	`"library(foreign)"' _newline ///
 	`"data <- read.csv("data.csv", sep=",")"' _newline ///
@@ -253,7 +253,7 @@ global UCIr =  exp(log($RRtmlegbm) +1.96*sqrt(($varICtmlegbm)/log($RRtmlegbm)))
 
 di _newline
 di "TMLE + GBM: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEtmlegbm _col(5) "; SE:" %5.4f sqrt($varICtmlegbm) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
+di "ATE:" %9.4f $ATEtmlegbm _col(5) "; SE:" %5.4f sqrt($varICtmlegbm) _col(5) "; p-value:" %5.4f $p-value _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
 
 di _newline
 di "TMLE + GBM: Relative Risk" _newline 
@@ -275,8 +275,8 @@ qui: file open rcode using SLS.R, write replace
 qui: file write rcode ///
 	`"set.seed(123)"' _newline ///
 	`"list.of.packages <- c("foreign","SuperLearner","gam”,”arm”)”’ _newline ///
-    `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-    `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
+        `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
+        `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
 	`"library(SuperLearner)"' _newline ///
 	`"library(foreign)"' _newline ///
 	`"library(gam)"' _newline ///
@@ -367,7 +367,7 @@ global UCIr =  exp(log($RRtmlebg) +1.96*sqrt(($varICtmlebg)/log($RRtmlebg)))
 
 di _newline
 di "TMLE + Bayes GLM and GAM: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEtmlebg _col(5) "; SE:" %5.4f sqrt($varICtmlebg) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
+di "ATE:" %9.4f $ATEtmlebg _col(5) "; SE:" %5.4f sqrt($varICtmlebg) _col(5) "; p-value:" %5.4f $p-value _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
 
 di _newline
 di "TMLE + Bayes GLM and GAM: Relative Risk" _newline 
@@ -577,7 +577,7 @@ global UCIr =  exp(log($RRslaipwgbm) +1.96*sqrt(($varICslaipwgbm)/log($RRslaipwg
 
 di _newline
 di "AIPW Random Forest : Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEslaipwgbm _col(5) "; SE:" %5.4f sqrt($varICslaipwgbm) _col(5) "; pvalue:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
+di "ATE:" %9.4f $ATEslaipwgbm _col(5) "; SE:" %5.4f sqrt($varICslaipwgbm) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
 
 di _newline
 di "AIPW Random Forest: Relative Risk" _newline 
@@ -683,7 +683,7 @@ global UCIr = exp(log($RRslaipwbg) +1.96*sqrt(($varICslaipwbg)/log($RRslaipwbg))
 
 di _newline
 di "AIPW Bayes GLM and GAM: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEslaipwbg _col(5) "; SE:" %5.4f sqrt($varICslaipwbg) _col(5) "; pvalue:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
+di "ATE:" %9.4f $ATEslaipwbg _col(5) "; SE:" %5.4f sqrt($varICslaipwbg) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
 
 di _newline
 di "AIPW Bayes GLM and GAM: Relative Risk" _newline 
@@ -704,8 +704,8 @@ qui: file open rcode using SLS.R, write replace
 qui: file write rcode ///
 	`"set.seed(123)"' _newline ///
 	`"list.of.packages <- c("foreign")"' _newline ///
-    `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-    `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
+        `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
+        `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
 	`"library(foreign)"' _newline ///
 	`"data <- read.csv("data.csv", sep=",")"' _newline ///
 	`"attach(data)"' _newline ///
@@ -782,7 +782,7 @@ global UCIr =  exp(log($RR) +1.96*sqrt(($varIC)/log($RR)))
 
 di _newline
 di "AIPW: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATE _col(5) "; SE:" %5.4f sqrt($varIC) _col(5) "; pvalue:" %5.4f $p-value _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
+di "ATE:" %9.4f $ATE _col(5) "; SE:" %5.4f sqrt($varIC) _col(5) "; p-value:" %5.4f $p-value _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
 
 di _newline
 di "AIPW: Relative Risk" _newline 
