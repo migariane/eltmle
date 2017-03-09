@@ -28,35 +28,39 @@ where:
 
 {pstd} 
 
-Classical epidemiologic methods to control for confounding require making the assumption 
-that the effect measure is constant across levels of confounders included in the model. 
-Alternatively, James Robins in 1986 showed that using standardisation implemented through the 
-use of the G-formula allows obtaining a unconfounded marginal estimation of the causal average 
-treatment effect (ATE) under causal assumptions.    
+{hi: Modern Epidemiology} has been able to identify significant limitations of classic epidemiological methods when the focus 
+is to explain the main effect of a risk factor on a disease or outcome:   
 
-The most commonly used estimator for a binary treatment effect is the risk difference or ATE.
-The ATE estimation relies on parametric modelling assumptions.Therefore, correct model specification 
-is crucial to obtain unbiased estimates of the true ATE.  
+1. Non-collapsibility of the odds and hazard ratios.  
+2. Impact of paradoxical effects due to conditioning on colliders.  
+3. Selection bias related to the vague understanding of the effect of time on exposure and outcome.  
+4. Effect of time-dependent confounding and mediators, etc.  
 
-Mark van der Laan and collaborators have developed a double-robust estimation procedure to reduce 
-bias against misspecification. The Targeted Maximum Likelihood Estimation (TMLE) is a semiparametric,
-efficient substitution estimator. TMLE allows for data-adaptive estimation while obtaining valid 
-statistical inference based on the targeted minimum loss-based estimation and machine learning 
-algorithms using ensemble learning to minimise the risk of model misspecification. 
+Classical epidemiological methods to control for confounding require making the assumption that the effect measure is constant 
+across levels of confounders included in the model. Alternatively, James Robins in 1986 showed that using {hi:standardisation}
+implemented through the use of the {hi: G-formula} allows obtaining a unconfounded marginal estimation of the causal average 
+treatment effect (ATE) under causal assumptions.      
 
-Evidence shows that TMLE provides the less unbiased estimate of the ATE compared with other double
-robust estimators. The following tutorial provides an accessible TMLE step by step introduction: {browse "http://migariane.github.io/TMLE.nb.html":Tutorial}.     
+The most commonly used estimator for a binary treatment effect is the risk difference or ATE. The ATE estimation relies on parametric 
+modelling assumptions. Therefore, the correct model specification is crucial to obtain unbiased estimates of the true ATE. 
+Professor Mark van der Laan and collaborators have developed a double-robust estimation procedure to reduce bias against misspecification. 
+The targeted maximum likelihood estimation (TMLE) is a semiparametric, efficient substitution estimator. {hi:TMLE} allows for 
+data-adaptive estimation while obtaining valid statistical inference based on the targeted minimum loss-based estimation and 
+machine learning algorithmS to minimise the risk of model misspecification.  
 
-{hi:eltmle} implements the targeted maximum likelihood estimation for a binary outcome and treatment 
-including the ensemble learning algorithm "Super Learner" for three machine learning algorithms: 
-“SL.glm” (logistic regression using A and W as covariates), “SL.step” (stepwise model selection using
-Akaike’s Information Criterion for subsets of the full model as well as inclusion of nonlinear covariates 
-based on second order polynomials) and, “SL.glm.interaction” (a logistic regression variant that includes 
-both second-order polynomials and two-way interactions of the terms included in the model). A common task
-in machine learning is to perform model selection by specifying a number of models with different parameters. 
-The first phase of the Super Learner algorithm is computationally equivalent to performing model selection 
-via 10-folds cross-validation. The latter phase of the Super Learner algorithm (the metalearning step) is 
-just training another single model (no cross-validation) on the level one data.
+Evidence shows that {hi:TMLE] provides the less unbiased estimate of the ATE compared with other double robust estimators.      
+
+The following link provides access to a TMLE tutorial: {browse "http://migariane.github.io/TMLE.nb.html":TMLE_tutorial}.        
+    
+{hi:eltmle} is a Stata program implementing the targeted maximum likelihood estimation for a binary outcome and treatment including 
+the ensemble learning algorithm "Super Learner" called from the {hi: SuperLearner} package v.2.0-21 (Polley E., et al. 2011). 
+The Super-Learner uses V-fold cross-validation (10-fold by default) to assess the performance of prediction regarding the potential 
+outcomes and the propensity score as weighted averages of a set of machine learning algorithms. We used the default SuperLearner 
+algorithms implemented in the base installation of the {hi:tmle-R} package v.1.2.0-5 (Susan G. and Van der Laan M., 2017), which 
+included the following: i) stepwise selection, ii) generalized linear modeling (glm), iii) a glm variant that included second order 
+polynomials and two-by-two interactions of the main terms included in the model. The first phase of the Super Learner algorithm is 
+computationally equivalent to performing model selection via 10-folds cross-validation. The latter phase of the Super Learner 
+algorithm (the meta-learning step) is just training another single model (no cross-validation) on the level one data. 
     
 {title:Options}
 
@@ -67,8 +71,8 @@ TMLE based on the main three machine learning algorithms described before.
 {p_end}
 
 {phang} 
-{hi:tmlebgam}: this option may be specified or unspecified. When specified, it does include 
-in addition the Bayes GLM and Generalized Additive Models to the Super Learner for the TMLE estimator. 
+{hi:tmlebgam}: this option may be specified or unspecified. When specified, it does include in addition to the above default
+implementation for the SuperLearner call the Bayes Generalized Linear Models and the Generalized Additive Models libraries. 
 {p_end}
 
 {phang} 
@@ -78,9 +82,9 @@ learning algorithms described before.
 {p_end}
 
 {phang} 
-{hi:slaipwbgam}: this option may be specified or unspecified. When specified, it does include 
-in addition the Bayes GLM and Generalized Additive Models to the Super Learner for the AIPW 
-implemented with the slaipw estimator. 
+{hi:slaipwbgam}: this option may be specified or unspecified. When specified, it does include in addition to the above default
+implementation for the SuperLearner call the Bayes Generalized Linear Models and the Generalized Additive Models libraries for 
+the slaipw estimator. 
 {p_end}
 
 
@@ -156,15 +160,21 @@ Remember 4: Windows users intall weltmle.ado file.
 {p_end}
 
 {pstd} 
-Remember 5: Mac users should have installed R software in their personal computer as 
+Remember 5: Mac users must have installed R software in their personal computer as 
 eltmle calls R to implement the Super Learner. The R executable file must be located at 
 the following path: "/usr/local/bin/r".
 {p_end}
 
 {pstd} 
-Remember 6: Windows users should have installed R software in their personal computer 
+Remember 6: Windows users must have installed R software in their personal computer 
 as eltmle calls R to implement the Super Learner. The R executable file must be located 
 at the following path: "C:\Program Files\R\R-3.1.2\bin\x64\R.exe" and the version must be v.3.0.0 or later.
+{p_end}
+
+{pstd} 
+Remember 6: Windows users must have only one version of R software installed in their personal computer  
+at the following path: "C:\Program Files\R\R-3.1.2\bin\x64\R.exe”. In case more than one different version 
+are located in the above highlighted path users might want to keep the latest.
 {p_end}
 
 {pstd}
@@ -203,21 +213,6 @@ in genetics and molecular biology 6.
 {phang}Department of Epidemiology and Population Health, London School of Hygiene and Tropical Medicine. 
 London, UK.{p_end}
 {phang}E-mail: {browse "mailto:miguel-angel.luque@lshtm.ac.uk":miguel-angel.luque@lshtm.ac.uk}{p_end}  
-
-{title:Coauthors}
-{phang}Micheal Schomaker{p_end}
-{phang}Centre for Infectious Disease Epidemiology and Reseaerch, Univeristy of Cape Town, Cape Town, South Afria.{p_end}
-{phang}E-mail: {browse "mailto:michael.schomaker@uct.ac.uk":michael.schomaker@uct.ac.uk}{p_end}
-
-{phang}karla Diaz-ordaz{p_end}
-{phang}Department of Medical Statistics, London School of Hygiene and Tropical Medicine.
-London, UK.{p_end}
-{phang}E-mail: {browse "mailto:karla.diaz-ordaz@lshtm.ac.uk":karla.diaz-ordaz@lshtm.ac.uk}{p_end}  
-
-{phang}Rhian Daniel{p_end}
-{phang}Department of Medical Statistics, London School of Hygiene and Tropical Medicine.
-London, UK.{p_end}
-{phang}E-mail: {browse "mailto:Rhian.daniel@lshtm.ac.uk":Rhian.daniel@lshtm.ac.uk}{p_end}
 
 {title:Also see}
 {psee}
