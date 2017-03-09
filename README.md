@@ -44,18 +44,19 @@ To install eltmle directly from github you need to use a Stata module for instal
     ado unistall eltmle   
      
  
-#Author (main author and developer):  
-  
+#Author 
+[Author and Developer]
 Miguel Angel Luque-Fernandez, LSHTM, NCDE, Cancer Survival Group, London, UK    
-Email: miguel-angel.luque@lshtm.ac.uk  
+Email: miguel-angel.luque@lshtm.ac.uk 
 
-#Contributors (intellectual advice and suggestions for improvement):     
- 
+#Contributors:
+[Intellectual advice and suggestions for improvement]
+
 Michael Schomaker, CIDER, UCT, Cape Twon, South Africa      
 Email: michael.schomaker at uct.ac.za    
 
 Bernard Rachet, LSHTM, NCDE, Cancer Survival Group, London, UK  
-Email: bernard.rached@lsthm.ac.uk  
+Email: bernard.rachet at lsthm.ac.uk  
 
 Aurelien Belot, LSHTM, NCDE, Cancer Survival Group, London, UK  
 Email: Aurelien.belot at lshtm.ac.uk  
@@ -69,7 +70,7 @@ Email: Karla.diaz-ordaz at lshtm.ac.uk
 Rhian Daniel, LSHTM, Department of Medical Statistics, London, UK    
 Email: Rhian.daniel at lshtm.ac.uk    
 
-#Acknowledgements:  
+#Acknowledgements  
   
 I would like to thank Professors Bianca De Stavola (LSHTM), Simon Cousens (LSHTM), Aurelio Tobias (CSIC), and Michel Coleman (LSHTM) for their comments and support.  
   
