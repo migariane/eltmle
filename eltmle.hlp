@@ -130,68 +130,68 @@ RR:   1.8575; 95%CI:(1.8020,1.9147)
 
 {title:Remarks} 
 
-{pstd} 
+{p 4 4 2 120}
 Remember 1: Y must be a binary numeric variable coded (0,1); X must be numeric binary
 variable and, Z a vector of covariates. 
 {p_end}
 
-{pstd} 
+{p 4 4 2 120}
 Remember 2: You must change your working directory to the location of the Stata.dta file.
 {p_end}
 
-{pstd} 
+{p 4 4 2 120}
 Remember 3: Mac users install {hi:meltmle.ado} file. 
 {p_end}
 
-{pstd} 
+{p 4 4 2 120}
 Remember 4: Windows users intall {hi:weltmle.ado} file.
 {p_end}
 
-{pstd} 
-Remember 5: Mac users must have installed R software in their personal computer as 
+{p 4 4 2 120}
+Remember 5: Mac users must have installed R software in their personal computer as
 eltmle calls R to implement the Super Learner. The R executable file must be located at 
 the following path: {hi:"/usr/local/bin/r"}.
 {p_end}
 
-{pstd} 
-Remember 6: Windows users must have installed R software in their personal computer 
+{p 4 4 2 120}
+Remember 6: Windows users must have installed R software in their personal computer
 as eltmle calls R to implement the Super Learner. The R executable file must be located 
 at the following path: {hi:"C:\Program Files\R\R-3.1.2\bin\x64\R.exe"} and the version must be v.3.0.0 or later.
 {p_end}
 
-{pstd} 
-Remember 7: Windows users must have only one version of R software installed in their personal computer  
+{p 4 4 2 120}
+Remember 7: Windows users must have only one version of R software installed in their personal computer
 at the following path: {hi:"C:\Program Files\R\R-3.1.2\bin\x64\R.exe"}. In case more than one different version 
 are located in the above highlighted path users might want to keep the latest.
 {p_end}
 
-{pstd}
+{p 4 4 2 120}
 Remember 8: Check the SLS.R file for problems with R.
 {p_end}
 
 {title:References}
 
-{phang}
-Luque-Fernandez, Miguel Angel. (2017). Targeted Maximum Likelihood Estimation for a 
+{p 4 4 2 120}
+Luque-Fernandez, Miguel Angel. (2017). Targeted Maximum Likelihood Estimation for a
 Binary Outcome: Tutorial and Guided Implementation {browse "http://migariane.github.io/TMLE.nb.html":Download here}.
 {p_end}
 
-{phang}
+{p 4 4 2 120}
 StataCorp. 2015. Stata Statistical Software: Release 14. College Station, TX: StataCorp LP.
 {p_end}
 
-{phang}
+{p 4 4 2 120}
 Gruber S, Laan M van der. (2011). Tmle: An r package for targeted maximum likelihood
 estimation. UC Berkeley Division of Biostatistics Working Paper Series.
 {p_end}
 
-{phang}
-Laan M van der, Rose S. (2011). Targeted learning: Causal inference for observational 
+{p 4 4 2 120}
+Laan M van der, Rose S. (2011). Targeted learning: Causal inference for observational
 and experimental data. Springer Series in Statistics.626p.
 {p_end}
 
-{phang}
-Van der Laan MJ, Polley EC, Hubbard AE. (2007). Super learner. Statistical applications 
+{p 4 4 2 120}
+Van der Laan MJ, Polley EC, Hubbard AE. (2007). Super learner. Statistical applications
 in genetics and molecular biology 6.
 {p_end}
 
