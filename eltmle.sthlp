@@ -41,7 +41,7 @@ where:
 {p_end}
 
 {p 4 4 2 120}
-The most commonly used estimator for a binary treatment effect is the average treatment effect ({hi:ATE}). The ATE estimation relies on parametric modelling assumptions. Therefore, the correct model specification is crucial to obtain unbiased {text}{estimates} of the true ATE. TMLE is a semiparametric, efficient substitution estimator allowing for data-adaptive estimation while obtaining valid statistical inference based on the targeted minimum loss-based estimation. TMLE has the advantage of being {tex}{doubly} robust. Moreover, TMLE allows inclusion of {hi:machine learning} algorithms to minimise the risk of model misspecification, a problem that persists for competing estimators. Evidence shows that TMLE typically provides the {hi:least unbiased} estimates of the ATE compared with other double robust estimators.
+The most commonly used estimator for a binary treatment effect is the average treatment effect ({hi:ATE}). The ATE estimation relies on parametric modelling assumptions. Therefore, the correct model specification is crucial to obtain {bf:unbiased} "estimates" of the true ATE. TMLE is a semiparametric, efficient substitution estimator allowing for data-adaptive estimation while obtaining valid statistical inference based on the targeted minimum loss-based estimation. TMLE has the advantage of being {bf:"doubly-robust"}. Moreover, TMLE allows inclusion of {hi:machine learning} algorithms to minimise the risk of model misspecification, a problem that persists for competing estimators. Evidence shows that TMLE typically provides the {hi:least unbiased} estimates of the ATE compared with other double robust estimators.
 {p_end}
 
 {p 4 4 2 120}
