@@ -1,5 +1,7 @@
 {smcl}
-{* 30.MARCH.2017}{...}
+{right: version 1.6 30.MARCH.2017}{...}
+
+{phang}
 {cmd:help eltmle}
 {hline}
 
@@ -10,83 +12,66 @@
 
 {title:Syntax}
 
-{p 8 17 2}
+{p 4 16 2}
 {cmd:eltmle}
 {hi: Y} 
 {hi: X}
 {hi: Z}
 ,
-[slapiw slaipwrf slaipwbgam tmle tmlerf tmlebgam]
+[{it:slapiw} {it:slaipwbgam} {it:tmle} {it:tmlebgam}]
 
+{p 4 4 2}
 where:
+{p_end}
 
+{p 4 4 2}
 {hi:Y}: Outcome: Numeric binary variable
+{p_end}
+{p 4 4 2}
 {hi:X}: Treatment or exposure: Numeric binary variable
-{hi:Z}: Covariates: Vector of numeric variables 
+{p_end}
+{p 4 4 2}
+{hi:Z}: Covariates: Vector of numeric variables
+{p_end}
 
 {title:Description}
 
-{pstd} 
+{p 4 4 2}
+{hi: Modern Epidemiology} has been able to identify significant limitations of classic epidemiological methods, like outcome regression analysis, when estimating causal quantities such as the average treatment effect (ATE) or the causal odds ratio, for observational data. For example, using classical regression models to estimate the ATE requires making the assumption that the effect measure is constant across levels of confounders included in the model, i.e. that there is no effect modification. Other methods do not require this assumption, including g-methods (e.g. the {hi:g-formula}) and targeted maximum likelihood estimation ({hi:TMLE}).
+{p_end}
 
-{hi: Modern Epidemiology} has been able to identify significant limitations of classic epidemiological methods when the focus 
-is to explain the main effect of a risk factor on a disease or outcome:   
+{p 4 4 2}
+The most commonly used estimator for a binary treatment effect is the average treatment effect (ATE). The ATE estimation relies on parametric modelling assumptions. Therefore, the correct model specification is crucial to obtain unbiased estimates of the true ATE. TMLE is a semiparametric, efficient substitution estimator allowing for data-adaptive estimation while obtaining valid statistical inference based on the targeted minimum loss-based estimation. TMLE has the advantage of being {hi: doubly robust}. Moreover, TMLE allows inclusion of **machine learning** algorithms to minimise the risk of model misspecification, a problem that persists for competing estimators. Evidence shows that TMLE typically provides the {hi:least unbiased} estimates of the ATE compared with other double robust estimators.
+{p_end}
 
-1. Non-collapsibility of the odds and hazard ratios.  
-2. Impact of paradoxical effects due to conditioning on colliders.  
-3. Selection bias related to the vague understanding of the effect of time on exposure and outcome.  
-4. Effect of time-dependent confounding and mediators, etc.  
+{p 4 4 2}
+The following link provides access to a TMLE tutorial: {browse "http://migariane.github.io/TMLE.nb.html":TMLE_tutorial}.
+{p_end}
 
-Classical epidemiological methods to control for confounding require making the assumption that the effect measure is constant 
-across levels of confounders included in the model. Alternatively, James Robins in 1986 showed that using {hi:standardisation}
-implemented through the use of the {hi: G-formula} allows obtaining a unconfounded marginal estimation of the causal average 
-treatment effect (ATE) under causal assumptions.      
+{p 4 4 2}
+{hi:eltmle} is a Stata program implementing the targeted maximum likelihood estimation for the ATE for a binary outcome and binary treatment. Future implementations will offer more general settings. Eltmle includes the use of a "Super Learner" called from the {hi:SuperLearner} package v.2.0-21 (Polley E., et al. 2011). The Super-Learner uses V-fold cross-validation (10-fold by default) to assess the performance of prediction regarding the potential outcomes and the propensity score as weighted averages of a set of machine learning algorithms. We used the default SuperLearner algorithms implemented in the base installation of the {hi:tmle-R} package v.1.2.0-5 (Susan G. and Van der Laan M., 2017), which included the following: i) stepwise selection, ii) generalized linear modeling (glm), iii) a glm variant that included second order polynomials and two-by-two interactions of the main terms included in the model.
+{p_end}
 
-The most commonly used estimator for a binary treatment effect is the risk difference or ATE. The ATE estimation relies on 
-parametric modelling assumptions. Therefore, the correct model specification is crucial to obtain unbiased estimates of the 
-true ATE. Professor Mark van der Laan and collaborators have developed a double-robust estimation procedure to reduce bias 
-against misspecification. The targeted maximum likelihood estimation (TMLE) is a semiparametric, efficient substitution 
-estimator. {hi:TMLE} allows for data-adaptive estimation while obtaining valid statistical inference based on the targeted 
-minimum loss-based estimation and machine learning algorithmS to minimise the risk of model misspecification.  
-
-Evidence shows that {hi:TMLE] provides the less unbiased estimate of the ATE compared with other double robust estimators.      
-
-The following link provides access to a TMLE tutorial: {browse "http://migariane.github.io/TMLE.nb.html":TMLE_tutorial}.        
-    
-{hi:eltmle} is a Stata program implementing the targeted maximum likelihood estimation for a binary outcome and treatment including 
-the ensemble learning algorithm "Super Learner" called from the {hi: SuperLearner} package v.2.0-21 (Polley E., et al. 2011). 
-The Super-Learner uses V-fold cross-validation (10-fold by default) to assess the performance of prediction regarding the potential 
-outcomes and the propensity score as weighted averages of a set of machine learning algorithms. We used the default SuperLearner 
-algorithms implemented in the base installation of the {hi:tmle-R} package v.1.2.0-5 (Susan G. and Van der Laan M., 2017), which 
-included the following: i) stepwise selection, ii) generalized linear modeling (glm), iii) a glm variant that included second order 
-polynomials and two-by-two interactions of the main terms included in the model. The first phase of the Super Learner algorithm is 
-computationally equivalent to performing model selection via 10-folds cross-validation. The latter phase of the Super Learner 
-algorithm (the meta-learning step) is just training another single model (no cross-validation) on the level one data. 
-    
 {title:Options}
 
-
-{phang} 
+{p 4 8 2}
 {hi:tmle}: this is the default option. If no-option is specified eltmle by default implements the
-TMLE based on the main three machine learning algorithms described before. 
+TMLE based on the main three machine learning algorithms described before.
 {p_end}
-
-{phang} 
+{p 4 8 2}
 {hi:tmlebgam}: this option may be specified or unspecified. When specified, it does include in addition to the above default
-implementation for the SuperLearner call the Bayes Generalized Linear Models and the Generalized Additive Models libraries. 
+implementation for the SuperLearner call the Bayes Generalized Linear Models and the Generalized Additive Models libraries.
 {p_end}
-
-{phang} 
+{p 4 8 2}
 {hi:slaipw}: this option may be specified or unspecified. When specified, it does estimate the augmented
 inverse probability weighting algorithm plus the Super Learner ensemble learning for the main three machine 
-learning algorithms described before. 
+learning algorithms described before.
 {p_end}
-
-{phang} 
+{p 4 8 2}
 {hi:slaipwbgam}: this option may be specified or unspecified. When specified, it does include in addition to the above default
 implementation for the SuperLearner call the Bayes Generalized Linear Models and the Generalized Additive Models libraries for 
-the slaipw estimator. 
+the slaipw estimator.
 {p_end}
-
 
 {title:Example}
 
@@ -98,9 +83,9 @@ the slaipw estimator.
 .use http://www.stata-press.com/data/r14/cattaneo2.dta
 .describe
 .gen lbw = cond(bweight<2500,1,0.)
-.gen lab var lbw “Low birthweight, <2500 g”
+.gen lab var lbw "Low birthweight, <2500 g"
 .save "your path/cattaneo2.dta", replace
-.cd “your path”
+.cd "your path"
 
 *******************************************************
 .eltmle lbw mbsmoke mage medu prenatal mmarried, tmle
@@ -162,18 +147,18 @@ Remember 4: Windows users intall {hi:weltmle.ado} file.
 {pstd} 
 Remember 5: Mac users must have installed R software in their personal computer as 
 eltmle calls R to implement the Super Learner. The R executable file must be located at 
-the following path: {hi:”/usr/local/bin/r”}.
+the following path: {hi:"/usr/local/bin/r"}.
 {p_end}
 
 {pstd} 
 Remember 6: Windows users must have installed R software in their personal computer 
 as eltmle calls R to implement the Super Learner. The R executable file must be located 
-at the following path: {hi:”C:\Program Files\R\R-3.1.2\bin\x64\R.exe”} and the version must be v.3.0.0 or later.
+at the following path: {hi:"C:\Program Files\R\R-3.1.2\bin\x64\R.exe"} and the version must be v.3.0.0 or later.
 {p_end}
 
 {pstd} 
 Remember 7: Windows users must have only one version of R software installed in their personal computer  
-at the following path: {hi:”C:\Program Files\R\R-3.1.2\bin\x64\R.exe”}. In case more than one different version 
+at the following path: {hi:"C:\Program Files\R\R-3.1.2\bin\x64\R.exe"}. In case more than one different version 
 are located in the above highlighted path users might want to keep the latest.
 {p_end}
 
