@@ -1,4 +1,4 @@
-*! version 1.5 Ensemble Learning Targeted Maximum Likelihodd by MALUQUE 05.APRIL.2017
+*! version 1.6 Ensemble Learning Targeted Maximum Likelihodd by MALUQUE 05.APRIL.2017
 *************************************************************************************
 **MIGUEL ANGEL LUQUE FERNANDEZ
 **TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OUTCOME AND TREATMENT 
@@ -26,7 +26,7 @@ program define eltmle
 		tmlebgam `varlist'
 	 }
 	 else if "`slaipw'" == "slaipw" { 
-	        slaipw `varlist'
+	    slaipw `varlist'
 	 }
 	 else if "`slaipwgbm'" == "slaipwgbm" {
 		slaipwgbm `varlist'
@@ -48,7 +48,7 @@ qui: file write rcode ///
 	`"set.seed(123)"' _newline ///
 	`"list.of.packages <- c("foreign","SuperLearner")"' _newline ///
         `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-        `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
+        `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
 	`"library(SuperLearner)"' _newline ///
 	`"library(foreign)"' _newline ///
 	`"data <- read.csv("data.csv", sep=",")"' _newline ///
@@ -162,7 +162,7 @@ qui: file write rcode ///
 	`"set.seed(123)"' _newline ///
 	`"list.of.packages <- c("foreign","SuperLearner")"' _newline ///
         `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-        `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
+        `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
 	`"library(SuperLearner)"' _newline ///
 	`"library(foreign)"' _newline ///
 	`"data <- read.csv("data.csv", sep=",")"' _newline ///
@@ -277,7 +277,7 @@ qui: file write rcode ///
 	`"set.seed(123)"' _newline ///
 	`"list.of.packages <- c("foreign","SuperLearner","gam","arm")"' _newline ///
     `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-    `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
+    `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
 	`"library(SuperLearner)"' _newline ///
 	`"library(foreign)"' _newline ///
 	`"library(gam)"' _newline ///
@@ -392,7 +392,7 @@ qui: file write rcode ///
 	`"set.seed(123)"' _newline ///
 	`"list.of.packages <- c("foreign","SuperLearner")"' _newline ///
     `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-    `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
+    `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
 	`"library(SuperLearner)"' _newline ///
 	`"library(foreign)"' _newline ///
 	`"data <- read.csv("data.csv", sep=",")"' _newline ///
@@ -497,7 +497,7 @@ qui: file write rcode ///
 	`"set.seed(123)"' _newline ///
 	`"list.of.packages <- c("foreign","SuperLearner")"' _newline ///
     `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-    `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
+    `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
 	`"library(SuperLearner)"' _newline ///
 	`"library(foreign)"' _newline ///
 	`"data <- read.csv("data.csv", sep=",")"' _newline ///
@@ -602,7 +602,7 @@ qui: file write rcode ///
 	`"set.seed(123)"' _newline ///
 	`"list.of.packages <- c("foreign","SuperLearner","gam","arm")"' _newline ///
     `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-    `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
+    `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
 	`"library(SuperLearner)"' _newline ///
 	`"library(foreign)"' _newline ///
 	`"library(gam)"' _newline ///
@@ -706,7 +706,7 @@ qui: file write rcode ///
 	`"set.seed(123)"' _newline ///
 	`"list.of.packages <- c("foreign")"' _newline ///
     `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-    `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
+    `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
 	`"library(foreign)"' _newline ///
 	`"data <- read.csv("data.csv", sep=",")"' _newline ///
 	`"attach(data)"' _newline ///
