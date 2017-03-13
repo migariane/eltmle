@@ -36,38 +36,38 @@ where:
 
 {title:Description}
 
-{p 4 4 2}
+{p 4 4 2 120}
 {hi: Modern Epidemiology} has been able to identify significant limitations of classic epidemiological methods, like outcome regression analysis, when estimating causal quantities such as the average treatment effect (ATE) or the causal odds ratio, for observational data. For example, using classical regression models to estimate the ATE requires making the assumption that the effect measure is constant across levels of confounders included in the model, i.e. that there is no effect modification. Other methods do not require this assumption, including g-methods (e.g. the {hi:g-formula}) and targeted maximum likelihood estimation ({hi:TMLE}).
 {p_end}
 
-{p 4 4 2}
+{p 4 4 2 120}
 The most commonly used estimator for a binary treatment effect is the average treatment effect ({hi:ATE}). The ATE estimation relies on parametric modelling assumptions. Therefore, the correct model specification is crucial to obtain {bf:unbiased estimates} of the true ATE. TMLE is a semiparametric, efficient substitution estimator allowing for data-adaptive estimation while obtaining valid statistical inference based on the targeted minimum loss-based estimation. TMLE has the advantage of being {bf:doubly robust}. Moreover, TMLE allows inclusion of {hi:machine learning} algorithms to minimise the risk of model misspecification, a problem that persists for competing estimators. Evidence shows that TMLE typically provides the {hi:least unbiased} estimates of the ATE compared with other double robust estimators.
 {p_end}
 
-{p 4 4 2}
+{p 4 4 2 120}
 The following link provides access to a TMLE tutorial: {browse "http://migariane.github.io/TMLE.nb.html":TMLE_tutorial}.
 {p_end}
 
-{p 4 4 2}
+{p 4 4 2 120}
 {hi:eltmle} is a Stata program implementing the targeted maximum likelihood estimation for the ATE for a binary outcome and binary treatment. Future implementations will offer more general settings. {hi:eltmle} includes the use of a super learner called from the {hi:SuperLearner} package v.2.0-21 (Polley E., et al. 2011). The Super-Learner uses V-fold cross-validation (10-fold by default) to assess the performance of prediction regarding the potential outcomes and the propensity score as weighted averages of a set of machine learning algorithms. We used the default SuperLearner algorithms implemented in the base installation of the {hi:tmle-R} package v.1.2.0-5 (Susan G. and Van der Laan M., 2017), which included the following: i) stepwise selection, ii) generalized linear modeling (glm), iii) a glm variant that included second order polynomials and two-by-two interactions of the main terms included in the model.
 {p_end}
 
 {title:Options}
 
-{p 4 8 2}
+{p 4 4 2 120}
 {hi:tmle}: this is the default option. If no-option is specified eltmle by default implements the
 TMLE based on the main three machine learning algorithms described before.
 {p_end}
-{p 4 8 2}
+{p 4 4 2 120}
 {hi:tmlebgam}: this option may be specified or unspecified. When specified, it does include in addition to the above default
 implementation for the SuperLearner call the Bayes Generalized Linear Models and the Generalized Additive Models libraries.
 {p_end}
-{p 4 8 2}
+{p 4 4 2 120}
 {hi:slaipw}: this option may be specified or unspecified. When specified, it does estimate the augmented
 inverse probability weighting algorithm plus the Super Learner ensemble learning for the main three machine 
 learning algorithms described before.
 {p_end}
-{p 4 8 2}
+{p 4 4 2 120}
 {hi:slaipwbgam}: this option may be specified or unspecified. When specified, it does include in addition to the above default
 implementation for the SuperLearner call the Bayes Generalized Linear Models and the Generalized Additive Models libraries for 
 the slaipw estimator.
