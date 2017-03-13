@@ -41,7 +41,7 @@ where:
 {p_end}
 
 {p 4 4 2 120}
-The most commonly used estimator for a binary treatment effect is the average treatment effect ({hi:ATE}). The ATE estimation relies on parametric modelling assumptions. Therefore, the correct model specification is crucial to obtain {bf:unbiased est:imates} of the true ATE. TMLE is a semiparametric, efficient substitution estimator allowing for data-adaptive estimation while obtaining valid statistical inference based on the targeted minimum loss-based estimation. TMLE has the advantage of being {bf:Doubly-Robust}. Moreover, TMLE allows inclusion of {hi:machine learning} algorithms to minimise the risk of model misspecification, a problem that persists for competing estimators. Evidence shows that TMLE typically provides the {hi:least unbiased} estimates of the ATE compared with other double robust estimators.
+The most commonly used estimator for a binary treatment effect is the average treatment effect ({hi:ATE}). The ATE estimation relies on parametric modelling assumptions. Therefore, the correct model specification is crucial to obtain {text}{bf:unbiased estimates} of the true ATE. TMLE is a semiparametric, efficient substitution estimator allowing for data-adaptive estimation while obtaining valid statistical inference based on the targeted minimum loss-based estimation. TMLE has the advantage of being {tex}{bf:Doubly} {bf:Robust}. Moreover, TMLE allows inclusion of {hi:machine learning} algorithms to minimise the risk of model misspecification, a problem that persists for competing estimators. Evidence shows that TMLE typically provides the {hi:least unbiased} estimates of the ATE compared with other double robust estimators.
 {p_end}
 
 {p 4 4 2 120}
@@ -58,15 +58,18 @@ The following link provides access to a TMLE tutorial: {browse "http://migariane
 {hi:tmle}: this is the default option. If no-option is specified eltmle by default implements the
 TMLE based on the main three machine learning algorithms described before.
 {p_end}
+
 {p 4 4 2 120}
 {hi:tmlebgam}: this option may be specified or unspecified. When specified, it does include in addition to the above default
 implementation for the SuperLearner call the Bayes Generalized Linear Models and the Generalized Additive Models libraries.
 {p_end}
+
 {p 4 4 2 120}
 {hi:slaipw}: this option may be specified or unspecified. When specified, it does estimate the augmented
 inverse probability weighting algorithm plus the Super Learner ensemble learning for the main three machine 
 learning algorithms described before.
 {p_end}
+
 {p 4 4 2 120}
 {hi:slaipwbgam}: this option may be specified or unspecified. When specified, it does include in addition to the above default
 implementation for the SuperLearner call the Bayes Generalized Linear Models and the Generalized Additive Models libraries for 
