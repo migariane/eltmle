@@ -22,21 +22,21 @@ To install eltmle directly from github you need to use a Stata module for instal
     
     github install migariane/meltmle  
    
-    which eltmle   
+        .which eltmle   
 
-    help eltmle   
+        .help eltmle   
 
     2) For Windows users (please, read carefully the help file before using eltmle in Stata):  
 
-    github install migariane/weltmle  
+        .github install migariane/weltmle  
  
-    which eltmle 
+        .which eltmle 
 
-    help eltmle   
+        .help eltmle   
      
     For both, MAC and Windows users, in case you want to uninstall the package type:    
 	
-    ado unistall eltmle   
+        .ado unistall eltmle   
      
  
 # Author 
@@ -49,6 +49,9 @@ Email: miguel-angel.luque@lshtm.ac.uk
 
 Michael Schomaker, CIDER, UCT, Cape Twon, South Africa      
 Email: michael.schomaker at uct.ac.za    
+
+Giovanni Cerulli, CRES, CNR, Rome, Itali  
+Email: giovanni.cerulli at cres.cnr.it
 
 Bernard Rachet, LSHTM, NCDE, Cancer Survival Group, London, UK  
 Email: bernard.rachet at lsthm.ac.uk  
