@@ -50,7 +50,7 @@ Email: miguel-angel.luque@lshtm.ac.uk
 Michael Schomaker, CIDER, UCT, Cape Twon, South Africa      
 Email: michael.schomaker at uct.ac.za    
 
-Giovanni Cerulli, CRES, CNR, Rome, Itali  
+Giovanni Cerulli, CRES, CNR, Rome, Italy  
 Email: giovanni.cerulli at cres.cnr.it
 
 Bernard Rachet, LSHTM, NCDE, Cancer Survival Group, London, UK  
