@@ -39,8 +39,6 @@ program define eltmle
 	 }
 end 
 
-
-
 // Write bacth file to find R.exe path and R version
 set more off
 qui: file close _all
@@ -66,7 +64,7 @@ qui: file write bat ///
 `"echo."' _newline ///
 `"pause"'
 qui: file close bat
-s
+
 //Run batch
 shell setup.bat
 
