@@ -898,7 +898,7 @@ qui: file write bat ///
 `"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
 `"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
 	`"echo Found %%r"' _newline ///
-	`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.ado"' _newline ///
+	`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
 	`"echo All set!"' _newline ///	
 	`"goto:DONE"' _newline ///
 `")"' _newline ///
