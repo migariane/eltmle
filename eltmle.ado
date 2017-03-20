@@ -39,35 +39,6 @@ program define eltmle
 	 }
 end 
 
-// Write bacth file to find R.exe path and R version
-set more off
-qui: file close _all
-qui: file open bat using setup.bat, write replace
-qui: file write bat ///
-`"@echo off"' _newline ///
-`"SET PATHROOT=C:\Program Files\R\"' _newline ///
-`"echo Locating path of R..."' _newline ///
-`"echo."' _newline ///
-`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
-`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
-	`"echo Found %%r"' _newline ///
-	`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.ado"' _newline ///
-	`"echo All set!"' _newline ///	
-	`"goto:DONE"' _newline ///
-`")"' _newline ///
-`":NO_R"' _newline ///
-`"echo R is not installed in your system."' _newline ///
-`"echo."' _newline ///
-`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
-`"echo Install it and re-run this script"' _newline ///
-`":DONE"' _newline ///
-`"echo."' _newline ///
-`"pause"'
-qui: file close bat
-
-//Run batch
-shell setup.bat
-
 program tmle  
 // Write R Code dependencies: foreign Surperlearner 
 set more off
@@ -105,8 +76,36 @@ qui: file write rcode ///
 	`"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
 	`"write.dta(data, "data2.dta")"'  
 qui: file close rcode
- 
-// Run R 
+
+// Write bacth file to find R.exe path and R version
+set more off
+qui: file close _all
+qui: file open bat using setup.bat, write replace
+qui: file write bat ///
+`"@echo off"' _newline ///
+`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+`"echo Locating path of R..."' _newline ///
+`"echo."' _newline ///
+`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
+	`"echo Found %%r"' _newline ///
+	`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.ado"' _newline ///
+	`"echo All set!"' _newline ///	
+	`"goto:DONE"' _newline ///
+`")"' _newline ///
+`":NO_R"' _newline ///
+`"echo R is not installed in your system."' _newline ///
+`"echo."' _newline ///
+`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+`"echo Install it and re-run this script"' _newline ///
+`":DONE"' _newline ///
+`"echo."' _newline ///
+`"pause"'
+qui: file close bat
+
+//Run batch
+shell setup.bat 
+//Run R 
 do runr.do
 
 // Read Revised Data Back to Stata
@@ -218,7 +217,35 @@ qui: file write rcode ///
 	`"write.dta(data, "data2.dta")"'  
 qui: file close rcode
  
-// Run R (you have to specify the path of your R executable file)
+// Write bacth file to find R.exe path and R version
+set more off
+qui: file close _all
+qui: file open bat using setup.bat, write replace
+qui: file write bat ///
+`"@echo off"' _newline ///
+`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+`"echo Locating path of R..."' _newline ///
+`"echo."' _newline ///
+`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
+	`"echo Found %%r"' _newline ///
+	`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.ado"' _newline ///
+	`"echo All set!"' _newline ///	
+	`"goto:DONE"' _newline ///
+`")"' _newline ///
+`":NO_R"' _newline ///
+`"echo R is not installed in your system."' _newline ///
+`"echo."' _newline ///
+`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+`"echo Install it and re-run this script"' _newline ///
+`":DONE"' _newline ///
+`"echo."' _newline ///
+`"pause"'
+qui: file close bat
+
+//Run batch
+shell setup.bat 
+//Run R (you have to specify the path of your R executable file)
 do runr.do
 
 // Read Revised Data Back to Stata
@@ -331,8 +358,35 @@ qui: file write rcode ///
 	`"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
 	`"write.dta(data, "data2.dta")"'  
 qui: file close rcode
- 
-// Run R (you have to specify the path of your R executable file)
+
+// Write bacth file to find R.exe path and R version
+set more off
+qui: file close _all
+qui: file open bat using setup.bat, write replace
+qui: file write bat ///
+`"@echo off"' _newline ///
+`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+`"echo Locating path of R..."' _newline ///
+`"echo."' _newline ///
+`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
+	`"echo Found %%r"' _newline ///
+	`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.ado"' _newline ///
+	`"echo All set!"' _newline ///	
+	`"goto:DONE"' _newline ///
+`")"' _newline ///
+`":NO_R"' _newline ///
+`"echo R is not installed in your system."' _newline ///
+`"echo."' _newline ///
+`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+`"echo Install it and re-run this script"' _newline ///
+`":DONE"' _newline ///
+`"echo."' _newline ///
+`"pause"'
+qui: file close bat
+//Run batch
+shell setup.bat 
+//Run R (you have to specify the path of your R executable file)
 do runr.do
 
 // Read Revised Data Back to Stata
@@ -444,7 +498,35 @@ qui: file write rcode ///
 	`"write.dta(data, "data2.dta")"'  
 qui: file close rcode
  
-// Run R (you have to specify the path of your R executable file)
+// Write bacth file to find R.exe path and R version
+set more off
+qui: file close _all
+qui: file open bat using setup.bat, write replace
+qui: file write bat ///
+`"@echo off"' _newline ///
+`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+`"echo Locating path of R..."' _newline ///
+`"echo."' _newline ///
+`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
+	`"echo Found %%r"' _newline ///
+	`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.ado"' _newline ///
+	`"echo All set!"' _newline ///	
+	`"goto:DONE"' _newline ///
+`")"' _newline ///
+`":NO_R"' _newline ///
+`"echo R is not installed in your system."' _newline ///
+`"echo."' _newline ///
+`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+`"echo Install it and re-run this script"' _newline ///
+`":DONE"' _newline ///
+`"echo."' _newline ///
+`"pause"'
+qui: file close bat
+
+//Run batch
+shell setup.bat 
+//Run R (you have to specify the path of your R executable file)
 do runr.do
 
 // Read Revised Data Back to Stata
@@ -546,8 +628,36 @@ qui: file write rcode ///
 	`"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
 	`"write.dta(data, "data2.dta")"'  
 qui: file close rcode
- 
-// Run R (you have to specify the path of your R executable file)
+
+// Write bacth file to find R.exe path and R version
+set more off
+qui: file close _all
+qui: file open bat using setup.bat, write replace
+qui: file write bat ///
+`"@echo off"' _newline ///
+`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+`"echo Locating path of R..."' _newline ///
+`"echo."' _newline ///
+`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
+	`"echo Found %%r"' _newline ///
+	`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.ado"' _newline ///
+	`"echo All set!"' _newline ///	
+	`"goto:DONE"' _newline ///
+`")"' _newline ///
+`":NO_R"' _newline ///
+`"echo R is not installed in your system."' _newline ///
+`"echo."' _newline ///
+`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+`"echo Install it and re-run this script"' _newline ///
+`":DONE"' _newline ///
+`"echo."' _newline ///
+`"pause"'
+qui: file close bat
+
+//Run batch
+shell setup.bat 
+//Run R (you have to specify the path of your R executable file)
 do runr.do
 
 // Read Revised Data Back to Stata
@@ -650,8 +760,36 @@ qui: file write rcode ///
 	`"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
 	`"write.dta(data, "data2.dta")"'  
 qui: file close rcode
- 
-// Run R (you have to specify the path of your R executable file)
+
+// Write bacth file to find R.exe path and R version
+set more off
+qui: file close _all
+qui: file open bat using setup.bat, write replace
+qui: file write bat ///
+`"@echo off"' _newline ///
+`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+`"echo Locating path of R..."' _newline ///
+`"echo."' _newline ///
+`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
+	`"echo Found %%r"' _newline ///
+	`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.ado"' _newline ///
+	`"echo All set!"' _newline ///	
+	`"goto:DONE"' _newline ///
+`")"' _newline ///
+`":NO_R"' _newline ///
+`"echo R is not installed in your system."' _newline ///
+`"echo."' _newline ///
+`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+`"echo Install it and re-run this script"' _newline ///
+`":DONE"' _newline ///
+`"echo."' _newline ///
+`"pause"'
+qui: file close bat
+
+//Run batch
+shell setup.bat 
+//Run R (you have to specify the path of your R executable file)
 do runr.do
 
 // Read Revised Data Back to Stata
@@ -748,7 +886,35 @@ qui: file write rcode ///
 	`"write.dta(data, "data2.dta")"'  
 qui: file close rcode
  
-// Run R (you have to specify the path of your R executable file)
+// Write bacth file to find R.exe path and R version
+set more off
+qui: file close _all
+qui: file open bat using setup.bat, write replace
+qui: file write bat ///
+`"@echo off"' _newline ///
+`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+`"echo Locating path of R..."' _newline ///
+`"echo."' _newline ///
+`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
+	`"echo Found %%r"' _newline ///
+	`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.ado"' _newline ///
+	`"echo All set!"' _newline ///	
+	`"goto:DONE"' _newline ///
+`")"' _newline ///
+`":NO_R"' _newline ///
+`"echo R is not installed in your system."' _newline ///
+`"echo."' _newline ///
+`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+`"echo Install it and re-run this script"' _newline ///
+`":DONE"' _newline ///
+`"echo."' _newline ///
+`"pause"'
+qui: file close bat
+
+//Run batch
+shell setup.bat 
+//Run R (you have to specify the path of your R executable file)
 do runr.do
 
 // Read Revised Data Back to Stata
