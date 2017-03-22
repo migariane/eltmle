@@ -12,7 +12,8 @@ The following link provides access to a TMLE tutorial:  http://migariane.github.
 
 # Installation note    
 
-To install eltmle directly from github you need to use a Stata module for installing Stata packages from GitHub, including previous releases of a package. You can install the latest version of the github command by executing the following code in your Stata session (**note**: you will need a Stata version greater or equal than 13.1, otherwise you can install the package manually downloading the files from the Github repository and placing it in your Stata ADO PERSONAL folder):  
+To install eltmle directly from github you need to use a Stata module for installing Stata packages from GitHub, including previous releases of a package. You can install the latest version of the github command by executing the following code in your Stata session.  
+**Note**: you need a Stata version greater or equal than 13.2, otherwise you can install the package manually downloading the files from the Github repository and placing it in your Stata ADO PERSONAL folder):  
 
     net install github, from("https://haghish.github.io/github/")
 
