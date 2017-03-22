@@ -36,7 +36,7 @@ To install eltmle directly from github you need to use a Stata module for instal
      
     For both, MAC and Windows users, in case you want to uninstall the package type:    
 	
-        .ado unistall eltmle   
+        .ado uninstall eltmle   
      
  
 # Author 
