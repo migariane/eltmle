@@ -1,16 +1,14 @@
-*! version 1.7 Ensemble Learning Targeted Maximum Likelihodd by Miguel Angel LUQUE-Fernandez 05.APRIL.2017
+*! version 1.7 Ensemble Learning Targeted Maximum Likelihood by Miguel Angel LUQUE-Fernandez 05.APRIL.2017
 *************************************************************************************
 **MIGUEL ANGEL LUQUE FERNANDEZ
 **TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OUTCOME AND TREATMENT 
-**Improved AIPW with Super Learner (ensemble learning machine learning)
-**Submitted to the IJE December 2016 (under review)
-**IJE-2016-12-1473
-**March 2017 
-**This program requieres R to be installed in your computer (R-3.3)
+**Improved AIPW with Super Learner (ensemble learning machine-learning)
+**This program requires R to be installed in your computer 
 *************************************************************************************
 capture program drop eltmle
 program define eltmle
      syntax [varlist] [if] [pw] [, slaipw slaipwgbm slaipwbgam tmle tmlegbm tmlebgam aipw] 
+	 version 13.2
 	 marksample touse
 	 local var `varlist' if `touse'
          local dir `c(pwd)'
