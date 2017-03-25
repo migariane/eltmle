@@ -111,7 +111,7 @@ implementation, the Bayes Generalized Linear Models and Generalized Additive Mod
 
 TMLE: Average Treatment Effect
 
-ATE:   0.0546; SE:0.0122; p-value: 0.0000; 95%CI:(0.030700,0.078427)
+ATE:  0.0546; SE:0.0122; p-value: 0.0000; 95%CI:(0.030700,0.078427)
 
 TMLE: Relative Risk
 
@@ -129,7 +129,7 @@ RR:   2.0703; 95%CI:(2.0132,2.1290)
 
 AIPW ensemble learning: Average Treatment Effect
 
-ATE:   0.0542; SE:0.0122; p-value: 0.0000; 95%CI:(0.030299,0.078026)
+ATE:  0.0542; SE:0.0122; p-value: 0.0000; 95%CI:(0.030299,0.078026)
 
 AIPW ensemble learning: Relative Risk
 
@@ -189,7 +189,7 @@ StataCorp. 2015. Stata Statistical Software: Release 14. College Station, TX: St
 {p_end}
 
 {p 4 4 2 120}
-Gruber S, Laan M van der. (2011). Tmle: An r package for targeted maximum likelihood
+Gruber S, Laan M van der. (2011). Tmle: An R package for targeted maximum likelihood
 estimation. UC Berkeley Division of Biostatistics Working Paper Series.
 {p_end}
 
