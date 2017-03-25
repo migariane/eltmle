@@ -11,7 +11,7 @@ program define eltmle
 	 version 13.2
 	 marksample touse
 	 local var `varlist' if `touse'
-         local dir `c(pwd)'
+     local dir `c(pwd)'
 	 cd "`dir'"
 	 export delimited `var' using "data.csv", nolabel replace 
 	 if "`slaipw'" == "" & "`slaipwgbm'" == "" & "`slaipwbgam'" == "" & "`tmlegbm'" == "" & "`tmlebgam'" == "" & "`aipw'" == "" {
@@ -173,6 +173,7 @@ quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm runr.do
 quietly: rm setup.bat
+quietly: rm .RData
 end
 
 /////////////////////////////////////////////
@@ -314,6 +315,7 @@ quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm runr.do
 quietly: rm setup.bat
+quietly: rm .RData
 end
 
 ///////////////////////////////////////
@@ -454,6 +456,7 @@ quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm runr.do
 quietly: rm setup.bat
+quietly: rm .RData
 end
 
 ////////////////////////////////////
@@ -585,6 +588,7 @@ quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm runr.do
 quietly: rm setup.bat
+quietly: rm .RData
 end
 
 ///////////////////////
@@ -716,6 +720,7 @@ quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm runr.do
 quietly: rm setup.bat
+quietly: rm .RData
 end
 
 //////////////////////////////
@@ -848,6 +853,7 @@ quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm runr.do
 quietly: rm setup.bat
+quietly: rm .RData
 end
 
 program aipw
@@ -973,6 +979,6 @@ quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm runr.do
 quietly: rm setup.bat
+quietly: rm .RData
 end
 
-//program drop eltmle tmle tmlebgam tmlegbm slaipw slaipwgbm slaipwbgam aipw

@@ -1,5 +1,5 @@
 {smcl}
-{right:*!version 1.6 30.MARCH.2017}{...}
+{right:*!version 1.7 05.APRIL.2017}{...}
 
 {phang}
 {cmd:help eltmle}
@@ -38,7 +38,7 @@ for observational data. For example, using classical regression models to estima
 {p_end}
 
 {p 4 4 2 120}
-The most commonly used estimator for a binary treatment effect is the average treatment effect ({hi:ATE}). The ATE estimation relies on parametric modelling assumptions. Therefore, the correct model specification is crucial 
+The average treatment effect ({hi:ATE}) or risk difference is the most commonly used causal parameter. Many estimators of the ATE but no all relies on parametric modeling assumptions. Therefore, the correct model specification is crucial 
 to obtain unbiased estimates of the true ATE.
 {p_end}
 
@@ -53,35 +53,35 @@ The following link provides access to a TMLE tutorial: {browse "http://migariane
 {p_end}
 
 {p 4 4 2 120}
-{hi:eltmle} is a Stata program implementing the targeted maximum likelihood estimation for the ATE for a binary outcome and binary treatment. Future implementations will offer more general settings. 
-{hi:eltmle} includes the use of a super learner called from the {hi:SuperLearner} package v.2.0-21 (Polley E., et al. 2011). The Super-Learner uses V-fold cross-validation (10-fold by default) to assess
- the performance of prediction regarding the potential outcomes and the propensity score as weighted averages of a set of machine learning algorithms. We used the default SuperLearner algorithms implemented
- in the base installation of the {hi:tmle-R} package v.1.2.0-5 (Susan G. and Van der Laan M., 2017), which included the following: i) stepwise selection, ii) generalized linear modeling, iii) a generalized 
- linear modelling variant that included second order polynomials and two-by-two interactions of the main terms included in the model.
+{hi:eltmle} is a Stata program implementing the targeted maximum likelihood estimation for the ATE for a binary outcome and binary treatment. {hi:eltmle} includes the use of a super-learner called from the {hi:SuperLearner}
+package v.2.0-21 (Polley E., et al. 2011). The Super-Learner uses V-fold cross-validation (10-fold by default) to assess the performance of prediction regarding the potential outcomes and the propensity score as weighted 
+averages of a set of machine learning algorithms. We used the default SuperLearner algorithms implemented in the base installation of the {hi:tmle-R} package v.1.2.0-5 (Susan G. and Van der Laan M., 2017), 
+which included the following: i) stepwise selection, ii) generalized linear modeling (GLM), iii) a GLM variant that includes second order polynomials and two-by-two interactions of the main terms
+included in the model. Additionally, {hi:eltmle} users will have the option to include Bayes Generalized Linear Models and Generalized Additive Models in the Super-Learner libraries.
+Future implementations will offer more advanced machine learning algorithms. 
 {p_end}
 
 {title:Options}
 
 {p 4 4 2 120}
 {hi:tmle}: this is the default option. If no-option is specified eltmle by default implements the
-TMLE based on the main three machine learning algorithms described before.
+TMLE algorithm plus the super-Learner ensemble learning for the main three machine learning algorithms described above.
 {p_end}
 
 {p 4 4 2 120}
 {hi:tmlebgam}: this option may be specified or unspecified. When specified, it does include in addition to the above default
-implementation for the SuperLearner call the Bayes Generalized Linear Models and the Generalized Additive Models libraries.
+implementation, the Bayes Generalized Linear Models and Generalized Additive Models.
 {p_end}
 
 {p 4 4 2 120}
 {hi:slaipw}: this option may be specified or unspecified. When specified, it does estimate the augmented
 inverse probability weighting algorithm plus the Super Learner ensemble learning for the main three machine 
-learning algorithms described before.
+learning algorithms described above.
 {p_end}
 
 {p 4 4 2 120}
 {hi:slaipwbgam}: this option may be specified or unspecified. When specified, it does include in addition to the above default
-implementation for the SuperLearner call the Bayes Generalized Linear Models and the Generalized Additive Models libraries for 
-the slaipw estimator.
+implementation, the Bayes Generalized Linear Models and Generalized Additive Models for the slaipw estimator.
 {p_end}
 
 {title:Example}
