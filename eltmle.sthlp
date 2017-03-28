@@ -94,7 +94,7 @@ implementation, the Bayes Generalized Linear Models and Generalized Additive Mod
 .use http://www.stata-press.com/data/r14/cattaneo2.dta
 .describe
 .gen lbw = cond(bweight<2500,1,0.)
-.gen lab var lbw "Low birthweight, <2500 g"
+.lab var lbw "Low birthweight, <2500 g"
 .save "your path/cattaneo2.dta", replace
 .cd "your path"
 
