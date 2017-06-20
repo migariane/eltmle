@@ -1,4 +1,4 @@
-*! version 1.7 Ensemble Learning Targeted Maximum Likelihood by Miguel Angel LUQUE-Fernandez 05.APRIL.2017
+*! version 1.8 Ensemble Learning Targeted Maximum Likelihood by Miguel Angel LUQUE-FERNANDEZ 20.MARCH.2017
 *************************************************************************************
 **MIGUEL ANGEL LUQUE FERNANDEZ
 **TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OUTCOME AND TREATMENT 
@@ -7,14 +7,14 @@
 *************************************************************************************
 capture program drop eltmle
 program define eltmle
-     syntax [varlist] [if] [pw] [, slaipw slaipwgbm slaipwbgam tmle tmlegbm tmlebgam aipw] 
+     syntax [varlist] [if] [pw] [, slaipw slaipwgbm slaipwbgam tmle tmlegbm tmlebgam] 
 	 version 13.2
 	 marksample touse
 	 local var `varlist' if `touse'
      local dir `c(pwd)'
 	 cd "`dir'"
 	 export delimited `var' using "data.csv", nolabel replace 
-	 if "`slaipw'" == "" & "`slaipwgbm'" == "" & "`slaipwbgam'" == "" & "`tmlegbm'" == "" & "`tmlebgam'" == "" & "`aipw'" == "" {
+	 if "`slaipw'" == "" & "`slaipwgbm'" == "" & "`slaipwbgam'" == "" & "`tmlegbm'" == "" & "`tmlebgam'" == "" {
 		tmle `varlist'
 	 }
 	 else if "`tmlegbm'" == "tmlegbm" { 
@@ -31,9 +31,6 @@ program define eltmle
 	 }
 	 else if "`slaipwbgam'" == "slaipwbgam" {
 		slaipwbgam `varlist'
-	 }
-	  else if "`aipw'" == "aipw" {
-		aipw `varlist'
 	 }
 end 
 
@@ -144,7 +141,7 @@ global RRtmle = $Q1/$Q0
 
 // Statistical inference ATE and RR
 // ATE
-gen double IC = (HAW*(Y - QAW)) + (Q1W - Q0W) - $ATEtmle
+gen double IC = (HAW*(Y - Qstar)) + (Q1sar - Q0star) - $ATEtmle
 qui: sum IC
 global var = r(Var)
 qui: count
@@ -286,7 +283,7 @@ global RRtmlegbm = $Q1/$Q0
 // Statistical inference ATE and RR
 
 // ATE
-gen double IC = (HAW*(Y - QAW)) + (Q1W - Q0W) - $ATEtmlegbm
+gen double IC = (HAW*(Y - Qstar)) + (Q1sar - Q0star) - $ATEtmlegbm
 qui: sum IC
 global var = r(Var)
 qui: count
@@ -427,7 +424,7 @@ global RRtmlebg = $Q1/$Q0
 
 // Statistical inference ATE and RR
 // ATE
-gen double IC = (HAW*(Y - QAW)) + (Q1W - Q0W) - $ATEtmlebg
+gen double IC = (HAW*(Y - Qstar)) + (Q1sar - Q0star) - $ATEtmlebg
 qui: sum IC
 global var = r(Var)
 qui: count
@@ -845,132 +842,6 @@ di "ATE:" %9.4f $ATEslaipwbg _col(5) "; SE:" %5.4f sqrt($varICslaipwbg) _col(5) 
 di _newline
 di "AIPW Bayes GLM and GAM: Relative Risk" _newline 
 di "RR:" %9.4f $RRslaipwbg _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
-
-// Clean up
-quietly: rm SLS.R
-//quietly: rm SLS.Rout
-quietly: rm data2.dta
-quietly: rm data.csv
-quietly: rm runr.do
-quietly: rm setup.bat
-quietly: rm .RData
-end
-
-program aipw
-// Write R Code dependencies: foreign Surperlearner 
-set more off
-qui: file close _all
-qui: file open rcode using SLS.R, write replace
-qui: file write rcode ///
-	`"set.seed(123)"' _newline ///
-	`"list.of.packages <- c("foreign")"' _newline ///
-    `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-    `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
-	`"library(foreign)"' _newline ///
-	`"data <- read.csv("data.csv", sep=",")"' _newline ///
-	`"attach(data)"' _newline ///
-	`"nvar <- dim(data)[[2]]"' _newline ///
-	`"Y <- data[,1]"' _newline ///
-	`"A <- data[,2]"' _newline ///
-	`"X <- data[,2:nvar]"' _newline ///
-	`"W <- data[,3:nvar]"' _newline ///
-	`"nvarX <- dim(X)[[2]]"' _newline ///
-	`"xnam <- paste0("w", 2:nvarX-1)"' _newline ///
-	`"fmlaY <- as.formula(paste("Y ~ A +", paste(names(W), collapse= "+")))"' _newline ///
-	`"fmlaA <- as.formula(paste("A ~ ", paste(names(W), collapse= "+")))"' _newline ///
-	`"Q <- glm(fmlaY, family=binomial, data=data)"' _newline ///
-	`"QAW <- predict(Q, type="response")"' _newline ///
-	`"Q1W = predict(Q, newdata = data.frame(A = 1, W), type="response")"' _newline ///
-	`"Q0W = predict(Q, newdata = data.frame(A = 0, W), type="response")"' _newline ///
-	`"g <- glm(fmlaA, family=binomial, data=data)"' _newline ///
-	`"ps <- predict(g, type="response")"' _newline ///
-	`"ps[ps<0.025] <- 0.025"' _newline ///
-	`"ps[ps>0.975] <- 0.975"' _newline ///
-	`"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-	`"write.dta(data, "data2.dta")"'  
-qui: file close rcode
- 
-// Write bacth file to find R.exe path and R version
-set more off
-qui: file close _all
-qui: file open bat using setup.bat, write replace
-qui: file write bat ///
-`"@echo off"' _newline ///
-`"SET PATHROOT=C:\Program Files\R\"' _newline ///
-`"echo Locating path of R..."' _newline ///
-`"echo."' _newline ///
-`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
-`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
-	`"echo Found %%r"' _newline ///
-	`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-	`"echo All set!"' _newline ///	
-	`"goto:DONE"' _newline ///
-`")"' _newline ///
-`":NO_R"' _newline ///
-`"echo R is not installed in your system."' _newline ///
-`"echo."' _newline ///
-`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
-`"echo Install it and re-run this script"' _newline ///
-`":DONE"' _newline ///
-`"echo."' _newline ///
-`"pause"'
-qui: file close bat
-
-//Run batch
-shell setup.bat 
-//Run R (you have to specify the path of your R executable file)
-do runr.do
-
-// Read Revised Data Back to Stata
-clear
-quietly: use "data2.dta", clear
-
-// IPTW
-gen double HAW = (A/ps) - ((1 - A)/(1 - ps))
-gen double H1W =  1/ps
-gen double H0W =  -1/(1 - ps)
-
-// AIPTW 
-gen double ATE = (HAW*(Y - QAW)) + (Q1W - Q0W)
-qui: sum ATE
-global ATE = r(mean)
-
-// Augmented Q
-gen double aQ1W = Q1W+(H1W*(Y-QAW))
-gen double aQ0W = Q0W+(H0W*(Y-QAW))
-sum aQ1W aQ0W ps
-
-// RR
-qui: sum aQ1W
-global Q1 = r(mean)
-qui: sum aQ0W
-global Q0 = r(mean)
-global RR = $Q1/$Q0
-
-// Statistical inference ATE
-
-// ATE
-gen double IC = (HAW*(Y - QAW)) + (Q1W - Q0W) - $ATE
-qui: sum IC
-global var = r(Var)
-qui: count
-global n = r(N)
-global varIC = $var/$n
-global pvalue = 2*(normalden(abs($ATE/sqrt($varIC))))
-global LCIa =  $ATE -1.96*sqrt($varIC)
-global UCIa =  $ATE +1.96*sqrt($varIC)
-
-// RR
-global LCIr =  exp(log($RR) -1.96*sqrt(($varIC)/log($RR)))
-global UCIr =  exp(log($RR) +1.96*sqrt(($varIC)/log($RR)))
-
-di _newline
-di "AIPW: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATE _col(5) "; SE:" %5.4f sqrt($varIC) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
-
-di _newline
-di "AIPW: Relative Risk" _newline 
-di "RR:" %9.4f $RR _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
 
 // Clean up
 quietly: rm SLS.R
