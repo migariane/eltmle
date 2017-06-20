@@ -1,5 +1,5 @@
 {smcl}
-{right:*!version 1.7 05.APRIL.2017}{...}
+{right:*!version 2.0 20.JUNE.2017}{...}
 
 {phang}
 {cmd:help eltmle}

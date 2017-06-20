@@ -1,4 +1,4 @@
-*! version 2.0 Ensemble Learning Targeted Maximum Likelihood by Miguel Angel LUQUE-FERNANDEZ 20.MARCH.2017
+*! version 2.0 Ensemble Learning Targeted Maximum Likelihood by Miguel Angel LUQUE-FERNANDEZ 20.JUNE.2017
 *************************************************************************************
 **MIGUEL ANGEL LUQUE FERNANDEZ
 **TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OUTCOME AND TREATMENT 
