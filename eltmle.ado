@@ -1,4 +1,4 @@
-*! version 1.8 Ensemble Learning Targeted Maximum Likelihood by Miguel Angel LUQUE-FERNANDEZ 20.MARCH.2017
+*! version 2.0 Ensemble Learning Targeted Maximum Likelihood by Miguel Angel LUQUE-FERNANDEZ 20.MARCH.2017
 *************************************************************************************
 **MIGUEL ANGEL LUQUE FERNANDEZ
 **TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OUTCOME AND TREATMENT 
@@ -182,7 +182,7 @@ qui: file close _all
 qui: file open rcode using SLS.R, write replace
 qui: file write rcode ///
 	`"set.seed(123)"' _newline ///
-	`"list.of.packages <- c("foreign","SuperLearner")"' _newline ///
+	`"list.of.packages <- c("foreign","SuperLearner","gbm")"' _newline ///
         `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
         `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
 	`"library(SuperLearner)"' _newline ///
