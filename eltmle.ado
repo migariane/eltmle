@@ -9,32 +9,33 @@ capture program drop eltmle
 program define eltmle
      syntax [varlist] [if] [pw] [, slaipw slaipwgbm slaipwbgam tmle tmlegbm tmlebgam] 
 	 version 13.2
-	 marksample touse
-	 local var `varlist' if `touse'
+	 local var `varlist'
 	 tokenize `var'
 	 local yvar = "`1'"
 	 sum `yvar'
 	 replace `yvar' = (`yvar'-`r(min)') / (`r(max)'-`r(min)') if `yvar'>1
+	 marksample touse
+	 local var `varlist' if `touse'
      local dir `c(pwd)'
 	 cd "`dir'"
 	 export delimited `var' using "data.csv", nolabel replace 
 	 if "`slaipw'" == "" & "`slaipwgbm'" == "" & "`slaipwbgam'" == "" & "`tmlegbm'" == "" & "`tmlebgam'" == "" {
-		tmle `var'
+		tmle `varlist'
 	 }
 	 else if "`tmlegbm'" == "tmlegbm" { 
-		tmlegbm `var'
+		tmlegbm `varlist'
 	 }
 	 else if "`tmlebgam'" == "tmlebgam" {
-		tmlebgam `var'
+		tmlebgam `varlist'
 	 }
 	 else if "`slaipw'" == "slaipw" { 
-	    slaipw `var'
+	    slaipw `varlist'
 	 }
 	 else if "`slaipwgbm'" == "slaipwgbm" {
-		slaipwgbm `var'
+		slaipwgbm `varlist'
 	 }
 	 else if "`slaipwbgam'" == "slaipwbgam" {
-		slaipwbgam `var'
+		slaipwbgam `varlist'
 	 }
 end 
 
