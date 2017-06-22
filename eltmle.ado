@@ -1,10 +1,15 @@
 *! version 2.0 Ensemble Learning Targeted Maximum Likelihood by Miguel Angel LUQUE-FERNANDEZ 20.JUNE.2017
+
 *************************************************************************************
-**MIGUEL ANGEL LUQUE FERNANDEZ
-**TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OUTCOME AND TREATMENT 
-**Improved AIPW with Super Learner (ensemble learning machine-learning)
-**This program requires R to be installed in your computer 
+** MIGUEL ANGEL LUQUE FERNANDEZ
+** TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OUTCOME AND TREATMENT 
+** Improved AIPW with Super Learner (ensemble learning and machine-learning)
+** This program requires R to be installed in your computer 
 *************************************************************************************
+
+* Improved IC
+* Improved Display 
+* Binary and continuous outcomes 
 
 capture program drop eltmle
 program define eltmle
@@ -170,7 +175,8 @@ di "ATE:" %9.4f $ATEtmle _col(5) "; SE:" %5.4f sqrt($varICtmle) _col(5) "; p-val
 
 di _newline
 di "TMLE: Relative Risk" _newline 
-di "RR:" %9.4f $RRtmle _col(5) "; 95%CI:(" %5.4f $LCIr "," %6.4f $UCIr ")"
+di "RR:" %9.4f $RRtmle _col(5) "; 95%CI:(" %5.4f $LCIr "," %7.4f $UCIr ")"
+
 drop logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Qstar Q1star Q0star ps Y A epsilon
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
@@ -323,7 +329,8 @@ di "ATE:" %9.4f $ATEtmlegbm _col(5) "; SE:" %5.4f sqrt($varICtmlegbm) _col(5) ";
 
 di _newline
 di "TMLE + GBM: Relative Risk" _newline 
-di "RR:" %9.4f $RRtmlegbm _col(5) "; 95%CI:(" %5.4f $LCIr "," %6.4f $UCIr ")"
+di "RR:" %9.4f $RRtmlegbm _col(5) "; 95%CI:(" %5.4f $LCIr "," %7.4f $UCIr ")"
+
 drop logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Qstar Q1star Q0star ps Y A epsilon
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
@@ -475,8 +482,10 @@ di "ATE:" %9.4f $ATEtmlebg _col(5) "; SE:" %5.4f sqrt($varICtmlebg) _col(5) "; p
 
 di _newline
 di "TMLE + Bayes GLM and GAM: Relative Risk" _newline 
-di "RR:" %9.4f $RRtmlebg _col(5) "; 95%CI:(" %5.4f $LCIr "," %6.4f $UCIr ")"
+di "RR:" %9.4f $RRtmlebg _col(5) "; 95%CI:(" %5.4f $LCIr "," %7.4f $UCIr ")"
+
 drop logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Qstar Q1star Q0star ps Y A epsilon
+
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ATE "Average Treatment Effect"
@@ -618,8 +627,10 @@ di "ATE:" %9.4f $ATEslaipw _col(5) "; SE:" %5.4f sqrt($varICslaipw) _col(5) "; p
 
 di _newline
 di "AIPW ensemble learning: Relative Risk" _newline 
-di "RR:" %9.4f $RRslaipw _col(5) "; 95%CI:(" %5.4f $LCIr "," %6.4f $UCIr ")"
+di "RR:" %9.4f $RRslaipw _col(5) "; 95%CI:(" %5.4f $LCIr "," %7.4f $UCIr ")"
+
 drop HAW H1W H0W aQ1W aQ0W ps Y A 
+
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ATE "Average Treatment Effect"
@@ -761,8 +772,10 @@ di "ATE:" %9.4f $ATEslaipwgbm _col(5) "; SE:" %5.4f sqrt($varICslaipwgbm) _col(5
 
 di _newline
 di "AIPW Random Forest: Relative Risk" _newline 
-di "RR:" %9.4f $RRslaipwgbm _col(5) "; 95%CI:(" %5.4f $LCIr "," %6.4f $UCIr ")"
+di "RR:" %9.4f $RRslaipwgbm _col(5) "; 95%CI:(" %5.4f $LCIr "," %7.4f $UCIr ")"
+
 drop HAW H1W H0W aQ1W aQ0W ps Y A 
+
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ATE "Average Treatment Effect"
@@ -905,8 +918,10 @@ di "ATE:" %9.4f $ATEslaipwbg _col(5) "; SE:" %5.4f sqrt($varICslaipwbg) _col(5) 
 
 di _newline
 di "AIPW Bayes GLM and GAM: Relative Risk" _newline 
-di "RR:" %9.4f $RRslaipwbg _col(5) "; 95%CI:(" %5.4f $LCIr "," %6.4f $UCIr ")"
+di "RR:" %9.4f $RRslaipwbg _col(5) "; 95%CI:(" %5.4f $LCIr "," %7.4f $UCIr ")"
+
 drop HAW H1W H0W aQ1W aQ0W ps Y A 
+
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ATE "Average Treatment Effect"
