@@ -11,13 +11,13 @@ program define eltmle
 	 version 13.2
 	 marksample touse
 	 local var `varlist' if `touse'
-	 tokenize `var'
+	 tokenize `varlist'
 	 local yvar = "`1'"
 	 sum `yvar'
 	 replace `yvar' = (`yvar'-`r(min)') / (`r(max)'-`r(min)') if `yvar'>1
      local dir `c(pwd)'
 	 cd "`dir'"
-	 export delimited `varlist' using "data.csv", nolabel replace 
+	 export delimited `var' using "data.csv", nolabel replace 
 	 if "`slaipw'" == "" & "`slaipwgbm'" == "" & "`slaipwbgam'" == "" & "`tmlegbm'" == "" & "`tmlebgam'" == "" {
 		tmle `varlist'
 	 }
