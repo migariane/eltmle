@@ -1,5 +1,5 @@
 {smcl}
-{right:*!version 2.0 20.JUNE.2017}{...}
+{right:*!version 2.0 20.JUN.2017}{...}
 
 {phang}
 {cmd:help eltmle}
@@ -20,7 +20,7 @@ where:
 {p_end}
 
 {p 4 4 2}
-{hi:Y}: Outcome: numeric binary variable
+{hi:Y}: Outcome: numeric binary or continuous variable
 {p_end}
 {p 4 4 2}
 {hi:X}: Treatment or exposure: numeric binary variable
@@ -53,7 +53,7 @@ The following link provides access to a TMLE tutorial: {browse "http://migariane
 {p_end}
 
 {p 4 4 2 120}
-{hi:eltmle} is a Stata program implementing the targeted maximum likelihood estimation for the ATE for a binary outcome and binary treatment. {hi:eltmle} includes the use of a super-learner called from the {hi:SuperLearner}
+{hi:eltmle} is a Stata program implementing the targeted maximum likelihood estimation for the ATE for a binary or continuous outcome and binary treatment. {hi:eltmle} includes the use of a super-learner called from the {hi:SuperLearner}
 package v.2.0-21 (Polley E., et al. 2011). The Super-Learner uses V-fold cross-validation (10-fold by default) to assess the performance of prediction regarding the potential outcomes and the propensity score as weighted 
 averages of a set of machine learning algorithms. We used the default SuperLearner algorithms implemented in the base installation of the {hi:tmle-R} package v.1.2.0-5 (Susan G. and Van der Laan M., 2017), 
 which included the following: i) stepwise selection, ii) generalized linear modeling (GLM), iii) a GLM variant that includes second order polynomials and two-by-two interactions of the main terms
@@ -104,18 +104,20 @@ implementation, the Bayes Generalized Linear Models and Generalized Additive Mod
 
     Variable |        Obs        Mean    Std. Dev.       Min        Max
 -------------+---------------------------------------------------------
-      Q1star |      4,642    .1055429    .0403702   .0205745   .3789994
-      Q0star |      4,642    .0509794    .0249112   .0207113   .1664136
-          ps |      4,642    .1861267     .110755   .0372202   .8494988
+        POM1 |      4,642    .5440335    .0062783   .5010813   .5626794
+        POM0 |      4,642    .5945027    .0127882   .5310631      .6284
+          WT |      4,642   -.0502464    2.622192  -3.799866   17.56914
+          PS |      4,642    .1861267    .0806954   .0418971   .7368329
 
 
 TMLE: Average Treatment Effect
 
-ATE:  0.0546; SE:0.0122; p-value: 0.0000; 95%CI:(0.030700,0.078427)
+ATE:  -0.0505; SE:0.0043; p-value:0.0000; 95%CI:(-0.0590, -0.0420)
+
 
 TMLE: Relative Risk
 
-RR:   2.0703; 95%CI:(2.0132,2.1290)
+RR:   0.9151; 95%CI:(0.9074, 0.9229)
 
 *********************************************************
 .eltmle lbw mbsmoke mage medu prenatal mmarried, slaipw
@@ -123,24 +125,26 @@ RR:   2.0703; 95%CI:(2.0132,2.1290)
 
     Variable |        Obs        Mean    Std. Dev.       Min        Max
 -------------+---------------------------------------------------------
-        aQ1W |      4,642    .0959911    1.717125  -2.481395     20.267
-        aQ0W |      4,642    .0516773    .3212793  -3.679752   1.911056
-          ps |      4,642    .1861267     .110755   .0372202   .8494988
+        POM1 |      4,642    .5444998     .779656  -7.194547   6.751284
+        POM0 |      4,642    .5946762    .1384425   .0855517   1.779545
+          WT |      4,642   -.0502464    2.622192  -3.799866   17.56914
+          PS |      4,642    .1861267    .0806954   .0418971   .7368329
 
 AIPW ensemble learning: Average Treatment Effect
 
-ATE:  0.0542; SE:0.0122; p-value: 0.0000; 95%CI:(0.030299,0.078026)
+ATE:  -0.0505; SE:0.0043; p-value:0.0000; 95%CI:(-0.0590, -0.0420)
 
 AIPW ensemble learning: Relative Risk
 
-RR:   1.8575; 95%CI:(1.8020,1.9147)
+RR:   0.9156; 95%CI:(0.9079, 0.9234)
+
 ************************************************************************
 
 {title:Remarks} 
 
 {p 4 4 2 120}
-Remember 1: Y must be a binary numeric variable coded (0,1); X must be numeric binary
-variable and, Z a vector of covariates. 
+Remember 1: Y must be a binary or continuous variable; X must be numeric binary
+variable coded (0,1) and, Z a vector of covariates. 
 {p_end}
 
 {p 4 4 2 120}
