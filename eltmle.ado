@@ -17,7 +17,7 @@ program define eltmle
 	 replace `yvar' = (`yvar'-`r(min)') / (`r(max)'-`r(min)') if `yvar'>1
      local dir `c(pwd)'
 	 cd "`dir'"
-	 export delimited `var' using "data.csv", nolabel replace 
+	 export delimited `varlist' using "data.csv", nolabel replace 
 	 if "`slaipw'" == "" & "`slaipwgbm'" == "" & "`slaipwbgam'" == "" & "`tmlegbm'" == "" & "`tmlebgam'" == "" {
 		tmle `varlist'
 	 }
