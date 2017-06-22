@@ -59,12 +59,12 @@ qui: file write rcode ///
 	`"X1[,1] <- 1"' _newline ///
 	`"X0[,1] <- 0"' _newline ///
 	`"newdata <- rbind(X,X1,X0)"' _newline /// 
-	`"Q <- SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method="method.NNLS")"' _newline ///
+	`"Q <- suppresWarnings(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method="method.NNLS"))"' _newline ///
 	`"Q <- as.data.frame(Q[[4]])"' _newline ///
 	`"QAW <- Q[1:n,]"' _newline ///
 	`"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
 	`"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
-	`"g <- SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS")"' _newline ///
+	`"g <- suppresWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS"))"' _newline ///
 	`"ps <- g[[4]]"' _newline ///
 	`"ps[ps<0.025] <- 0.025"' _newline ///
 	`"ps[ps>0.975] <- 0.975"' _newline ///
@@ -161,7 +161,7 @@ di "ATE:" %9.4f $ATEtmle _col(5) "; SE:" %5.4f sqrt($varICtmle) _col(5) "; p-val
 
 di _newline
 di "TMLE: Relative Risk" _newline 
-di "RR:" %9.4f $RRtmle _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
+di "RR:" %9.4f $RRtmle _col(5) "; 95%CI:(" %9.4f $LCIr "," %9.4f $UCIr ")"
 
 // Clean up
 quietly: rm SLS.R
@@ -200,12 +200,12 @@ qui: file write rcode ///
 	`"X1[,1] <- 1"' _newline ///
 	`"X0[,1] <- 0"' _newline ///
 	`"newdata <- rbind(X,X1,X0)"' _newline /// 
-	`"Q <- SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method="method.NNLS")"' _newline ///
+	`"Q <- suppresWarnings(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method="method.NNLS"))"' _newline ///
 	`"Q <- as.data.frame(Q[[4]])"' _newline ///
 	`"QAW <- Q[1:n,]"' _newline ///
 	`"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
 	`"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
-	`"g <- SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS")"' _newline ///
+	`"g <- suppresWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS"))"' _newline ///
 	`"ps <- g[[4]]"' _newline ///
 	`"ps[ps<0.025] <- 0.025"' _newline ///
 	`"ps[ps>0.975] <- 0.975"' _newline ///
@@ -303,7 +303,7 @@ di "ATE:" %9.4f $ATEtmlegbm _col(5) "; SE:" %5.4f sqrt($varICtmlegbm) _col(5) ";
 
 di _newline
 di "TMLE + GBM: Relative Risk" _newline 
-di "RR:" %9.4f $RRtmlegbm _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
+di "RR:" %9.4f $RRtmlegbm _col(5) "; 95%CI:(" %9.4f $LCIr "," %9.4f $UCIr ")"
 
 // Clean up
 quietly: rm SLS.R
@@ -343,12 +343,12 @@ qui: file write rcode ///
 	`"X1[,1] <- 1"' _newline ///
 	`"X0[,1] <- 0"' _newline ///
 	`"newdata <- rbind(X,X1,X0)"' _newline /// 
-	`"Q <- SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method= "method.NNLS")"' _newline ///
+	`"Q <- suppresWarnings(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method= "method.NNLS"))"' _newline ///
 	`"Q <- as.data.frame(Q[[4]])"' _newline ///
 	`"QAW <- Q[1:n,]"' _newline ///
 	`"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
 	`"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
-	`"g <- SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS")"' _newline ///
+	`"g <- suppresWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS"))"' _newline ///
 	`"ps <- g[[4]]"' _newline ///
 	`"ps[ps<0.025] <- 0.025"' _newline ///
 	`"ps[ps>0.975] <- 0.975"' _newline ///
@@ -444,7 +444,7 @@ di "ATE:" %9.4f $ATEtmlebg _col(5) "; SE:" %5.4f sqrt($varICtmlebg) _col(5) "; p
 
 di _newline
 di "TMLE + Bayes GLM and GAM: Relative Risk" _newline 
-di "RR:" %9.4f $RRtmlebg _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
+di "RR:" %9.4f $RRtmlebg _col(5) "; 95%CI:(" %9.4f $LCIr "," %9.4f $UCIr ")"
 
 // Clean up
 quietly: rm SLS.R
@@ -483,12 +483,12 @@ qui: file write rcode ///
 	`"X1[,1] <- 1"' _newline ///
 	`"X0[,1] <- 0"' _newline ///
 	`"newdata <- rbind(X,X1,X0)"' _newline /// 
-	`"Q <- SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method="method.NNLS")"' _newline ///
+	`"Q <- suppresWarnings(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method="method.NNLS"))"' _newline ///
 	`"Q <- as.data.frame(Q[[4]])"' _newline ///
 	`"QAW <- Q[1:n,]"' _newline ///
 	`"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
 	`"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
-	`"g <- SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS")"' _newline ///
+	`"g <- suppresWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS"))"' _newline ///
 	`"ps <- g[[4]]"'  _newline ///
 	`"ps[ps<0.025] <- 0.025"' _newline ///
 	`"ps[ps>0.975] <- 0.975"' _newline ///
@@ -576,7 +576,7 @@ di "ATE:" %9.4f $ATEslaipw _col(5) "; SE:" %5.4f sqrt($varICslaipw) _col(5) "; p
 
 di _newline
 di "AIPW ensemble learning: Relative Risk" _newline 
-di "RR:" %9.4f $RRslaipw _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
+di "RR:" %9.4f $RRslaipw _col(5) "; 95%CI:(" %9.4f $LCIr "," %9.4f $UCIr ")"
 
 // Clean up
 quietly: rm SLS.R
@@ -615,12 +615,12 @@ qui: file write rcode ///
 	`"X1[,1] <- 1"' _newline ///
 	`"X0[,1] <- 0"' _newline ///
 	`"newdata <- rbind(X,X1,X0)"' _newline /// 
-	`"Q <- SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = binomial(), newX=newdata, method="method.NNLS")"' _newline ///
+	`"Q <- suppresWarnings(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = binomial(), newX=newdata, method="method.NNLS"))"' _newline ///
 	`"Q <- as.data.frame(Q[[4]])"' _newline ///
 	`"QAW <- Q[1:n,]"' _newline ///
 	`"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
 	`"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
-	`"g <- SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS")"' _newline ///
+	`"g <- suppresWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS"))"' _newline ///
 	`"ps <- g[[4]]"'  _newline ///
 	`"ps[ps<0.025] <- 0.025"' _newline ///
 	`"ps[ps>0.975] <- 0.975"' _newline ///
@@ -748,12 +748,12 @@ qui: file write rcode ///
 	`"X1[,1] <- 1"' _newline ///
 	`"X0[,1] <- 0"' _newline ///
 	`"newdata <- rbind(X,X1,X0)"' _newline /// 
-	`"Q <- SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method="method.NNLS")"' _newline ///
+	`"Q <- suppresWarnings(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method="method.NNLS"))"' _newline ///
 	`"Q <- as.data.frame(Q[[4]])"' _newline ///
 	`"QAW <- Q[1:n,]"' _newline ///
 	`"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
 	`"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
-	`"g <- SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS")"' _newline ///
+	`"g <- suppresWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS"))"' _newline ///
 	`"ps <- g[[4]]"'  _newline ///
 	`"ps[ps<0.025] <- 0.025"' _newline ///
 	`"ps[ps>0.975] <- 0.975"' _newline ///
@@ -841,7 +841,7 @@ di "ATE:" %9.4f $ATEslaipwbg _col(5) "; SE:" %5.4f sqrt($varICslaipwbg) _col(5) 
 
 di _newline
 di "AIPW Bayes GLM and GAM: Relative Risk" _newline 
-di "RR:" %9.4f $RRslaipwbg _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
+di "RR:" %9.4f $RRslaipwbg _col(5) "; 95%CI:(" %9.4f $LCIr "," %9.4f $UCIr ")"
 
 // Clean up
 quietly: rm SLS.R
