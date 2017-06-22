@@ -11,7 +11,7 @@ program define eltmle
 	 version 13.2
 	 marksample touse
 	 local var `varlist' if `touse'
-	 tokenize `varlist'
+	 tokenize `var'
 	 local yvar = "`1'"
 	 sum `yvar'
 	 replace `yvar' = (`yvar'-`r(min)') / (`r(max)'-`r(min)') if `yvar'>1
@@ -19,22 +19,22 @@ program define eltmle
 	 cd "`dir'"
 	 export delimited `var' using "data.csv", nolabel replace 
 	 if "`slaipw'" == "" & "`slaipwgbm'" == "" & "`slaipwbgam'" == "" & "`tmlegbm'" == "" & "`tmlebgam'" == "" {
-		tmle `varlist'
+		tmle `var'
 	 }
 	 else if "`tmlegbm'" == "tmlegbm" { 
-		tmlegbm `varlist'
+		tmlegbm `var'
 	 }
 	 else if "`tmlebgam'" == "tmlebgam" {
-		tmlebgam `varlist'
+		tmlebgam `var'
 	 }
 	 else if "`slaipw'" == "slaipw" { 
-	    slaipw `varlist'
+	    slaipw `var'
 	 }
 	 else if "`slaipwgbm'" == "slaipwgbm" {
-		slaipwgbm `varlist'
+		slaipwgbm `var'
 	 }
 	 else if "`slaipwbgam'" == "slaipwbgam" {
-		slaipwbgam `varlist'
+		slaipwbgam `var'
 	 }
 end 
 
