@@ -619,7 +619,7 @@ di "ATE:" %9.4f $ATEslaipw _col(5) "; SE:" %5.4f sqrt($varICslaipw) _col(5) "; p
 di _newline
 di "AIPW ensemble learning: Relative Risk" _newline 
 di "RR:" %9.4f $RRslaipw _col(5) "; 95%CI:(" %9.4f $LCIr "," %12.4f $UCIr ")"
-drop HAW H1W H0W aQ1W aQ0W ps Y A epsilon
+drop HAW H1W H0W aQ1W aQ0W ps Y A 
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ATE "Average Treatment Effect"
@@ -762,7 +762,7 @@ di "ATE:" %9.4f $ATEslaipwgbm _col(5) "; SE:" %5.4f sqrt($varICslaipwgbm) _col(5
 di _newline
 di "AIPW Random Forest: Relative Risk" _newline 
 di "RR:" %9.4f $RRslaipwgbm _col(5) "; 95%CI:(" %5.4f $LCIr "," %8.4f $UCIr ")"
-drop HAW H1W H0W aQ1W aQ0W ps Y A epsilon
+drop HAW H1W H0W aQ1W aQ0W ps Y A 
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ATE "Average Treatment Effect"
@@ -906,7 +906,7 @@ di "ATE:" %9.4f $ATEslaipwbg _col(5) "; SE:" %5.4f sqrt($varICslaipwbg) _col(5) 
 di _newline
 di "AIPW Bayes GLM and GAM: Relative Risk" _newline 
 di "RR:" %9.4f $RRslaipwbg _col(5) "; 95%CI:(" %5.4f $LCIr "," %8.4f $UCIr ")"
-drop HAW H1W H0W aQ1W aQ0W ps Y A epsilon
+drop HAW H1W H0W aQ1W aQ0W ps Y A 
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ATE "Average Treatment Effect"
