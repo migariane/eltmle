@@ -1,11 +1,14 @@
 *! version 2.0 Ensemble Learning Targeted Maximum Likelihood by Miguel Angel LUQUE-FERNANDEZ 20.JUNE.2017
 
-*************************************************************************************
+***************************************************************************
 ** MIGUEL ANGEL LUQUE FERNANDEZ
-** TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OUTCOME AND TREATMENT 
-** Improved AIPW with Super Learner (ensemble learning and machine-learning)
-** This program requires R to be installed in your computer 
-*************************************************************************************
+** mluquefe@hsph.havard.edu // miguel-angel.luque@lshtm.ac.uk
+** TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OR CONTINUOUS 
+** OUTCOME AND TREATMENT 
+** Improved AIPTW with Super Learner (Ensemble Learning and Machine-Learning)
+** This program requires R to be installed in your computer
+** JUNE 2017
+****************************************************************************
 
 * Improved IC
 * Improved Display 
