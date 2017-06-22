@@ -166,11 +166,11 @@ global UCIr =  exp(log($RRtmle) +1.96*sqrt(($varICtmle)))
 
 di _newline
 di "TMLE: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEtmle _col(5) "; SE:" %5.4f sqrt($varICtmle) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %10.4f $UCIa ")"
+di "ATE:" %9.4f $ATEtmle _col(5) "; SE:" %5.4f sqrt($varICtmle) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %9.4f $UCIa ")"
 
 di _newline
 di "TMLE: Relative Risk" _newline 
-di "RR:" %9.4f $RRtmle _col(5) "; 95%CI:(" %5.4f $LCIr "," %7.4f $UCIr ")"
+di "RR:" %9.4f $RRtmle _col(5) "; 95%CI:(" %5.4f $LCIr "," %6.4f $UCIr ")"
 drop logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Qstar Q1star Q0star ps Y A epsilon
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
@@ -319,11 +319,11 @@ global UCIr =  exp(log($RRtmlegbm) +1.96*sqrt(($varICtmlegbm)))
 
 di _newline
 di "TMLE + GBM: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEtmlegbm _col(5) "; SE:" %5.4f sqrt($varICtmlegbm) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %10.4f $UCIa ")"
+di "ATE:" %9.4f $ATEtmlegbm _col(5) "; SE:" %5.4f sqrt($varICtmlegbm) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %9.4f $UCIa ")"
 
 di _newline
 di "TMLE + GBM: Relative Risk" _newline 
-di "RR:" %9.4f $RRtmlegbm _col(5) "; 95%CI:(" %5.4f $LCIr "," %7.4f $UCIr ")"
+di "RR:" %9.4f $RRtmlegbm _col(5) "; 95%CI:(" %5.4f $LCIr "," %6.4f $UCIr ")"
 drop logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Qstar Q1star Q0star ps Y A epsilon
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
@@ -471,11 +471,11 @@ global UCIr =  exp(log($RRtmlebg) +1.96*sqrt(($varICtmlebg)))
 
 di _newline
 di "TMLE + Bayes GLM and GAM: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEtmlebg _col(5) "; SE:" %5.4f sqrt($varICtmlebg) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %10.4f $UCIa ")"
+di "ATE:" %9.4f $ATEtmlebg _col(5) "; SE:" %5.4f sqrt($varICtmlebg) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %9.4f $UCIa ")"
 
 di _newline
 di "TMLE + Bayes GLM and GAM: Relative Risk" _newline 
-di "RR:" %9.4f $RRtmlebg _col(5) "; 95%CI:(" %5.4f $LCIr "," %7.4f $UCIr ")"
+di "RR:" %9.4f $RRtmlebg _col(5) "; 95%CI:(" %5.4f $LCIr "," %6.4f $UCIr ")"
 drop logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Qstar Q1star Q0star ps Y A epsilon
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
@@ -609,16 +609,16 @@ global Q0 = r(mean)
 global RRslaipw = $Q1/$Q0
 
 // RR
-global LCIr =  exp(log($RRslaipw) -1.96*sqrt(($varICslaipw)/log($RRslaipw)))
-global UCIr =  exp(log($RRslaipw) +1.96*sqrt(($varICslaipw)/log($RRslaipw)))
+global LCIr =  exp(log($RRslaipw) -1.96*sqrt(($varICslaipw)))
+global UCIr =  exp(log($RRslaipw) +1.96*sqrt(($varICslaipw)))
 
 di _newline
 di "AIPW ensemble learning: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEslaipw _col(5) "; SE:" %5.4f sqrt($varICslaipw) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %10.4f $UCIa ")"
+di "ATE:" %9.4f $ATEslaipw _col(5) "; SE:" %5.4f sqrt($varICslaipw) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %9.4f $UCIa ")"
 
 di _newline
 di "AIPW ensemble learning: Relative Risk" _newline 
-di "RR:" %9.4f $RRslaipw _col(5) "; 95%CI:(" %5.4f $LCIr "," %8.4f $UCIr ")"
+di "RR:" %9.4f $RRslaipw _col(5) "; 95%CI:(" %5.4f $LCIr "," %6.4f $UCIr ")"
 drop HAW H1W H0W aQ1W aQ0W ps Y A 
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
@@ -757,11 +757,11 @@ global UCIr =  exp(log($RRslaipwgbm) +1.96*sqrt(($varICslaipwgbm)))
 
 di _newline
 di "AIPW Random Forest : Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEslaipwgbm _col(5) "; SE:" %5.4f sqrt($varICslaipwgbm) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %10.4f $UCIa ")"
+di "ATE:" %9.4f $ATEslaipwgbm _col(5) "; SE:" %5.4f sqrt($varICslaipwgbm) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %9.4f $UCIa ")"
 
 di _newline
 di "AIPW Random Forest: Relative Risk" _newline 
-di "RR:" %9.4f $RRslaipwgbm _col(5) "; 95%CI:(" %5.4f $LCIr "," %8.4f $UCIr ")"
+di "RR:" %9.4f $RRslaipwgbm _col(5) "; 95%CI:(" %5.4f $LCIr "," %6.4f $UCIr ")"
 drop HAW H1W H0W aQ1W aQ0W ps Y A 
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
@@ -901,11 +901,11 @@ global UCIr = exp(log($RRslaipwbg) +1.96*sqrt(($varICslaipwbg)))
 
 di _newline
 di "AIPW Bayes GLM and GAM: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEslaipwbg _col(5) "; SE:" %5.4f sqrt($varICslaipwbg) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %10.4f $UCIa ")"
+di "ATE:" %9.4f $ATEslaipwbg _col(5) "; SE:" %5.4f sqrt($varICslaipwbg) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %9.4f $UCIa ")"
 
 di _newline
 di "AIPW Bayes GLM and GAM: Relative Risk" _newline 
-di "RR:" %9.4f $RRslaipwbg _col(5) "; 95%CI:(" %5.4f $LCIr "," %8.4f $UCIr ")"
+di "RR:" %9.4f $RRslaipwbg _col(5) "; 95%CI:(" %5.4f $LCIr "," %6.4f $UCIr ")"
 drop HAW H1W H0W aQ1W aQ0W ps Y A 
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
