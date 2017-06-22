@@ -3,16 +3,16 @@
 ***************************************************************************
 ** MIGUEL ANGEL LUQUE FERNANDEZ
 ** mluquefe@hsph.havard.edu // miguel-angel.luque@lshtm.ac.uk
-** TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OR CONTINUOUS 
-** OUTCOME AND TREATMENT 
+** TMLE ALGORITHM IMPLEMENTATION IN STATA FOR A BINARY OR CONTINUOUS 
+** OUTCOME AND BINARY TREATMENT 
 ** Improved AIPTW with Super Learner (Ensemble Learning and Machine-Learning)
 ** This program requires R to be installed in your computer
 ** JUNE 2017
 ****************************************************************************
 
-* Improved IC
-* Improved Display 
-* Binary and continuous outcomes 
+* Improved IC for statistical inference
+* Improved display: potential outcomes and weights to check balance
+* Binary and continuous outcomes  
 
 capture program drop eltmle
 program define eltmle
