@@ -11,6 +11,10 @@ program define eltmle
 	 version 13.2
 	 marksample touse
 	 local var `varlist' if `touse'
+	 tokenize `var'
+	 local yvar = "`1'"
+	 sum `yvar'
+	 replace `yvar' = (`yvar'-r(min)) / (r(max)-r(mi)) if `yvar'>1
      local dir `c(pwd)'
 	 cd "`dir'"
 	 export delimited `var' using "data.csv", nolabel replace 
@@ -152,8 +156,8 @@ global LCIa =  $ATEtmle -1.96*sqrt($varICtmle)
 global UCIa =  $ATEtmle +1.96*sqrt($varICtmle)
 
 // RR
-global LCIr =  exp(log($RRtmle) -1.96*sqrt(($varICtmle)/log($RRtmle)))
-global UCIr =  exp(log($RRtmle) +1.96*sqrt(($varICtmle)/log($RRtmle)))
+global LCIr =  exp(log($RRtmle) -1.96*sqrt(($varICtmle)))
+global UCIr =  exp(log($RRtmle) +1.96*sqrt(($varICtmle)))
 
 di _newline
 di "TMLE: Average Treatment Effect" _newline
@@ -161,7 +165,7 @@ di "ATE:" %9.4f $ATEtmle _col(5) "; SE:" %5.4f sqrt($varICtmle) _col(5) "; p-val
 
 di _newline
 di "TMLE: Relative Risk" _newline 
-di "RR:" %9.4f $RRtmle _col(5) "; 95%CI:(" %9.4f $LCIr "," %9.4f $UCIr ")"
+di "RR:" %9.4f $RRtmle _col(5) "; 95%CI:(" %5.4f $LCIr "," %5.4f $UCIr ")"
 
 // Clean up
 quietly: rm SLS.R
@@ -294,8 +298,8 @@ global LCIa =  $ATEtmlegbm -1.96*sqrt($varICtmlegbm)
 global UCIa =  $ATEtmlegbm +1.96*sqrt($varICtmlegbm)
 
 // RR
-global LCIr =  exp(log($RRtmlegbm) -1.96*sqrt(($varICtmlegbm)/log($RRtmlegbm)))
-global UCIr =  exp(log($RRtmlegbm) +1.96*sqrt(($varICtmlegbm)/log($RRtmlegbm)))
+global LCIr =  exp(log($RRtmlegbm) -1.96*sqrt(($varICtmlegbm)))
+global UCIr =  exp(log($RRtmlegbm) +1.96*sqrt(($varICtmlegbm)))
 
 di _newline
 di "TMLE + GBM: Average Treatment Effect" _newline
@@ -303,7 +307,7 @@ di "ATE:" %9.4f $ATEtmlegbm _col(5) "; SE:" %5.4f sqrt($varICtmlegbm) _col(5) ";
 
 di _newline
 di "TMLE + GBM: Relative Risk" _newline 
-di "RR:" %9.4f $RRtmlegbm _col(5) "; 95%CI:(" %9.4f $LCIr "," %9.4f $UCIr ")"
+di "RR:" %9.4f $RRtmlegbm _col(5) "; 95%CI:(" %5.4f $LCIr "," %5.4f $UCIr ")"
 
 // Clean up
 quietly: rm SLS.R
@@ -435,8 +439,8 @@ global LCIa =  $ATEtmlebg -1.96*sqrt($varICtmlebg)
 global UCIa =  $ATEtmlebg +1.96*sqrt($varICtmlebg)
 
 // RR
-global LCIr =  exp(log($RRtmlebg) -1.96*sqrt(($varICtmlebg)/log($RRtmlebg)))
-global UCIr =  exp(log($RRtmlebg) +1.96*sqrt(($varICtmlebg)/log($RRtmlebg)))
+global LCIr =  exp(log($RRtmlebg) -1.96*sqrt(($varICtmlebg)))
+global UCIr =  exp(log($RRtmlebg) +1.96*sqrt(($varICtmlebg)))
 
 di _newline
 di "TMLE + Bayes GLM and GAM: Average Treatment Effect" _newline
@@ -444,7 +448,7 @@ di "ATE:" %9.4f $ATEtmlebg _col(5) "; SE:" %5.4f sqrt($varICtmlebg) _col(5) "; p
 
 di _newline
 di "TMLE + Bayes GLM and GAM: Relative Risk" _newline 
-di "RR:" %9.4f $RRtmlebg _col(5) "; 95%CI:(" %9.4f $LCIr "," %9.4f $UCIr ")"
+di "RR:" %9.4f $RRtmlebg _col(5) "; 95%CI:(" %5.4f $LCIr "," %5.4f $UCIr ")"
 
 // Clean up
 quietly: rm SLS.R
@@ -699,8 +703,8 @@ global LCIa =  $ATEslaipwgbm -1.96*sqrt($varICslaipwgbm)
 global UCIa =  $ATEslaipwgbm +1.96*sqrt($varICslaipwgbm)
 
 // RR
-global LCIr =  exp(log($RRslaipwgbm) -1.96*sqrt(($varICslaipwgbm)/log($RRslaipwgbm)))
-global UCIr =  exp(log($RRslaipwgbm) +1.96*sqrt(($varICslaipwgbm)/log($RRslaipwgbm)))
+global LCIr =  exp(log($RRslaipwgbm) -1.96*sqrt(($varICslaipwgbm)))
+global UCIr =  exp(log($RRslaipwgbm) +1.96*sqrt(($varICslaipwgbm)))
 
 di _newline
 di "AIPW Random Forest : Average Treatment Effect" _newline
@@ -708,7 +712,7 @@ di "ATE:" %9.4f $ATEslaipwgbm _col(5) "; SE:" %5.4f sqrt($varICslaipwgbm) _col(5
 
 di _newline
 di "AIPW Random Forest: Relative Risk" _newline 
-di "RR:" %9.4f $RRslaipwgbm _col(5) "; 95%CI:(" %9.4f $LCIr "," %9.4f $UCIr ")"
+di "RR:" %9.4f $RRslaipwgbm _col(5) "; 95%CI:(" %5.4f $LCIr "," %5.4f $UCIr ")"
 
 // Clean up
 quietly: rm SLS.R
@@ -832,8 +836,8 @@ global LCIa =  $ATEslaipwbg -1.96*sqrt($varICslaipwbg)
 global UCIa =  $ATEslaipwbg +1.96*sqrt($varICslaipwbg)
 
 // RR
-global LCIr = exp(log($RRslaipwbg) -1.96*sqrt(($varICslaipwbg)/log($RRslaipwbg)))
-global UCIr = exp(log($RRslaipwbg) +1.96*sqrt(($varICslaipwbg)/log($RRslaipwbg)))
+global LCIr = exp(log($RRslaipwbg) -1.96*sqrt(($varICslaipwbg)))
+global UCIr = exp(log($RRslaipwbg) +1.96*sqrt(($varICslaipwbg)))
 
 di _newline
 di "AIPW Bayes GLM and GAM: Average Treatment Effect" _newline
@@ -841,7 +845,7 @@ di "ATE:" %9.4f $ATEslaipwbg _col(5) "; SE:" %5.4f sqrt($varICslaipwbg) _col(5) 
 
 di _newline
 di "AIPW Bayes GLM and GAM: Relative Risk" _newline 
-di "RR:" %9.4f $RRslaipwbg _col(5) "; 95%CI:(" %9.4f $LCIr "," %9.4f $UCIr ")"
+di "RR:" %9.4f $RRslaipwbg _col(5) "; 95%CI:(" %5.4f $LCIr "," %5.4f $UCIr ")"
 
 // Clean up
 quietly: rm SLS.R
