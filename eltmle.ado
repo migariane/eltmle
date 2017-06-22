@@ -14,7 +14,7 @@ program define eltmle
 	 tokenize `var'
 	 local yvar = "`1'"
 	 sum `yvar'
-	 replace `yvar' = (`yvar'-r(min)) / (r(max)-r(mi)) if `yvar'>1
+	 replace `yvar' = (`yvar'-`r(min)') / (`r(max)'-`r(min)') if `yvar'>1
      local dir `c(pwd)'
 	 cd "`dir'"
 	 export delimited `var' using "data.csv", nolabel replace 
