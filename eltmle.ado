@@ -132,10 +132,10 @@ gen double  Qstar = exp(HAW*epsilon + logQAW)/(1 + exp(HAW*epsilon + logQAW))
 gen double Q0star = exp(H0W*epsilon + logQ0W)/(1 + exp(H0W*epsilon + logQ0W))
 gen double Q1star = exp(H1W*epsilon + logQ1W)/(1 + exp(H1W*epsilon + logQ1W))
 gen  POM1 = Q1star
-gen  POMO = Q0star
+gen  POM0 = Q0star
 gen    WT = HAW
 gen    PS = ps
-summ POM1 POMO WT PS
+summ POM1 POM0 WT PS
 
 // Estimating the updated targeted ATE 
 gen double ATE = (Q1star - Q0star)
@@ -284,10 +284,10 @@ gen double  Qstar = exp(HAW*epsilon + logQAW)/(1 + exp(HAW*epsilon + logQAW))
 gen double Q0star = exp(H0W*epsilon + logQ0W)/(1 + exp(H0W*epsilon + logQ0W))
 gen double Q1star = exp(H1W*epsilon + logQ1W)/(1 + exp(H1W*epsilon + logQ1W))
 gen  POM1 = Q1star
-gen  POMO = Q0star
+gen  POM0 = Q0star
 gen    WT = HAW
 gen    PS = ps
-summ POM1 POMO WT PS
+summ POM1 POM0 WT PS
 
 // Estimating the updated targeted ATE 
 gen double ATE = (Q1star - Q0star)
@@ -437,10 +437,10 @@ gen double  Qstar = exp(HAW*epsilon + logQAW)/(1 + exp(HAW*epsilon + logQAW))
 gen double Q0star = exp(H0W*epsilon + logQ0W)/(1 + exp(H0W*epsilon + logQ0W))
 gen double Q1star = exp(H1W*epsilon + logQ1W)/(1 + exp(H1W*epsilon + logQ1W))
 gen  POM1 = Q1star
-gen  POMO = Q0star
+gen  POM0 = Q0star
 gen    WT = HAW
 gen    PS = ps
-summ POM1 POMO WT PS
+summ POM1 POM0 WT PS
 
 // Estimating the updated targeted ATE 
 gen double ATE = (Q1star - Q0star)
@@ -596,10 +596,10 @@ global UCIa =  $ATEslaipw +1.96*sqrt($varICslaipw)
 gen double aQ1W = Q1W+(H1W*(Y-QAW))
 gen double aQ0W = Q0W+(H0W*(Y-QAW))
 gen  POM1 = aQ1W
-gen  POMO = aQ0W
+gen  POM0 = aQ0W
 gen    WT = HAW
 gen    PS = ps
-summ POM1 POMO WT PS
+summ POM1 POM0 WT PS
 
 // RR
 qui: sum aQ1W
@@ -726,10 +726,10 @@ global ATEslaipwgbm = r(mean)
 gen double aQ1W = Q1W+(H1W*(Y-QAW))
 gen double aQ0W = Q0W+(H0W*(Y-QAW))
 gen  POM1 = aQ1W
-gen  POMO = aQ0W
+gen  POM0 = aQ0W
 gen    WT = HAW
 gen    PS = ps
-summ POM1 POMO WT PS
+summ POM1 POM0 WT PS
 
 // RR
 qui: sum aQ1W
@@ -870,10 +870,10 @@ global ATEslaipwbg = r(mean)
 gen double aQ1W = Q1W+(H1W*(Y-QAW))
 gen double aQ0W = Q0W+(H0W*(Y-QAW))
 gen  POM1 = aQ1W
-gen  POMO = aQ0W
+gen  POM0 = aQ0W
 gen    WT = HAW
 gen    PS = ps
-summ POM1 POMO WT PS
+summ POM1 POM0 WT PS
 
 // RR
 qui: sum aQ1W
