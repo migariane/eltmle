@@ -4,8 +4,8 @@
 ** MIGUEL ANGEL LUQUE FERNANDEZ
 ** mluquefe@hsph.havard.edu // miguel-angel.luque@lshtm.ac.uk
 ** TMLE ALGORITHM IMPLEMENTATION IN STATA FOR A BINARY OR CONTINUOUS 
-** OUTCOME AND BINARY TREATMENT 
-** Improved AIPTW with Super Learner (Ensemble Learning and Machine-Learning)
+** OUTCOME AND BINARY TREATMENT FOR WINDOWS USERS
+** Improved AIPTW with Super Learner (Ensemble Learning)
 ** This program requires R to be installed in your computer
 ** JUNE 2017
 ****************************************************************************
@@ -174,7 +174,7 @@ global UCIr =  exp(log($RRtmle) +1.96*sqrt(($varICtmle)))
 
 di _newline
 di "TMLE: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEtmle _col(5) "; SE:" %5.4f sqrt($varICtmle) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %9.4f $UCIa ")"
+di "ATE:" %9.4f $ATEtmle _col(5) "; SE:" %5.4f sqrt($varICtmle) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %5.4f $LCIa ","  %7.4f $UCIa ")"
 
 di _newline
 di "TMLE: Relative Risk" _newline 
@@ -328,7 +328,7 @@ global UCIr =  exp(log($RRtmlegbm) +1.96*sqrt(($varICtmlegbm)))
 
 di _newline
 di "TMLE + GBM: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEtmlegbm _col(5) "; SE:" %5.4f sqrt($varICtmlegbm) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %9.4f $UCIa ")"
+di "ATE:" %9.4f $ATEtmlegbm _col(5) "; SE:" %5.4f sqrt($varICtmlegbm) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %5.4f $LCIa ","  %7.4f $UCIa ")"
 
 di _newline
 di "TMLE + GBM: Relative Risk" _newline 
@@ -481,7 +481,7 @@ global UCIr =  exp(log($RRtmlebg) +1.96*sqrt(($varICtmlebg)))
 
 di _newline
 di "TMLE + Bayes GLM and GAM: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEtmlebg _col(5) "; SE:" %5.4f sqrt($varICtmlebg) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %9.4f $UCIa ")"
+di "ATE:" %9.4f $ATEtmlebg _col(5) "; SE:" %5.4f sqrt($varICtmlebg) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %5.4f $LCIa ","  %7.4f $UCIa ")"
 
 di _newline
 di "TMLE + Bayes GLM and GAM: Relative Risk" _newline 
@@ -626,7 +626,7 @@ global UCIr =  exp(log($RRslaipw) +1.96*sqrt(($varICslaipw)))
 
 di _newline
 di "AIPW ensemble learning: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEslaipw _col(5) "; SE:" %5.4f sqrt($varICslaipw) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %9.4f $UCIa ")"
+di "ATE:" %9.4f $ATEslaipw _col(5) "; SE:" %5.4f sqrt($varICslaipw) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %5.4f $LCIa ","  %7.4f $UCIa ")"
 
 di _newline
 di "AIPW ensemble learning: Relative Risk" _newline 
@@ -771,7 +771,7 @@ global UCIr =  exp(log($RRslaipwgbm) +1.96*sqrt(($varICslaipwgbm)))
 
 di _newline
 di "AIPW Random Forest : Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEslaipwgbm _col(5) "; SE:" %5.4f sqrt($varICslaipwgbm) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %9.4f $UCIa ")"
+di "ATE:" %9.4f $ATEslaipwgbm _col(5) "; SE:" %5.4f sqrt($varICslaipwgbm) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %5.4f $LCIa ","  %7.4f $UCIa ")"
 
 di _newline
 di "AIPW Random Forest: Relative Risk" _newline 
@@ -917,7 +917,7 @@ global UCIr = exp(log($RRslaipwbg) +1.96*sqrt(($varICslaipwbg)))
 
 di _newline
 di "AIPW Bayes GLM and GAM: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEslaipwbg _col(5) "; SE:" %5.4f sqrt($varICslaipwbg) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.4f $LCIa ","  %9.4f $UCIa ")"
+di "ATE:" %9.4f $ATEslaipwbg _col(5) "; SE:" %5.4f sqrt($varICslaipwbg) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %5.4f $LCIa ","  %7.4f $UCIa ")"
 
 di _newline
 di "AIPW Bayes GLM and GAM: Relative Risk" _newline 
