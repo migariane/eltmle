@@ -1,9 +1,8 @@
 {smcl}
 {right:*!version 2.1 26.JUN.2017}{...}
 
-{phang}
+{p 4 4 2}
 {cmd:help eltmle}
-{hline}
 
 {title:Title}
 
