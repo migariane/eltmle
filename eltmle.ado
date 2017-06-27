@@ -371,7 +371,7 @@ qui sum IC
 global varbg = r(Var)
 qui count
 global n = r(N)
-global varICtmlebg = $var/$n
+global varICtmlebg = $varbg/$n
 
 global pvaluebg = cond($flag==1,2*(normalden(abs($ATEcibg/sqrt($varICtmlebg)))),2*(normalden(abs($ATEtmlebg/sqrt($varICtmlebg)))),.)
 
