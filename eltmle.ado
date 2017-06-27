@@ -339,16 +339,16 @@ gen double Q1star = exp(H1W*epsilon + logQ1W)/(1 + exp(H1W*epsilon + logQ1W))
 
 global cfbg = $b - $a
 
-gen double POM1 = cond($flag==1,Q1star,Q1star*($cf),.)
-gen double POM0 = cond($flag==1,Q0star,Q0star*($cf),.)
-gen double   PO = cond($flag==1,Qstar,Qstar*($cf),.)
+gen double POM1 = cond($flag==1,Q1star,Q1star*($cfbg),.)
+gen double POM0 = cond($flag==1,Q0star,Q0star*($cfbg),.)
+gen double   PO = cond($flag==1,Qstar,Qstar*($cfbg),.)
 
 gen    WT = HAW
 gen    PS = ps
 summ   POM1 POM0 WT PS
 
 // Estimating the updated targeted ATE binary outcome
-gen double ATE = cond($flag==1,(Q1star - Q0star),(Q1star - Q0star)*($cf),.)
+gen double ATE = cond($flag==1,(Q1star - Q0star),(Q1star - Q0star)*($cfbg),.)
 qui sum ATE
 global ATEtmlebg = r(mean)
 
