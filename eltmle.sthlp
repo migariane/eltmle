@@ -109,13 +109,14 @@ implementation, the Bayes Generalized Linear Models and Generalized Additive Mod
           WT |      4,642   -.0409955    2.830591  -6.644464   21.43709
           PS |      4,642    .1861267     .110755   .0372202   .8494988
 
-TMLE: Average Treatment Effect
 
-ATE:   0.0546; SE:0.0122; p-value:0.0000; 95%CI:(0.0307, 0.0784)
+TMLE: Average Causal Effect
 
-TMLE: Relative Risk
+ACE (Risk Differences): 0.0546; Estimated Variance: 0.0001; p-value: 0.0000; 95%CI:(0.0307, 0.0784)
 
-RR:   2.0703; 95%CI:(2.0215, 2.1203)
+TMLE: Causal Relative Risk
+
+RR: 2.0703; 95%CI:(1.5741, 2.7230)
 
 ***********************************************************
 .eltmle bweight mbsmoke mage medu prenatal mmarried, tmle
@@ -123,20 +124,16 @@ RR:   2.0703; 95%CI:(2.0215, 2.1203)
 
     Variable |        Obs        Mean    Std. Dev.       Min        Max
 -------------+---------------------------------------------------------
-        POM1 |      4,642    .5489117    .0144511    .500036   .5731835
-        POM0 |      4,642    .5936076    .0173526   .5558277   .6138109
+        POM1 |      4,642    2832.384    74.56757   2580.186   2957.627
+        POM0 |      4,642    3063.015    89.53935   2868.071   3167.264
           WT |      4,642   -.0409955    2.830591  -6.644464   21.43709
           PS |      4,642    .1861267     .110755   .0372202   .8494988
 
-TMLE: Average Treatment Effect
+ACE (Additive Effect): -230.6310; Estimated Variance:  600.9338; p-value: 0.0000; 95%CI:(-278.68, -182.58)
 
-ATE:  -0.0447; SE:0.0048; p-value:0.0000; 95%CI:(-0.0540, -0.0354)
+ACE (Risk Differences):  -0.0447; Estimated Variance:   0.00002; p-value: 0.0000; 95%CI:(-0.05, -0.04)
 
-TMLE: Relative Risk
-
-RR:   0.9247; 95%CI:(0.9161, 0.9334)
-
-************************************************************************
+***********************************************************************************************************
 
 {title:Remarks} 
 
