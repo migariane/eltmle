@@ -390,7 +390,7 @@ global UCIrbg =  exp(log($RRtmlebg) + 1.96*sqrt($varICrrbg))
 // IC for Additive Risk differences
 gen double ICrd = HAW*(Y - Qstar) + (Q1star - Q0star) - $ATEcibg
 qui sum ICrd
-global varrd = r(Var)
+global varrdbg = r(Var)
 global varICrdbg = $varrdbg/$n
 global LCIardbg =  $ATEcibg -1.96*sqrt($varICrdbg)
 global UCIardbg =  $ATEcibg +1.96*sqrt($varICrdbg)
