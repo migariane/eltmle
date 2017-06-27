@@ -201,7 +201,7 @@ global UCIard =  $ATEci +1.96*sqrt($varICrd)
 // Display Results 
 local bin  ""ACE (Risk Differences):" %10.4f $ATEtmle _col(5) "; Estimated Variance:" %10.4f $varICtmle _col(5) "; p-value:" %7.4f $pvalue _col(5) "; 95%CI:("  %5.4f $LCIa ","   %7.4f $UCIa ")""
 local cont ""ACE (Additive Effect):" %10.4f $ATEtmle _col(5) "; Estimated Variance:" %10.4f $varICtmle _col(5) "; p-value:" %7.4f $pvalue _col(5) "; 95%CI:("  %8.2f $LCIa ","  %9.2f $UCIa ")""
-local contrd  ""ACE (Risk Differences) :" %10.4f $ATEci _col(5) "; Estimated Variance:" %10.5f $varICrd _col(5) "; p-value:" %7.4f $pvalue _col(5) "; 95%CI:("  %5.2f $LCIard ","  %7.2f $UCIard ")""
+local contrd  ""ACE (Risk Differences):" %10.4f $ATEci _col(5) "; Estimated Variance:" %10.5f $varICrd _col(5) "; p-value:" %7.4f $pvalue _col(5) "; 95%CI:("  %5.4f $LCIard ","  %7.4f $UCIard ")""
 
 if $flag==1 {
 di _newline
@@ -398,7 +398,7 @@ global UCIardbg =  $ATEcibg +1.96*sqrt($varICrdbg)
 // Display Results 
 local bin  ""ACE (Risk Differences):" %10.4f $ATEtmlebg _col(5) "; Estimated Variance:" %10.4f $varICtmlebg _col(5) "; p-value:” %7.4f $pvaluebg _col(5) "; 95%CI:("  %5.4f $LCIabg ","   %7.4f $UCIabg ")""
 local cont ""ACE (Additive Effect):" %10.4f $ATEtmlebg _col(5) "; Estimated Variance:" %10.4f $varICtmlebg _col(5) "; p-value:" %7.4f $pvaluebg _col(5) "; 95%CI:("  %8.2f $LCIabg ","  %9.2f $UCIabg ")""
-local contrd  ""ACE (Risk Differences) :" %10.4f $ATEcibg _col(5) "; Estimated Variance:" %10.5f $varICrdbg _col(5) "; p-value:" %7.4f $pvaluebg _col(5) "; 95%CI:("  %5.2f $LCIardbg ","  %7.2f $UCIardbg ")""
+local contrd  ""ACE (Risk Differences):" %10.4f $ATEcibg _col(5) "; Estimated Variance:" %10.5f $varICrdbg _col(5) "; p-value:" %7.4f $pvaluebg _col(5) "; 95%CI:("  %5.4f $LCIardbg ","  %7.4f $UCIardbg ")""
 
 if $flag==1 {
 di _newline
@@ -697,8 +697,8 @@ qui: count
 global n = r(N)
 global varICslaipwbg = $varbg/$n
 global pvaluebg = 2*(normalden(abs($ATEslaipwbg/sqrt($varICslaipwbg))))
-global LCIabg =  $ATEslaipwbg -1.96*sqrt($varICslaipwbg)
-global UCIabg =  $ATEslaipwbg +1.96*sqrt($varICslaipwbg)
+global LCIaaipwbg =  $ATEslaipwbg -1.96*sqrt($varICslaipwbg)
+global UCIaaipwbg =  $ATEslaipwbg +1.96*sqrt($varICslaipwbg)
 
 // RR
 gen double ICrr = ((A/ps)*(Y - QAW) + (Q1W) - aQ1W) - ((1-A)/(1-ps)*(Y - QAW) + (Q0W) - aQ0W)
@@ -706,16 +706,16 @@ qui sum ICrr
 global varrbg = r(Var)
 global varICrrbg = $varrbg/$n
 
-global LCIrbg =  exp(log($RRslaipwbg) - 1.96*sqrt($varICrrbg))
-global UCIrbg =  exp(log($RRslaipwbg) + 1.96*sqrt($varICrrbg))
+global LCIraipwbg =  exp(log($RRslaipwbg) - 1.96*sqrt($varICrrbg))
+global UCIraipwbg =  exp(log($RRslaipwbg) + 1.96*sqrt($varICrrbg))
 
 di _newline
 di "AIPW Bayes GLM and GAM: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEslaipwbg _col(5) "; SE:" %5.4f sqrt($varICslaipwbg) _col(5) "; p-value:" %5.4f $pvaluebg _col(5) "; 95%CI:(" %5.4f $LCIabg ","  %7.4f $UCIabg ")"
+di "ATE:" %9.4f $ATEslaipwbg _col(5) "; SE:" %5.4f sqrt($varICslaipwbg) _col(5) "; p-value:" %5.4f $pvaluebg _col(5) "; 95%CI:(" %5.4f $LCIaaipwbg ","  %7.4f $UCIaaipwbg ")"
 
 di _newline
 di "AIPW Bayes GLM and GAM: Relative Risk" _newline 
-di "RR:" %9.4f $RRslaipwbg _col(5) "; 95%CI:(" %5.4f $LCIrbg "," %7.4f $UCIrbg ")"
+di "RR:" %9.4f $RRslaipwbg _col(5) "; 95%CI:(" %5.4f $LCIraipwbg "," %7.4f $UCIraipwbg ")"
 
 drop HAW H1W H0W aQ1W aQ0W ps Y A ICrr
 
@@ -733,5 +733,4 @@ quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm .RData
 end
-
-///////////////////////////////////////////////////
+////////////////////////////////////////
