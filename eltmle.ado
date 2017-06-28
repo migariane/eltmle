@@ -15,6 +15,7 @@
 * Included estimation for continuous outcomes 
 * Added additive causal effects for continuous outcome
 * Fixed risk difference and causal relative risk for SLAIPW and SLAIPWBGAM 
+* Checked consistency of confidence intervals for RR
 
 capture program drop eltmle
 program define eltmle
@@ -199,9 +200,9 @@ global LCIard =  $ATEci -1.96*sqrt($varICrd)
 global UCIard =  $ATEci +1.96*sqrt($varICrd)
 
 // Display Results 
-local bin  ""ACE (Risk Differences):" %10.4f $ATEtmle _col(5) "; Estimated Variance:" %10.4f $varICtmle _col(5) "; p-value:" %7.4f $pvalue _col(5) "; 95%CI:("  %5.4f $LCIa ","   %7.4f $UCIa ")""
+local bin  ""ACE (Risk Differences):" %10.4f $ATEtmle _col(5) "; SE:" %10.5f sqrt($varICtmle) _col(5) "; p-value:" %7.4f $pvalue _col(5) "; 95%CI:("  %5.4f $LCIa ","   %7.4f $UCIa ")""
 local cont ""ACE (Additive Effect):" %10.4f $ATEtmle _col(5) "; Estimated Variance:" %10.4f $varICtmle _col(5) "; p-value:" %7.4f $pvalue _col(5) "; 95%CI:("  %8.2f $LCIa ","  %9.2f $UCIa ")""
-local contrd  ""ACE (Risk Differences):" %10.4f $ATEci _col(5) "; Estimated Variance:" %10.5f $varICrd _col(5) "; p-value:" %7.4f $pvalue _col(5) "; 95%CI:("  %5.4f $LCIard ","  %7.4f $UCIard ")""
+local contrd  ""ACE (Risk Differences):" %10.4f $ATEci _col(5) "; SE:" %10.5f sqrt($varICrd) _col(5) "; p-value:" %7.4f $pvalue _col(5) "; 95%CI:("  %5.4f $LCIard ","  %7.4f $UCIard ")""
 
 if $flag==1 {
 di _newline
@@ -396,9 +397,9 @@ global LCIardbg =  $ATEcibg -1.96*sqrt($varICrdbg)
 global UCIardbg =  $ATEcibg +1.96*sqrt($varICrdbg)
 
 // Display Results 
-local bin  ""ACE (Risk Differences):" %10.4f $ATEtmlebg _col(5) "; Estimated Variance:" %10.4f $varICtmlebg _col(5) "; p-value:” %7.4f $pvaluebg _col(5) "; 95%CI:("  %5.4f $LCIabg ","   %7.4f $UCIabg ")""
+local bin  ""ACE (Risk Differences):" %10.4f $ATEtmlebg _col(5) "; SE:" %10.5f sqrt($varICtmlebg) _col(5) "; p-value:” %7.4f $pvaluebg _col(5) "; 95%CI:("  %5.4f $LCIabg ","   %7.4f $UCIabg ")""
 local cont ""ACE (Additive Effect):" %10.4f $ATEtmlebg _col(5) "; Estimated Variance:" %10.4f $varICtmlebg _col(5) "; p-value:" %7.4f $pvaluebg _col(5) "; 95%CI:("  %8.2f $LCIabg ","  %9.2f $UCIabg ")""
-local contrd  ""ACE (Risk Differences):" %10.4f $ATEcibg _col(5) "; Estimated Variance:" %10.5f $varICrdbg _col(5) "; p-value:" %7.4f $pvaluebg _col(5) "; 95%CI:("  %5.4f $LCIardbg ","  %7.4f $UCIardbg ")""
+local contrd  ""ACE (Risk Differences):" %10.4f $ATEcibg _col(5) "; SE:" %10.5f sqrt($varICrdbg) _col(5) "; p-value:" %7.4f $pvaluebg _col(5) "; 95%CI:("  %5.4f $LCIardbg ","  %7.4f $UCIardbg ")""
 
 if $flag==1 {
 di _newline
