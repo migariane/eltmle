@@ -397,7 +397,7 @@ global LCIardbg =  $ATEcibg -1.96*sqrt($varICrdbg)
 global UCIardbg =  $ATEcibg +1.96*sqrt($varICrdbg)
 
 // Display Results 
-local bin  ""ACE (Risk Differences):" %10.4f $ATEtmlebg _col(5) "; SE:" %10.5f sqrt($varICtmlebg) _col(5) "; p-value:” %7.4f $pvaluebg _col(5) "; 95%CI:("  %5.4f $LCIabg ","   %7.4f $UCIabg ")""
+local bin  ""ACE (Risk Differences):" %10.4f $ATEtmlebg _col(5) "; SE:" %10.5f sqrt($varICtmlebg) _col(5) "; p-value:" %7.4f $pvaluebg _col(5) "; 95%CI:("  %5.4f $LCIabg ","   %7.4f $UCIabg ")""
 local cont ""ACE (Additive Effect):" %10.4f $ATEtmlebg _col(5) "; Estimated Variance:" %10.4f $varICtmlebg _col(5) "; p-value:" %7.4f $pvaluebg _col(5) "; 95%CI:("  %8.2f $LCIabg ","  %9.2f $UCIabg ")""
 local contrd  ""ACE (Risk Differences):" %10.4f $ATEcibg _col(5) "; SE:" %10.5f sqrt($varICrdbg) _col(5) "; p-value:" %7.4f $pvaluebg _col(5) "; 95%CI:("  %5.4f $LCIardbg ","  %7.4f $UCIardbg ")""
 
