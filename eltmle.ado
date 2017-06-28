@@ -1,4 +1,5 @@
-*! version 2.1 Ensemble Learning Targeted Maximum Likelihood by MA.LUQUE-FERNANDEZ 26.JUNE.2017
+*! version 2.2
+*! Ensemble Learning Targeted Maximum Likelihood by MA.LUQUE-FERNANDEZ 28.JUNE.2017
 
 ***************************************************************************
 ** MIGUEL ANGEL LUQUE FERNANDEZ
