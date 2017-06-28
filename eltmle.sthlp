@@ -1,8 +1,5 @@
 {smcl}
-{right:*!version 2.1 26.JUN.2017}{...}
-
-{p 4 4 2}
-{cmd:help eltmle}
+{* *! version 2.2 28.JUN.2017}{...}
 
 {title:Title}
 
@@ -111,7 +108,7 @@ implementation, the Bayes Generalized Linear Models and Generalized Additive Mod
 
 TMLE: Average Causal Effect
 
-ACE (Risk Differences): 0.0546; Estimated Variance: 0.0001; p-value: 0.0000; 95%CI:(0.0307, 0.0784)
+ACE (Risk Differences): 0.0546; SE: 0.01217; p-value: 0.0000; 95%CI:(0.0307, 0.0784)
 
 TMLE: Causal Relative Risk
 
@@ -130,7 +127,7 @@ RR: 2.0703; 95%CI:(1.5741, 2.7230)
 
 ACE (Additive Effect): -230.6310; Estimated Variance:  600.9338; p-value: 0.0000; 95%CI:(-278.68, -182.58)
 
-ACE (Risk Differences):  -0.0447; Estimated Variance:   0.00002; p-value: 0.0000; 95%CI:(-0.05, -0.04)
+ACE (Risk Differences):  -0.0447; SE:   0.00475; p-value: 0.0000; 95%CI:(-0.05, -0.04)
 
 ***********************************************************************************************************
 
