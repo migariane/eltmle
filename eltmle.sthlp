@@ -135,7 +135,7 @@ ACE (Risk Differences):  -0.0447; SE:   0.00475; p-value: 0.0000; 95%CI:(-0.05, 
 
 {p 4 4 2 120}
 Remember 1: Y must be a binary or continuous variable; X must be numeric binary
-variable coded (0,1) and, Z a vector of covariates. 
+variable coded (0, 1) and, Z a vector of numeric covariates. 
 {p_end}
 
 {p 4 4 2 120}
@@ -151,20 +151,20 @@ Remember 4: Windows users intall {hi:weltmle.ado} file.
 {p_end}
 
 {p 4 4 2 120}
-Remember 5: Mac users must have installed R software in their personal computer as
+Remember 5: Mac users must have installed R software on their personal computer as
 eltmle calls R to implement the Super Learner. The R executable file must be located at 
 the following path: {hi:"/usr/local/bin/r"}.
 {p_end}
 
 {p 4 4 2 120}
-Remember 6: Windows users must have installed R software in their personal computer
+Remember 6: Windows users must have installed R software on their personal computer
 as eltmle calls R to implement the Super Learner. The R executable file must be located 
-at the following path: {hi:"C:\Program Files\R\R-3.1.2\bin\x64\R.exe"} and the version must be v.3.0.0 or later.
+at the following path: {hi:"C:\Program Files\R\R-X.X.X\bin\x64\R.exe"} (where X stands for the number of the version).
 {p_end}
 
 {p 4 4 2 120}
-Remember 7: Windows users must have only one version of R software installed in their personal computer
-at the following path: {hi:"C:\Program Files\R\R-3.1.2\bin\x64\R.exe"}. In case more than one different version 
+Remember 7: Windows users must have only one version of R software installed on their personal computer
+at the following path: {hi:"C:\Program Files\R\R-X.X.X\bin\x64\R.exe"}. In case more than one different versions 
 are located in the above highlighted path users might want to keep the latest.
 {p_end}
 
