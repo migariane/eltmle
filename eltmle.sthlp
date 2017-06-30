@@ -165,7 +165,7 @@ at the following path: {hi:"C:\Program Files\R\R-X.X.X\bin\x64\R.exe"} (where X 
 {p 4 4 2 120}
 Remember 7: Windows users must have only one version of R software installed on their personal computer
 at the following path: {hi:"C:\Program Files\R\R-X.X.X\bin\x64\R.exe"}. In case more than one different version 
-is located in the above highlighted path users would like want to keep the latest.
+is located in the above highlighted path users would like to keep the latest.
 {p_end}
 
 {p 4 4 2 120}
