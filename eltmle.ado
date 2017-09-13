@@ -1,4 +1,4 @@
-*! version 2.2  30.Jun.2017
+*! version 2.2.1  30.Jun.2017
 *! ELTMLE: Stata module for Ensemble Learning Targeted Maximum Likelihood Estimation
 *! by Miguel Angel Luque-Fernandez [cre,aut]
 *! Bug reports:
@@ -45,7 +45,7 @@ THE SOFTWARE.
 
 capture program drop eltmle
 program define eltmle
-     syntax [varlist] [if] [pw] [, slaipw slaipwbgam tmle tmlebgam] 
+     syntax varlist(min=3) [if] [pw] [, slaipw slaipwbgam tmle tmlebgam] 
 	 version 13.2
 	 marksample touse
 	 local var `varlist' if `touse'
