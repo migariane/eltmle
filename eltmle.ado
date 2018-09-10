@@ -109,7 +109,7 @@ if "`c(os)'" == "MacOSX" {
 //shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
 shell "/usr/local/bin/r" CMD BATCH SLS.R 
 }
-else if{
+else{
 // Write bacth file to find R.exe path and R version
 set more off
 qui: file close _all
