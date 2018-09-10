@@ -40,8 +40,10 @@ THE SOFTWARE.
 * Included marginal odds ratio
 * Improved estimation of the clever covariate 
 * Included Influence curve (IC) estimation for the OR
-* Update IC estimation 
-* Update global to local
+* Improved IC estimation 
+* Globals changed to locals
+* Just one ado file for both Mac and Windows users
+* Included additive effect for continuous outcomes  
 
 capture program drop eltmle
 program define eltmle
