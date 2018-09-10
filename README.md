@@ -48,18 +48,21 @@ Université de Montréal, Montréal, Canada
 Email: mireille.schnitzer at umontreal.ca   
 
 # Acknowledgements  
-Miguel Angel Luque Fernandez is supported by a Miguel Servet I Investigator Award (grant CP17/00206) from the Carlos III National Institute of Health, Madrid, Spain.  
+Miguel Angel Luque Fernandez is supported by a Miguel Servet I Investigator Award (grant CP17/00206) from the Carlos III National Institute of Health, Madrid, Spain. 
+
+# Updates
 In case you have updates or changes that you would like to make, please send me a pull request.  
-Alternatively, if you have any questions, please e-mail me.     
+Alternatively, if you have any questions, please e-mail me. 
+
+# Citation    
 You can cite this repository as:  
 Luque-Fernandez MA, (2018). Ensemble Targeted Maximum Likelihood Estimation for a Binary Treatment. 
-GitHub repository, https://github.com/migariane/weltmle (Windows users) or https://github.com/migariane/meltmle (MAC users)        
+GitHub repository, https://github.com/migariane/eltmle          
 Miguel Angel Luque-Fernandez    
 E-mail: miguel-angel.luque at lshtm.ac.uk  
 Twitter @WATZILEI  
 
 # Copyright
-
 This software is distributed under the GPL-2 license.
 
 
