@@ -19,22 +19,14 @@ To install eltmle directly from github you need to use a Stata module for instal
 
     then, you can install eltmle simply using the following code in Stata:
 
-    1) For MAC users (please, read carefully the help file before using eltmle in Stata):  
+    1) Please, read carefully the help file before using eltmle in Stata):  
     
-    github install migariane/meltmle  
+    github install migariane/eltmle  
    
         .which eltmle   
 
         .help eltmle   
-
-    2) For Windows users (please, read carefully the help file before using eltmle in Stata):  
-
-        .github install migariane/weltmle  
- 
-        .which eltmle 
-
-        .help eltmle   
-     
+   
     For both, MAC and Windows users, in case you want to uninstall the package type:    
 	
         .ado uninstall eltmle   
@@ -48,35 +40,19 @@ Email: miguel-angel.luque@lshtm.ac.uk
 # Contributors:
 [Intellectual advice and suggestions for improvement]
 
-Michael Schomaker, CIDER, UCT, Cape Twon, South Africa      
-Email: michael.schomaker at uct.ac.za    
+Michael Schomaker, CIDER, UCT, Cape Town, South Africa      
+Email: michael.schomaker at uct.ac.za 
 
-Giovanni Cerulli, CRES, CNR, Rome, Italy  
-Email: giovanni.cerulli at cres.cnr.it
-
-Bernard Rachet, LSHTM, NCDE, Cancer Survival Group, London, UK  
-Email: bernard.rachet at lsthm.ac.uk  
-
-Aurelien Belot, LSHTM, NCDE, Cancer Survival Group, London, UK  
-Email: Aurelien.belot at lshtm.ac.uk  
-
-Camille Maringe, LSHTM, NCDE, Cancer Survival Group, London, UK  
-Email: camille.maringe at lshtm.ac.uk  
-
-Karla Diaz Ordaz, LSHTM, Department of Medical Statistics, London, UK    
-Email: Karla.diaz-ordaz at lshtm.ac.uk    
-
-Rhian Daniel, LSHTM, Department of Medical Statistics, London, UK    
-Email: Rhian.daniel at lshtm.ac.uk    
+Mireille E. Schnitzer, Faculté de pharmacie,     
+Université de Montréal, Montréal, Canada  
+Email: mireille.schnitzer at umontreal.ca   
 
 # Acknowledgements  
-  
-I would like to thank Professors Bianca De Stavola (LSHTM), Simon Cousens (LSHTM), Aurelio Tobias (CSIC), Michel Coleman (LSHTM) for their comments and support and Haghish E. F. (CMBMI, Freiburg, Germany) for his wonderful **Github** and **MarkDoc** Stata packages.  
-  
+Miguel Angel Luque Fernandez is supported by a Miguel Servet I Investigator Award (grant CP17/00206) from the Carlos III National Institute of Health, Madrid, Spain.  
 In case you have updates or changes that you would like to make, please send me a pull request.  
 Alternatively, if you have any questions, please e-mail me.     
 You can cite this repository as:  
-Luque-Fernandez MA, (2017). Ensemble Taregeted Maximum Likelihood Estimation for a Binary Outcome and Treatment. 
+Luque-Fernandez MA, (2018). Ensemble Targeted Maximum Likelihood Estimation for a Binary Treatment. 
 GitHub repository, https://github.com/migariane/weltmle (Windows users) or https://github.com/migariane/meltmle (MAC users)        
 Miguel Angel Luque-Fernandez    
 E-mail: miguel-angel.luque at lshtm.ac.uk  

@@ -1,5 +1,6 @@
 {smcl}
-{* *! version 2.2 28.JUN.2017}{...}
+{right: version 2.2.2 September 11th, 2018}
+{...}
 
 {title:Title}
 
@@ -9,7 +10,7 @@
 {title:Syntax}
 
 {p 4 4 2}
-{cmd:eltmle} {hi: Y} {hi: X} {hi: Z} [{cmd:,} {it:slapiw} {it:slaipwbgam} {it:tmle} {it:tmlebgam}]
+{cmd:eltmle} {hi: Y} {hi: X} {hi: Z} [{cmd:,} {it:tmle} {it:tmlebgam}]
 
 {p 4 4 2}
 where:
@@ -69,17 +70,6 @@ TMLE algorithm plus the super-Learner ensemble learning for the main three machi
 implementation, the Bayes Generalized Linear Models and Generalized Additive Models as Super-Learner algorithms for the tmle estimator.
 {p_end}
 
-{p 4 4 2 120}
-{hi:slaipw}: this option may be specified or unspecified. When specified, it does estimate the augmented
-inverse probability weighting algorithm plus the Super Learner ensemble learning for the main three machine 
-learning algorithms described above.
-{p_end}
-
-{p 4 4 2 120}
-{hi:slaipwbgam}: this option may be specified or unspecified. When specified, it does include in addition to the above default
-implementation, the Bayes Generalized Linear Models and Generalized Additive Models as Super-Learner algorithms for the slaipw estimator.
-{p_end}
-
 {title:Example}
 
 *******************************************************
@@ -97,22 +87,23 @@ implementation, the Bayes Generalized Linear Models and Generalized Additive Mod
 *******************************************************
 .eltmle lbw mbsmoke mage medu prenatal mmarried, tmle
 *******************************************************
-
     Variable |        Obs        Mean    Std. Dev.       Min        Max
 -------------+---------------------------------------------------------
-        POM1 |      4,642    .1055429    .0403702   .0205745   .3789994
-        POM0 |      4,642    .0509794    .0249112   .0207113   .1664136
-          WT |      4,642   -.0409955    2.830591  -6.644464   21.43709
+        POM1 |      4,642    .1023406    .0401616   .0201151   .3747893
+        POM0 |      4,642     .051377    .0251473   .0208754   .1706158
           PS |      4,642    .1861267     .110755   .0372202   .8494988
 
+TMLE: Average Treatment Effect
 
-TMLE: Average Causal Effect
-
-ACE (Risk Differences): 0.0546; SE: 0.01217; p-value: 0.0000; 95%CI:(0.0307, 0.0784)
+ATE (Risk Differences):     0.0510; SE:   0.01217; p-value: 0.0001; 95%CI:(0.0271, 0.0748)
 
 TMLE: Causal Relative Risk
 
-RR: 2.0703; 95%CI:(1.5741, 2.7230)
+RR:   1.9920; 95%CI:(1.5294, 2.5944)
+
+TMLE: Marginal Odds Ratio
+
+OR:   2.1050; 95%CI:(1.4951, 2.7150)
 
 ***********************************************************
 .eltmle bweight mbsmoke mage medu prenatal mmarried, tmle
@@ -120,16 +111,23 @@ RR: 2.0703; 95%CI:(1.5741, 2.7230)
 
     Variable |        Obs        Mean    Std. Dev.       Min        Max
 -------------+---------------------------------------------------------
-        POM1 |      4,642    2832.384    74.56757   2580.186   2957.627
-        POM0 |      4,642    3063.015    89.53935   2868.071   3167.264
-          WT |      4,642   -.0409955    2.830591  -6.644464   21.43709
+        POM1 |      4,642    .5490164     .014507   .4999964    .573446
+        POM0 |      4,642    .5934364    .0173583   .5550403   .6135838
           PS |      4,642    .1861267     .110755   .0372202   .8494988
 
-ACE (Additive Effect): -230.6310; Estimated Variance:  600.9338; p-value: 0.0000; 95%CI:(-278.68, -182.58)
+TMLE: Additive Causal Effect
 
-ACE (Risk Differences):  -0.0447; SE:   0.00475; p-value: 0.0000; 95%CI:(-0.05, -0.04)
+Additive Causal effect:   -0.0444; SE:   0.00475; p-value: 0.0000; 95%CI:(-0.0537,-0.0351)
 
-***********************************************************************************************************
+TMLE: Causal Relative Risk
+
+RR:   0.9251; 95%CI:(0.9098, 0.9408)
+
+TMLE: Marginal Odds Ratio
+
+OR:   0.8340; 95%CI:(0.8025, 0.8655)
+
+**********************************************************************************************
 
 {title:Remarks} 
 
@@ -143,39 +141,32 @@ Remember 2: You must change your working directory to the location of the Stata.
 {p_end}
 
 {p 4 4 2 120}
-Remember 3: Mac users install {hi:meltmle.ado} file. 
-{p_end}
-
-{p 4 4 2 120}
-Remember 4: Windows users intall {hi:weltmle.ado} file.
-{p_end}
-
-{p 4 4 2 120}
-Remember 5: Mac users must have installed R software on their personal computer as
+Remember 3: Mac users must have installed R software on their personal computer as
 eltmle calls R to implement the Super Learner. The R executable file must be located at 
 the following path: {hi:"/usr/local/bin/r"}.
 {p_end}
 
 {p 4 4 2 120}
-Remember 6: Windows users must have installed R software on their personal computer
+Remember 4: Windows users must have installed R software on their personal computer
 as eltmle calls R to implement the Super Learner. The R executable file must be located 
 at the following path: {hi:"C:\Program Files\R\R-X.X.X\bin\x64\R.exe"} (where X stands for the number of the version).
 {p_end}
 
 {p 4 4 2 120}
-Remember 7: Windows users must have only one version of R software installed on their personal computer
+Remember 5: Windows users must have only one version of R software installed on their personal computer
 at the following path: {hi:"C:\Program Files\R\R-X.X.X\bin\x64\R.exe"}. In case more than one different version 
 is located in the above highlighted path users would like to keep the latest.
-{p_end}
-
-{p 4 4 2 120}
-Remember 8: Check the SLS.R file for problems with R.
 {p_end}
 
 {title:References}
 
 {p 4 4 2 120}
-Luque-Fernandez, Miguel Angel. (2017). Targeted Maximum Likelihood Estimation for a
+Miguel Angel Luque‐Fernandez, M Schomaker, B Rachet, M Schnitzer (2018). Targeted maximum likelihood estimation for a binary treatment: A tutorial.
+Statistics in medicine. {browse "https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.7628":Download here}.
+{p_end}
+
+{p 4 4 2 120}
+Miguel Angel Luque-Fernandez (2017). Targeted Maximum Likelihood Estimation for a
 Binary Outcome: Tutorial and Guided Implementation {browse "http://migariane.github.io/TMLE.nb.html":Download here}.
 {p_end}
 
@@ -201,6 +192,8 @@ in genetics and molecular biology 6.
 {title:Author and developer}
 
 {phang}Miguel Angel Luque-Fernandez{p_end}
+{phang}Biomedical Research Institute of Granada, Noncommunicable Disease and Cancer Epidemiolgy Group. University of Granada,
+Granada, Spain.{p_end}
 {phang}Department of Epidemiology and Population Health, London School of Hygiene and Tropical Medicine. 
 London, UK.{p_end}
 {phang}E-mail: {browse "mailto:miguel-angel.luque@lshtm.ac.uk":miguel-angel.luque@lshtm.ac.uk}{p_end}  

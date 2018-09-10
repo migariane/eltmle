@@ -31,16 +31,16 @@ THE SOFTWARE.
 ** mluquefe at hsph.havard.edu // miguel-angel.luque at lshtm.ac.uk
 ** TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OR CONTINUOUS 
 ** OUTCOME AND BINARY TREATMENT FOR MAC and WINDOWS USERS 
-** Improved AIPTW with Super Learner (Ensemble Learning)
 ** This program requires R to be installed in your computer
-** Sep 2018
+** September 2018
 ****************************************************************************
 
 * Improved Influence curve estimation for the causal relative risk
-* Improved display including potential outcomes and propensity score to check balance
+* Improved output including potential outcomes and propensity score 
 * Included estimation for continuous outcomes 
 * Included marginal odds ratio
-* Updated Influence Curve estimation for ATE, RR and OR
+* Improved estimation of the clever covariate epsilon 
+* Included Influence curve (IC) estimation for ATE, RR and OR
 
 capture program drop eltmle
 program define eltmle
@@ -228,15 +228,16 @@ local UCIard =  `ATEci' +1.96*sqrt(`varICtmle')
 
 // Display Results 
 local bin  ""ATE (Risk Differences):  " %10.4f `ATEtmle' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIa' ","   %7.4f `UCIa' ")""
-local contrd ""ATE (Risk Differences):" %10.4f `ATEci' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIard' ","  %7.4f `UCIard' ")""
+local contrd ""Additive Causal effect:" %10.4f `ATEci' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIard' ","  %7.4f `UCIard' ")""
 
-if $flag==1 {
+if $flag!=1 {
 di _newline
 di "TMLE: Average Treatment Effect" _newline
 di `bin'
 }
-else if $flag!=1{
+else if $flag==1{
 di _newline
+di "TMLE: Additive Causal Effect" _newline
 di `contrd'
 }
 
@@ -426,16 +427,17 @@ local LCIard =  `ATEci' -1.96*sqrt(`varICtmle')
 local UCIard =  `ATEci' +1.96*sqrt(`varICtmle')
 
 // Display Results 
-local bin  ""ATE (Risk Differences):  " %10.4f `ATEtmle' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIa' ","   %7.4f `UCIa' ")""
-local contrd ""ATE (Risk Differences):" %10.4f `ATEci' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIard' ","  %7.4f `UCIard' ")""
+local bin  ""Risk Differences:  " %10.4f `ATEtmle' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIa' ","   %7.4f `UCIa' ")""
+local contrd ""Additive Causal Effect:" %10.4f `ATEci' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIard' ","  %7.4f `UCIard' ")""
 
-if $flag==1 {
+if $flag!=1 {
 di _newline
 di "TMLE: Average Treatment Effect" _newline
 di `bin'
 }
-else if $flag!=1{
+else if $flag==1{
 di _newline
+di "TMLE: Additive Causal Effect" _newline
 di `contrd'
 }
 
