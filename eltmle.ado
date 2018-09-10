@@ -91,12 +91,12 @@ qui: file write rcode ///
         `"X1[,1] <- 1"' _newline ///
         `"X0[,1] <- 0"' _newline ///
         `"newdata <- rbind(X,X1,X0)"' _newline /// 
-        `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "quasibinomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
+        `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
         `"Q <- as.data.frame(Q[[4]])"' _newline ///
         `"QAW <- Q[1:n,]"' _newline ///
         `"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
         `"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
-        `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "quasibinomial", method = "method.NNLS"))"' _newline ///
+        `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"))"' _newline ///
         `"ps <- g[[4]]"' _newline ///
         `"ps[ps<0.025] <- 0.025"' _newline ///
         `"ps[ps>0.975] <- 0.975"' _newline ///
@@ -136,11 +136,10 @@ qui: file write bat ///
 `"pause"'
 qui: file close bat
 //Run batch
-}
 shell setup.bat 
 //Run R 
 do runr.do
-
+}
 
 // Read Revised Data Back to Stata
 clear
@@ -291,12 +290,12 @@ qui: file write rcode ///
         `"X1[,1] <- 1"' _newline ///
         `"X0[,1] <- 0"' _newline ///
         `"newdata <- rbind(X,X1,X0)"' _newline /// 
-        `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "quasibinomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
+        `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
         `"Q <- as.data.frame(Q[[4]])"' _newline ///
         `"QAW <- Q[1:n,]"' _newline ///
         `"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
         `"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
-        `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "quasibinomial", method = "method.NNLS"))"' _newline ///
+        `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"))"' _newline ///
         `"ps <- g[[4]]"' _newline ///
         `"ps[ps<0.025] <- 0.025"' _newline ///
         `"ps[ps>0.975] <- 0.975"' _newline ///
@@ -309,7 +308,7 @@ if "`c(os)'" == "MacOSX" {
 //shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
 shell "/usr/local/bin/r" CMD BATCH SLS.R 
 }
-else if{
+else{
 // Write bacth file to find R.exe path and R version
 set more off
 qui: file close _all
