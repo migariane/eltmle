@@ -136,10 +136,11 @@ qui: file write bat ///
 `"pause"'
 qui: file close bat
 //Run batch
+}
 shell setup.bat 
 //Run R 
 do runr.do
-}
+
 
 // Read Revised Data Back to Stata
 clear
