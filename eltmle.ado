@@ -246,7 +246,7 @@ local orbin ""MOR:"%9.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ","%3.2f `UCIOr' ")"
 
 di _newline
 `line1'
-di "TMLE: Causal Relative Risk (CRR)" 
+di "TMLE: Causal Risk Ratio (CRR)" 
 `line1'
 di `rrbin'
 
@@ -445,7 +445,7 @@ local orbin ""MOR:"%9.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ","%3.2f `UCIOr' ")"
 
 di _newline
 `line1'
-di "TMLE: Causal Relative Risk (CRR)" 
+di "TMLE: Causal Risk Ratio (CRR)" 
 `line1'
 di `rrbin'
 
@@ -644,7 +644,7 @@ local orbin ""MOR:"%9.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ","%3.2f `UCIOr' ")"
 
 di _newline
 `line1'
-di "TMLE: Causal Relative Risk (CRR)" 
+di "TMLE: Causal Risk Ratio (CRR)" 
 `line1'
 di `rrbin'
 
