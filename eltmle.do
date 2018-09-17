@@ -202,14 +202,14 @@ if $flag==1 {
 `line1'
 di "TMLE: Average Treatment Effect"
 `line1'
-disp _newline
+di _newline
 di `ATE'
 }
 else if $flag!=1{
 `line1'
 di "TMLE: Additive Causal Effect" 
 `line1'
-disp _newline
+di _newline
 di `ATE'
 }
 
@@ -219,12 +219,12 @@ local orbin ""MOR:"%9.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ","%3.2f `UCIOr' ")"
 `line1'
 di "TMLE: Causal Relative Risk (CRR)" 
 `line1'
-disp _newline
 di `rrbin'
+di _newline
+
 `line1'
 di "TMLE: Marginal Odds Ratio (MOR)" 
 `line1'
-disp _newline
 di `orbin'
 
 drop ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps cin Y A eps* d1 d0
