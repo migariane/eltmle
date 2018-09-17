@@ -1,5 +1,5 @@
 {smcl}
-{right: version 2.2.2 September 11th, 2018}
+{right: version 2.2.2 September 17th, 2018}
 {...}
 
 {title:Title}
@@ -71,8 +71,8 @@ implementation, the Bayes Generalized Linear Models and Generalized Additive Mod
 {p_end}
 
 {p 4 4 2 120}
-{hi:tmleglsrf}: this option may be specified or unspecified. When specified, it does include in addition to the above default
-implementation, the Lasso (glmnet R package) and Random Forest (randomForest R package) as Super-Learner algorithms for the tmle estimator.
+{hi:tmleglsrf}: this option may be specified or unspecified. When specified, it does include in addition to the three main learning algorithms 
+described above, the Lasso (glmnet R package), Random Forest (randomForest R package) and the Generalized Additive Models as Super-Learner algorithms for the tmle estimator.
 {p_end}
 
 {title:Example}
@@ -221,7 +221,7 @@ is located in the above highlighted path users would like to keep the latest.
 
 {p 4 4 2 120}
 Remember 6: In case you want to preserve the original dataset you can use the 
-preserve restore Stata functionality in combination to the Stata **eltmle** command as shown in the previous example.
+preserve restore Stata functionality in combination to the Stata {hi: eltmle} command as shown in the previous example.
 {p_end}
 
 {title:References}
