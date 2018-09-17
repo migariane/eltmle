@@ -200,29 +200,29 @@ gen IC = d1 - d0
 qui sum IC
 local varICtmle = r(Var)/r(N)
 local varICitmle = (r(Var)/r(N))*cin
-local pvalue =  cond($flag == 1, 2*(normalden(abs(`ATE'/sqrt(`varICtmle')))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICitmle')))),.)
-local LCIa   =  cond($flag == 1, `ATEtmle' -1.96*sqrt(`varICtmle'), `ATEtmle' - 1.96*sqrt(`varICitmle'), .)
-local UCIa   =  cond($flag == 1, `ATEtmle' +1.96*sqrt(`varICtmle'), `ATEtmle' + 1.96*sqrt(`varICitmle'), .)
+local pvalue =  cond($flag == 1, 2 * (normalden(abs(`ATEtmle'/sqrt(`varICtmle')))), 2 * (normalden(abs(`ATEtmle'/sqrt(`varICitmle')))),.)
+local LCIa   =  cond($flag == 1, `ATEtmle' - 1.96 * sqrt(`varICtmle'), `ATEtmle' - 1.96 * sqrt(`varICitmle'), .)
+local UCIa   =  cond($flag == 1, `ATEtmle' + 1.96 * sqrt(`varICtmle'), `ATEtmle' + 1.96 * sqrt(`varICitmle'), .)
 
 // Statistical inference RR
 gen double ICrr = (1/`Q0' * d0) - ((1/`Q1') * d1)
 qui sum ICrr
 local varICrr = r(Var)/r(N)
 
-local LCIrr =  exp(`logRRtmle' - 1.96*sqrt(`varICrr'))
-local UCIrr =  exp(`logRRtmle' + 1.96*sqrt(`varICrr'))
+local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
 // Statistical inference OR
 gen double ICor = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0 
 qui sum ICor
 local varICor = r(Var)/r(N)
 
-local LCIOr =  `ORtmle' - 1.96*sqrt(`varICor')
-local UCIOr =  `ORtmle' + 1.96*sqrt(`varICor')
+local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
+local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
 // IC for Additive Risk differences
-local LCIard =  `ATEci' -1.96*sqrt(`varICtmle')
-local UCIard =  `ATEci' +1.96*sqrt(`varICtmle')
+local LCIard =  `ATEci' - 1.96 * sqrt(`varICtmle')
+local UCIard =  `ATEci' + 1.96 * sqrt(`varICtmle')
 
 // Display Results 
 local bin  ""ATE (Risk Differences):  " %10.4f `ATEtmle' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIa' ","   %7.4f `UCIa' ")""
@@ -364,14 +364,14 @@ gen double Q0star = exp(H0W*eps2 + logQ0W)/(1 + exp(H0W*eps2 + logQ0W))
 gen double Q1star = exp(H1W*eps1 + logQ1W)/(1 + exp(H1W*eps1 + logQ1W))
 gen double cin = (Y - $a)/($b - $a)
 
-gen double POM1 = cond($flag == 1, Q1star, Q1star*cin, .)
-gen double POM0 = cond($flag == 1, Q0star, Q0star*cin, .)
+gen double POM1 = cond($flag == 1, Q1star, Q1star * cin, .)
+gen double POM0 = cond($flag == 1, Q0star, Q0star * cin, .)
 
 gen  PS = ps
 summ POM1 POM0 PS
 
 // Estimating the updated targeted ATE binary outcome
-gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star)*cin, .)
+gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star) * cin, .)
 qui sum ATE
 local ATEtmle = r(mean)
 
@@ -394,7 +394,7 @@ gen IC = d1 - d0
 qui sum IC
 local varICtmle = r(Var)/r(N)
 local varICitmle = (r(Var)/r(N))*cin
-local pvalue =  cond($flag == 1, 2*(normalden(abs(`ATE'/sqrt(`varICtmle')))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICitmle')))),.)
+local pvalue =  cond($flag == 1, 2*(normalden(abs(`ATEtmle'/sqrt(`varICtmle')))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICitmle')))),.)
 local LCIa   =  cond($flag == 1, `ATEtmle' -1.96*sqrt(`varICtmle'), `ATEtmle' - 1.96*sqrt(`varICitmle'), .)
 local UCIa   =  cond($flag == 1, `ATEtmle' +1.96*sqrt(`varICtmle'), `ATEtmle' + 1.96*sqrt(`varICitmle'), .)
 
