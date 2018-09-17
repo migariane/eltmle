@@ -181,11 +181,6 @@ gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star)*cin, .)
 qui sum ATE
 local ATEtmle = r(mean)
 
-// ATE continuous outcome 
-gen double ATEci = (Q1star - Q0star)
-qui sum ATEci 
-local ATEci = r(mean)
-
 // Relative risk
 qui sum Q1star
 local Q1 = r(mean)
@@ -205,10 +200,9 @@ gen IC = d1 - d0
 qui sum IC
 local varICtmle = r(Var)/r(N)
 local varICitmle = (r(Var)/r(N))*cin
-local pvalue =  cond($flag != 1, 2*(normalden(abs(`ATEci'/sqrt(`varICitmle')))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICtmle')))),.)
-local LCIa   =  cond($flag != 1, `ATEci' -1.96*sqrt(`varICitmle'), `ATEtmle' - 1.96*sqrt(`varICtmle'), .)
-local UCIa   =  cond($flag != 1, `ATEci' +1.96*sqrt(`varICitmle'), `ATEtmle' + 1.96*sqrt(`varICtmle'), .)
-
+local pvalue =  cond($flag == 1, 2*(normalden(abs(`ATE'/sqrt(`varICtmle')))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICitmle')))),.)
+local LCIa   =  cond($flag == 1, `ATEtmle' -1.96*sqrt(`varICtmle'), `ATEtmle' - 1.96*sqrt(`varICitmle'), .)
+local UCIa   =  cond($flag == 1, `ATEtmle' +1.96*sqrt(`varICtmle'), `ATEtmle' + 1.96*sqrt(`varICitmle'), .)
 
 // Statistical inference RR
 gen double ICrr = (1/`Q0' * d0) - ((1/`Q1') * d1)
@@ -232,7 +226,7 @@ local UCIard =  `ATEci' +1.96*sqrt(`varICtmle')
 
 // Display Results 
 local bin  ""ATE (Risk Differences):  " %10.4f `ATEtmle' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIa' ","   %7.4f `UCIa' ")""
-local contrd ""Additive Causal effect:" %10.4f `ATEci' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIard' ","  %7.4f `UCIard' ")""
+local contrd ""Additive Causal effect:" %10.4f `ATEtmle' _col(5) "; SE:" %10.5f sqrt(`varICitmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIard' ","  %7.4f `UCIard' ")""
 
 if $flag==1 {
 di _newline
@@ -381,11 +375,6 @@ gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star)*cin, .)
 qui sum ATE
 local ATEtmle = r(mean)
 
-// ATE continuous outcome 
-gen double ATEci = (Q1star - Q0star)
-qui sum ATEci 
-local ATEci = r(mean)
-
 // Relative risk
 qui sum Q1star
 local Q1 = r(mean)
@@ -405,9 +394,9 @@ gen IC = d1 - d0
 qui sum IC
 local varICtmle = r(Var)/r(N)
 local varICitmle = (r(Var)/r(N))*cin
-local pvalue =  cond($flag != 1, 2*(normalden(abs(`ATEci'/sqrt(`varICitmle' * cin)))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICtmle')))),.)
-local LCIa   =  cond($flag != 1, `ATEci' -1.96*sqrt(`varICitmle' *cin), `ATEtmle' - 1.96*sqrt(`varICtmle'), .)
-local UCIa   =  cond($flag != 1, `ATEci' +1.96*sqrt(`varICitmle' *cin), `ATEtmle' + 1.96*sqrt(`varICtmle'), .)
+local pvalue =  cond($flag == 1, 2*(normalden(abs(`ATE'/sqrt(`varICtmle')))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICitmle')))),.)
+local LCIa   =  cond($flag == 1, `ATEtmle' -1.96*sqrt(`varICtmle'), `ATEtmle' - 1.96*sqrt(`varICitmle'), .)
+local UCIa   =  cond($flag == 1, `ATEtmle' +1.96*sqrt(`varICtmle'), `ATEtmle' + 1.96*sqrt(`varICitmle'), .)
 
 // Statistical inference RR
 gen double ICrr = (1/`Q0' * d0) - ((1/`Q1') * d1)
@@ -431,7 +420,7 @@ local UCIard =  `ATEci' +1.96*sqrt(`varICtmle')
 
 // Display Results 
 local bin  ""Risk Differences:  " %10.4f `ATEtmle' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIa' ","   %7.4f `UCIa' ")""
-local contrd ""Additive Causal Effect:" %10.4f `ATEci' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIard' ","  %7.4f `UCIard' ")""
+local contrd ""Additive Causal Effect:" %10.4f `ATEtmle' _col(5) "; SE:" %10.5f sqrt(`varICitmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIard' ","  %7.4f `UCIard' ")""
 
 if $flag==1 {
 di _newline
