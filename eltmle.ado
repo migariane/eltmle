@@ -1,3 +1,31 @@
+*! version 2.2.2  17.Sep.2018
+*! ELTMLE: Stata module for Ensemble Learning Targeted Maximum Likelihood Estimation
+*! by Miguel Angel Luque-Fernandez [cre,aut]
+*! Bug reports:
+*! miguel-angel.luque at lshtm.ac.uk
+
+/*
+Copyright (c) 2018  <Miguel Angel Luque-Fernandez>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+
 ***************************************************************************
 ** MIGUEL ANGEL LUQUE FERNANDEZ
 ** mluquefe at hsph.havard.edu // miguel-angel.luque at lshtm.ac.uk
@@ -7,20 +35,20 @@
 ** September 2018
 ****************************************************************************
 
-* Improved output including potential outcomes and propensity score 
+* Improved the output including potential outcomes and propensity score 
 * Included estimation for continuous outcomes 
 * Included marginal odds ratio
 * Improved estimation of the clever covariate for both H1W and H0W
 * Included Influence curve (IC) estimation for the marginal OR
 * Improved IC estimation  
-* Globals changed to locals
+* Update globals to locals where possible
 * Just one ado file for both Mac and Windows users
 * Included additive effect for continuous outcomes
-* Improved output display  
+* Improved the display of the output
 
 capture program drop eltmle
 program define eltmle
-     syntax varlist(min=3) [if] [pw] [, tmle tmlebgam] 
+     syntax varlist(min=3) [if] [pw] [, tmle tmlebgam tmleglsrf] 
 	 version 13.2
 	 marksample touse
 	 local var `varlist' if `touse'
@@ -43,7 +71,7 @@ program define eltmle
 	 else if "`tmleglsrf'" == "tmleglsrf" {
 		tmleglsrf `varlist'
 		}
-	 end 
+end 
 
 program tmle  
 // Write R Code dependencies: foreign Surperlearner 
@@ -202,29 +230,28 @@ if $flag==1 {
 `line1'
 di "TMLE: Average Treatment Effect"
 `line1'
-disp _newline
 di `ATE'
 }
 else if $flag!=1{
 `line1'
 di "TMLE: Additive Causal Effect" 
 `line1'
-disp _newline
 di `ATE'
 }
 
 local rrbin ""CRR:"%9.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ","%3.2f `UCIrr' ")""
 local orbin ""MOR:"%9.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ","%3.2f `UCIOr' ")""
 
+di _newline
 `line1'
 di "TMLE: Causal Relative Risk (CRR)" 
 `line1'
-disp _newline
 di `rrbin'
+
+di _newline
 `line1'
 di "TMLE: Marginal Odds Ratio (MOR)" 
 `line1'
-disp _newline
 di `orbin'
 
 drop ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps cin Y A eps* d1 d0
@@ -244,7 +271,6 @@ quietly: rm .RData
 end
 
 program tmlebgam 
- 
 // Write R Code dependencies: foreign Surperlearner 
 set more off
 qui: file close _all
@@ -401,29 +427,28 @@ if $flag==1 {
 `line1'
 di "TMLE: Average Treatment Effect"
 `line1'
-disp _newline
 di `ATE'
 }
 else if $flag!=1{
 `line1'
 di "TMLE: Additive Causal Effect" 
 `line1'
-disp _newline
 di `ATE'
 }
 
 local rrbin ""CRR:"%9.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ","%3.2f `UCIrr' ")""
 local orbin ""MOR:"%9.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ","%3.2f `UCIOr' ")""
 
+di _newline
 `line1'
 di "TMLE: Causal Relative Risk (CRR)" 
 `line1'
-disp _newline
 di `rrbin'
+
+di _newline
 `line1'
 di "TMLE: Marginal Odds Ratio (MOR)" 
 `line1'
-disp _newline
 di `orbin'
 
 drop ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps cin Y A eps* d1 d0
@@ -599,29 +624,28 @@ if $flag==1 {
 `line1'
 di "TMLE: Average Treatment Effect"
 `line1'
-disp _newline
 di `ATE'
 }
 else if $flag!=1{
 `line1'
 di "TMLE: Additive Causal Effect" 
 `line1'
-disp _newline
 di `ATE'
 }
 
 local rrbin ""CRR:"%9.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ","%3.2f `UCIrr' ")""
 local orbin ""MOR:"%9.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ","%3.2f `UCIOr' ")""
 
+di _newline
 `line1'
 di "TMLE: Causal Relative Risk (CRR)" 
 `line1'
-disp _newline
 di `rrbin'
+
+di _newline
 `line1'
 di "TMLE: Marginal Odds Ratio (MOR)" 
 `line1'
-disp _newline
 di `orbin'
 
 drop ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps cin Y A eps* d1 d0
@@ -639,4 +663,3 @@ quietly: rm data2.dta
 //quietly: rm data.csv
 quietly: rm .RData
 end
-
