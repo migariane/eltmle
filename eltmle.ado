@@ -34,8 +34,8 @@ program define eltmle
      local dir `c(pwd)'
 	 cd "`dir'"
 	 qui export delimited `var' using "data.csv", nolabel replace 
-	 if "`tmle'" == "" {
-		tmle `varlist'
+	 if "`tmlebgam'" == "" & "`tmleglsrf'" == "" {
+		tmle `varlist'	
 		}
 	 else if "`tmlebgam'" == "tmlebgam" {
 		tmlebgam `varlist'
