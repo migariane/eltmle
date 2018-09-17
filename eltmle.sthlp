@@ -10,7 +10,7 @@
 {title:Syntax}
 
 {p 4 4 2}
-{cmd:eltmle} {hi: Y} {hi: X} {hi: Z} [{cmd:,} {it:tmle} {it:tmlebgam}]
+{cmd:eltmle} {hi: Y} {hi: X} {hi: Z} [{cmd:,} {it:tmle} {it:tmlebgam} {it:tmleglsrf}]
 
 {p 4 4 2}
 where:
@@ -70,11 +70,16 @@ TMLE algorithm plus the super-Learner ensemble learning for the main three machi
 implementation, the Bayes Generalized Linear Models and Generalized Additive Models as Super-Learner algorithms for the tmle estimator.
 {p_end}
 
+{p 4 4 2 120}
+{hi:tmleglsrf}: this option may be specified or unspecified. When specified, it does include in addition to the above default
+implementation, the Lasso (glmnet R package) and Random Forest (randomForest R package) as Super-Learner algorithms for the tmle estimator.
+{p_end}
+
 {title:Example}
 
-***************************************
-* eltmle Y X Z [if] [,tmle tmlebgam] 
-***************************************
+**********************************************
+* eltmle Y X Z [if] [,tmle tmlebgam tmleglsrf] 
+**********************************************
 
 .clear
 .use http://www.stata-press.com/data/r14/cattaneo2.dta
@@ -83,6 +88,10 @@ implementation, the Bayes Generalized Linear Models and Generalized Additive Mod
 .lab var lbw "Low birthweight, <2500 g"
 .save "your path/cattaneo2.dta", replace
 .cd "your path"
+
+******************
+// Binary outcome 
+******************
 
 ******************************************************
 .eltmle lbw mbsmoke mage medu prenatal mmarried, tmle
@@ -93,8 +102,7 @@ implementation, the Bayes Generalized Linear Models and Generalized Additive Mod
         POM1 |      4,642    .1023406    .0401616   .0201151   .3747893
         POM0 |      4,642     .051377    .0251473   .0208754   .1706158
           PS |      4,642    .1861267     .110755   .0372202   .8494988
-
-
+		  
 ________________________________
 TMLE: Average Treatment Effect
 ________________________________
@@ -113,6 +121,10 @@ ________________________________
 
 MOR:     2.11; 95%CI:(1.50,2.72)
 
+**********************
+// Continuous outcome 
+**********************
+
 ***********************************************************
 .eltmle bweight mbsmoke mage medu prenatal mmarried, tmle
 ***********************************************************
@@ -122,22 +134,59 @@ MOR:     2.11; 95%CI:(1.50,2.72)
         POM1 |      4,642    2832.925    74.85617   2579.981   2958.981
         POM0 |      4,642    3062.132    89.56902   2864.008   3166.092
           PS |      4,642    .1861267     .110755   .0372202   .8494988
-
-____________________________
+		  
+_____________________________
 TMLE: Additive Causal Effect
 ____________________________
 
 Risk Differences: -229.21; SE: 0.3413; p-value: 0.0000; 95%CI:(-229.88, -228.54)
+
 ________________________________
 TMLE: Causal Relative Risk (CRR)
 ________________________________
 
 CRR: 0.93; 95%CI:(0.91,0.94)
+
 ________________________________
 TMLE: Marginal Odds Ratio (MOR)
 ________________________________
 
 MOR: 0.83; 95%CI:(0.80,0.87)
+
+***************************************************************
+// Continuous outcome: preserving original dataset and using 
+// more advance machine learning techniques
+***************************************************************
+
+***************************************************************
+.preserve
+.eltmle bweight mbsmoke mage medu prenatal mmarried, tmleglsrf
+.restore
+***************************************************************
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+        POM1 |      4,642    2834.385    74.96674    2582.38   2967.601
+        POM0 |      4,642    3063.005     89.5585   2867.587    3167.28
+          PS |      4,642     .154641    .1111959       .025   .6236143
+		  
+________________________________
+TMLE: Additive Causal Effect
+________________________________
+
+Risk Differences:   -228.62; SE: 0.4193; p-value: 0.0000; 95%CI:(-229.44,-227.80)
+
+________________________________
+TMLE: Causal Relative Risk (CRR)
+________________________________
+
+CRR:     0.93; 95%CI:(0.91,0.94)
+
+________________________________
+TMLE: Marginal Odds Ratio (MOR)
+________________________________
+
+MOR:     0.83; 95%CI:(0.80,0.87)
 
 **********************************************************************************************
 
@@ -168,6 +217,11 @@ at the following path: {hi:"C:\Program Files\R\R-X.X.X\bin\x64\R.exe"} (where X 
 Remember 5: Windows users must have only one version of R software installed on their personal computer
 at the following path: {hi:"C:\Program Files\R\R-X.X.X\bin\x64\R.exe"}. In case more than one different version 
 is located in the above highlighted path users would like to keep the latest.
+{p_end}
+
+{p 4 4 2 120}
+Remember 6: In case you want to preserve the original dataset you can use the 
+preserve restore Stata functionality in combination to the Stata **eltmle** command as shown in the previous example.
 {p_end}
 
 {title:References}

@@ -227,12 +227,14 @@ local ATE  ""Risk Differences:"%10.2f `ATEtmle' "; SE:"%7.4f sqrt(`varICtmle') _
 local line1 disp _dup(32) "_"
 
 if $flag==1 {
+di _newline
 `line1'
 di "TMLE: Average Treatment Effect"
 `line1'
 di `ATE'
 }
 else if $flag!=1{
+di _newline
 `line1'
 di "TMLE: Additive Causal Effect" 
 `line1'
@@ -424,12 +426,14 @@ local ATE  ""Risk Differences:"%10.2f `ATEtmle' "; SE:"%7.4f sqrt(`varICtmle') _
 local line1 disp _dup(32) "_"
 
 if $flag==1 {
+di _newline
 `line1'
 di "TMLE: Average Treatment Effect"
 `line1'
 di `ATE'
 }
 else if $flag!=1{
+di _newline
 `line1'
 di "TMLE: Additive Causal Effect" 
 `line1'
@@ -621,12 +625,14 @@ local ATE  ""Risk Differences:"%10.2f `ATEtmle' "; SE:"%7.4f sqrt(`varICtmle') _
 local line1 disp _dup(32) "_"
 
 if $flag==1 {
+di _newline
 `line1'
 di "TMLE: Average Treatment Effect"
 `line1'
 di `ATE'
 }
 else if $flag!=1{
+di _newline
 `line1'
 di "TMLE: Additive Causal Effect" 
 `line1'
