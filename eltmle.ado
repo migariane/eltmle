@@ -173,8 +173,8 @@ gen double cin = (Y - $a)/($b - $a)
 gen double POM1 = cond($flag == 1, Q1star, Q1star*cin, .)
 gen double POM0 = cond($flag == 1, Q0star, Q0star*cin, .)
 
-gen    PS = ps
-summ   POM1 POM0 PS
+gen   PS = ps
+summ  POM1 POM0 PS
 
 // Estimating the updated targeted ATE binary outcome
 gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star)*cin, .)
@@ -204,10 +204,10 @@ gen IC = d1 - d0
 
 qui sum IC
 local varICtmle = r(Var)/r(N)
-
-local pvalue =  cond($flag != 1, 2*(normalden(abs(`ATEci'/sqrt(`varICtmle' *cin)))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICtmle')))),.)
-local LCIa   =  cond($flag != 1, `ATEci' -1.96*sqrt(`varICtmle' *cin), `ATEtmle' - 1.96*sqrt(`varICtmle'), .)
-local UCIa   =  cond($flag != 1, `ATEci' +1.96*sqrt(`varICtmle' *cin), `ATEtmle' + 1.96*sqrt(`varICtmle'), .)
+local varICitmle = (r(Var)/r(N))*cin
+local pvalue =  cond($flag != 1, 2*(normalden(abs(`ATEci'/sqrt(`varICitmle')))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICtmle')))),.)
+local LCIa   =  cond($flag != 1, `ATEci' -1.96*sqrt(`varICitmle'), `ATEtmle' - 1.96*sqrt(`varICtmle'), .)
+local UCIa   =  cond($flag != 1, `ATEci' +1.96*sqrt(`varICitmle'), `ATEtmle' + 1.96*sqrt(`varICtmle'), .)
 
 
 // Statistical inference RR
@@ -373,8 +373,8 @@ gen double cin = (Y - $a)/($b - $a)
 gen double POM1 = cond($flag == 1, Q1star, Q1star*cin, .)
 gen double POM0 = cond($flag == 1, Q0star, Q0star*cin, .)
 
-gen    PS = ps
-summ   POM1 POM0 PS
+gen  PS = ps
+summ POM1 POM0 PS
 
 // Estimating the updated targeted ATE binary outcome
 gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star)*cin, .)
@@ -404,10 +404,10 @@ gen IC = d1 - d0
 
 qui sum IC
 local varICtmle = r(Var)/r(N)
-
-local pvalue =  cond($flag != 1, 2*(normalden(abs(`ATEci'/sqrt(`varICtmle' * cin)))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICtmle')))),.)
-local LCIa   =  cond($flag != 1, `ATEci' -1.96*sqrt(`varICtmle' *cin), `ATEtmle' - 1.96*sqrt(`varICtmle'), .)
-local UCIa   =  cond($flag != 1, `ATEci' +1.96*sqrt(`varICtmle' *cin), `ATEtmle' + 1.96*sqrt(`varICtmle'), .)
+local varICitmle = (r(Var)/r(N))*cin
+local pvalue =  cond($flag != 1, 2*(normalden(abs(`ATEci'/sqrt(`varICitmle' * cin)))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICtmle')))),.)
+local LCIa   =  cond($flag != 1, `ATEci' -1.96*sqrt(`varICitmle' *cin), `ATEtmle' - 1.96*sqrt(`varICtmle'), .)
+local UCIa   =  cond($flag != 1, `ATEci' +1.96*sqrt(`varICitmle' *cin), `ATEtmle' + 1.96*sqrt(`varICtmle'), .)
 
 // Statistical inference RR
 gen double ICrr = (1/`Q0' * d0) - ((1/`Q1') * d1)
