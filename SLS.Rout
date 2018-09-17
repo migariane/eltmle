@@ -17,6 +17,8 @@ Type 'demo()' for some demos, 'help()' for on-line help, or
 'help.start()' for an HTML browser interface to help.
 Type 'q()' to quit R.
 
+[Previously saved workspace restored]
+
 > set.seed(123)
 > list.of.packages <- c("foreign","SuperLearner")
 > new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -56,4 +58,4 @@ There were 50 or more warnings (use warnings() to see the first 50)
 > 
 > proc.time()
    user  system elapsed 
-  3.469   0.587   4.093 
+  3.838   0.429   4.306 
