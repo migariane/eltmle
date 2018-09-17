@@ -220,7 +220,7 @@ local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
 local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
 // Display Results 
-local ATE  ""Risk Differences:"%10.2f `ATEtmle' "; SE:"%7.4f sqrt(`varICtmle') _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
+local ATE  ""Risk Differences:"%5.3f `ATEtmle' "; SE:"%4.5f sqrt(`varICtmle') _col(1) "; p-value:"%4.5f `pvalue' _col(1)"; 95%CI:("%7.3f `LCIa' ","%7.3f `UCIa' ")""
 local line1 disp _dup(32) "_"
 
 if $flag==1 {
