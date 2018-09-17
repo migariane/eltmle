@@ -38,12 +38,13 @@ THE SOFTWARE.
 * Improved output including potential outcomes and propensity score 
 * Included estimation for continuous outcomes 
 * Included marginal odds ratio
-* Improved estimation of the clever covariate 
-* Included Influence curve (IC) estimation for the OR
-* Improved IC estimation 
+* Improved estimation of the clever covariate for both H1W and H0W
+* Included Influence curve (IC) estimation for the marginal OR
+* Improved IC estimation  
 * Globals changed to locals
 * Just one ado file for both Mac and Windows users
-* Included additive effect for continuous outcomes  
+* Included additive effect for continuous outcomes
+* Improved final display  
 
 capture program drop eltmle
 program define eltmle
@@ -204,10 +205,10 @@ gen IC = d1 - d0
 qui sum IC
 local varICtmle = r(Var)/r(N)
 
-local pvalue = cond($flag == 1, 2*(normalden(abs(`ATEci'/sqrt(`varICtmle')))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICtmle')))),.)
+local pvalue =  cond($flag != 1, 2*(normalden(abs(`ATEci'/sqrt(`varICtmle')))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICtmle')))),.)
+local LCIa   =  cond($flag != 1, `ATEci' -1.96*sqrt(`varICtmle'), `ATEtmle' - 1.96*sqrt(`varICtmle'), .)
+local UCIa   =  cond($flag != 1, `ATEci' +1.96*sqrt(`varICtmle'), `ATEtmle' + 1.96*sqrt(`varICtmle'), .)
 
-local LCIa =  cond($flag == 1, `ATEci' -1.96*sqrt(`varICtmle'), `ATEtmle' - 1.96*sqrt(`varICtmle'), .)
-local UCIa =  cond($flag == 1, `ATEci' +1.96*sqrt(`varICtmle'), `ATEtmle' + 1.96*sqrt(`varICtmle'), .)
 
 // Statistical inference RR
 gen double ICrr = (1/`Q0' * d0) - ((1/`Q1') * d1)
@@ -253,7 +254,7 @@ di _newline
 di "TMLE: Marginal Odds Ratio" _newline
 di `orbin'
 
-drop ATEci ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps Y A eps*
+drop ATEci ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps Y A eps* cim d1 d0
 
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
@@ -262,11 +263,11 @@ label var IC "Variance ATE"
 label var PS "Propensity Score"
 
 // Clean up
-//quietly: rm SLS.R
-//quietly: rm SLS.Rout
-//quietly: rm data2.dta
-//quietly: rm data.csv
-//quietly: rm .RData
+quietly: rm SLS.R
+quietly: rm SLS.Rout
+quietly: rm data2.dta
+quietly: rm data.csv
+quietly: rm .RData
 end
 
 program tmlebgam  
@@ -404,10 +405,9 @@ gen IC = d1 - d0
 qui sum IC
 local varICtmle = r(Var)/r(N)
 
-local pvalue = cond($flag == 1, 2*(normalden(abs(`ATEci'/sqrt(`varICtmle')))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICtmle')))),.)
-
-local LCIa =  cond($flag == 1, `ATEci' -1.96*sqrt(`varICtmle'), `ATEtmle' - 1.96*sqrt(`varICtmle'), .)
-local UCIa =  cond($flag == 1, `ATEci' +1.96*sqrt(`varICtmle'), `ATEtmle' + 1.96*sqrt(`varICtmle'), .)
+local pvalue =  cond($flag != 1, 2*(normalden(abs(`ATEci'/sqrt(`varICtmle')))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICtmle')))),.)
+local LCIa   =  cond($flag != 1, `ATEci' -1.96*sqrt(`varICtmle'), `ATEtmle' - 1.96*sqrt(`varICtmle'), .)
+local UCIa   =  cond($flag != 1, `ATEci' +1.96*sqrt(`varICtmle'), `ATEtmle' + 1.96*sqrt(`varICtmle'), .)
 
 // Statistical inference RR
 gen double ICrr = (1/`Q0' * d0) - ((1/`Q1') * d1)
@@ -453,8 +453,7 @@ di _newline
 di "TMLE: Marginal Odds Ratio" _newline
 di `orbin'
 
-drop ATEci ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps Y A eps*
-
+drop ATEci ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps Y A eps* cim d1 d0
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ATE "Average Treatment Effect"
@@ -462,10 +461,10 @@ label var IC "Variance ATE"
 label var PS "Propensity Score"
 
 // Clean up
-//quietly: rm SLS.R
-//quietly: rm SLS.Rout
-//quietly: rm data2.dta
-//quietly: rm data.csv
-//quietly: rm .RData
+quietly: rm SLS.R
+quietly: rm SLS.Rout
+quietly: rm data2.dta
+quietly: rm data.csv
+quietly: rm .RData
 end
 
