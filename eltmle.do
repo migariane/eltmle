@@ -243,7 +243,6 @@ quietly: rm .RData
 end
 
 program tmlebgam 
- 
 // Write R Code dependencies: foreign Surperlearner 
 set more off
 qui: file close _all
@@ -636,4 +635,3 @@ quietly: rm data2.dta
 //quietly: rm data.csv
 quietly: rm .RData
 end
-
