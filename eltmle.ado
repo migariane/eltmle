@@ -1,4 +1,4 @@
-*! version 2.2.2  11.Sep.2018
+*! version 2.2.2  17.Sep.2018
 *! ELTMLE: Stata module for Ensemble Learning Targeted Maximum Likelihood Estimation
 *! by Miguel Angel Luque-Fernandez [cre,aut]
 *! Bug reports:
@@ -205,9 +205,9 @@ gen IC = d1 - d0
 qui sum IC
 local varICtmle = r(Var)/r(N)
 
-local pvalue =  cond($flag != 1, 2*(normalden(abs(`ATEci'/sqrt(`varICtmle')))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICtmle')))),.)
-local LCIa   =  cond($flag != 1, `ATEci' -1.96*sqrt(`varICtmle'), `ATEtmle' - 1.96*sqrt(`varICtmle'), .)
-local UCIa   =  cond($flag != 1, `ATEci' +1.96*sqrt(`varICtmle'), `ATEtmle' + 1.96*sqrt(`varICtmle'), .)
+local pvalue =  cond($flag != 1, 2*(normalden(abs(`ATEci'/sqrt(`varICtmle' *cin)))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICtmle')))),.)
+local LCIa   =  cond($flag != 1, `ATEci' -1.96*sqrt(`varICtmle' *cin), `ATEtmle' - 1.96*sqrt(`varICtmle'), .)
+local UCIa   =  cond($flag != 1, `ATEci' +1.96*sqrt(`varICtmle' *cin), `ATEtmle' + 1.96*sqrt(`varICtmle'), .)
 
 
 // Statistical inference RR
@@ -234,12 +234,12 @@ local UCIard =  `ATEci' +1.96*sqrt(`varICtmle')
 local bin  ""ATE (Risk Differences):  " %10.4f `ATEtmle' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIa' ","   %7.4f `UCIa' ")""
 local contrd ""Additive Causal effect:" %10.4f `ATEci' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIard' ","  %7.4f `UCIard' ")""
 
-if $flag!=1 {
+if $flag==1 {
 di _newline
 di "TMLE: Average Treatment Effect" _newline
 di `bin'
 }
-else if $flag==1{
+else if $flag!=1{
 di _newline
 di "TMLE: Additive Causal Effect" _newline
 di `contrd'
@@ -254,7 +254,7 @@ di _newline
 di "TMLE: Marginal Odds Ratio" _newline
 di `orbin'
 
-drop ATEci ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps Y A eps* cim d1 d0
+drop ATEci ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps Y A eps* cin d1 d0
 
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
@@ -405,9 +405,9 @@ gen IC = d1 - d0
 qui sum IC
 local varICtmle = r(Var)/r(N)
 
-local pvalue =  cond($flag != 1, 2*(normalden(abs(`ATEci'/sqrt(`varICtmle')))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICtmle')))),.)
-local LCIa   =  cond($flag != 1, `ATEci' -1.96*sqrt(`varICtmle'), `ATEtmle' - 1.96*sqrt(`varICtmle'), .)
-local UCIa   =  cond($flag != 1, `ATEci' +1.96*sqrt(`varICtmle'), `ATEtmle' + 1.96*sqrt(`varICtmle'), .)
+local pvalue =  cond($flag != 1, 2*(normalden(abs(`ATEci'/sqrt(`varICtmle' * cin)))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICtmle')))),.)
+local LCIa   =  cond($flag != 1, `ATEci' -1.96*sqrt(`varICtmle' *cin), `ATEtmle' - 1.96*sqrt(`varICtmle'), .)
+local UCIa   =  cond($flag != 1, `ATEci' +1.96*sqrt(`varICtmle' *cin), `ATEtmle' + 1.96*sqrt(`varICtmle'), .)
 
 // Statistical inference RR
 gen double ICrr = (1/`Q0' * d0) - ((1/`Q1') * d1)
@@ -433,12 +433,12 @@ local UCIard =  `ATEci' +1.96*sqrt(`varICtmle')
 local bin  ""Risk Differences:  " %10.4f `ATEtmle' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIa' ","   %7.4f `UCIa' ")""
 local contrd ""Additive Causal Effect:" %10.4f `ATEci' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIard' ","  %7.4f `UCIard' ")""
 
-if $flag!=1 {
+if $flag==1 {
 di _newline
 di "TMLE: Average Treatment Effect" _newline
 di `bin'
 }
-else if $flag==1{
+else if $flag!=1{
 di _newline
 di "TMLE: Additive Causal Effect" _newline
 di `contrd'
@@ -453,7 +453,7 @@ di _newline
 di "TMLE: Marginal Odds Ratio" _newline
 di `orbin'
 
-drop ATEci ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps Y A eps* cim d1 d0
+drop ATEci ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps Y A eps* cin d1 d0
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ATE "Average Treatment Effect"
