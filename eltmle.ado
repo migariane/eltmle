@@ -221,8 +221,8 @@ local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
 local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
 // IC for Additive Risk differences
-local LCIard =  `ATEci' - 1.96 * sqrt(`varICtmle')
-local UCIard =  `ATEci' + 1.96 * sqrt(`varICtmle')
+local LCIard =  `ATEtmle' - 1.96 * sqrt(`varICitmle')
+local UCIard =  `ATEtmle' + 1.96 * sqrt(`varICitmle')
 
 // Display Results 
 local bin  ""ATE (Risk Differences):  " %10.4f `ATEtmle' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIa' ","   %7.4f `UCIa' ")""
@@ -248,7 +248,7 @@ di _newline
 di "TMLE: Marginal Odds Ratio" _newline
 di `orbin'
 
-drop ATEci ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps Y A eps* cin d1 d0
+drop ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps Y A eps* cin d1 d0
 
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
@@ -415,8 +415,8 @@ local LCIOr =  `ORtmle' - 1.96*sqrt(`varICor')
 local UCIOr =  `ORtmle' + 1.96*sqrt(`varICor')
 
 // IC for Additive Risk differences
-local LCIard =  `ATEci' -1.96*sqrt(`varICtmle')
-local UCIard =  `ATEci' +1.96*sqrt(`varICtmle')
+local LCIard =  `ATEtmle' -1.96*sqrt(`varICitmle')
+local UCIard =  `ATEtmle' +1.96*sqrt(`varICitmle')
 
 // Display Results 
 local bin  ""Risk Differences:  " %10.4f `ATEtmle' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIa' ","   %7.4f `UCIa' ")""
@@ -442,7 +442,7 @@ di _newline
 di "TMLE: Marginal Odds Ratio" _newline
 di `orbin'
 
-drop ATEci ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps Y A eps* cin d1 d0
+drop ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps Y A eps* cin d1 d0
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ATE "Average Treatment Effect"
