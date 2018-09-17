@@ -72,9 +72,9 @@ implementation, the Bayes Generalized Linear Models and Generalized Additive Mod
 
 {title:Example}
 
-*******************************************************
-* eltmle Y X Z [if] [,slaipw slaipwbgam tmle tmlebgam] 
-*******************************************************
+***************************************
+* eltmle Y X Z [if] [,tmle tmlebgam] 
+***************************************
 
 .clear
 .use http://www.stata-press.com/data/r14/cattaneo2.dta
@@ -84,26 +84,34 @@ implementation, the Bayes Generalized Linear Models and Generalized Additive Mod
 .save "your path/cattaneo2.dta", replace
 .cd "your path"
 
-*******************************************************
+******************************************************
 .eltmle lbw mbsmoke mage medu prenatal mmarried, tmle
-*******************************************************
+******************************************************
+
     Variable |        Obs        Mean    Std. Dev.       Min        Max
 -------------+---------------------------------------------------------
         POM1 |      4,642    .1023406    .0401616   .0201151   .3747893
         POM0 |      4,642     .051377    .0251473   .0208754   .1706158
           PS |      4,642    .1861267     .110755   .0372202   .8494988
 
+
+________________________________
 TMLE: Average Treatment Effect
+________________________________
 
-ATE (Risk Differences):     0.0510; SE:   0.01217; p-value: 0.0001; 95%CI:(0.0271, 0.0748)
+Risk Differences: 0.05; SE: 0.0122; p-value: 0.0001; 95%CI:(0.03, 0.07)
 
-TMLE: Causal Relative Risk
+________________________________
+TMLE: Causal Relative Risk (CRR)
+________________________________
 
-RR:   1.9920; 95%CI:(1.5294, 2.5944)
+CRR:     1.99; 95%CI:(1.53,2.59)
 
-TMLE: Marginal Odds Ratio
+________________________________
+TMLE: Marginal Odds Ratio (MOR)
+________________________________
 
-OR:   2.1050; 95%CI:(1.4951, 2.7150)
+MOR:     2.11; 95%CI:(1.50,2.72)
 
 ***********************************************************
 .eltmle bweight mbsmoke mage medu prenatal mmarried, tmle
@@ -111,21 +119,25 @@ OR:   2.1050; 95%CI:(1.4951, 2.7150)
 
     Variable |        Obs        Mean    Std. Dev.       Min        Max
 -------------+---------------------------------------------------------
-        POM1 |      4,642    .5490164     .014507   .4999964    .573446
-        POM0 |      4,642    .5934364    .0173583   .5550403   .6135838
+        POM1 |      4,642    2832.925    74.85617   2579.981   2958.981
+        POM0 |      4,642    3062.132    89.56902   2864.008   3166.092
           PS |      4,642    .1861267     .110755   .0372202   .8494988
 
+____________________________
 TMLE: Additive Causal Effect
+____________________________
 
-Additive Causal effect:   -0.0444; SE:   0.00475; p-value: 0.0000; 95%CI:(-0.0537,-0.0351)
+Risk Differences: -229.21; SE: 0.3413; p-value: 0.0000; 95%CI:(-229.88, -228.54)
+________________________________
+TMLE: Causal Relative Risk (CRR)
+________________________________
 
-TMLE: Causal Relative Risk
+CRR: 0.93; 95%CI:(0.91,0.94)
+________________________________
+TMLE: Marginal Odds Ratio (MOR)
+________________________________
 
-RR:   0.9251; 95%CI:(0.9098, 0.9408)
-
-TMLE: Marginal Odds Ratio
-
-OR:   0.8340; 95%CI:(0.8025, 0.8655)
+MOR: 0.83; 95%CI:(0.80,0.87)
 
 **********************************************************************************************
 
