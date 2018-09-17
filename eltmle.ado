@@ -168,16 +168,16 @@ gen double eps2 = a[1,2]
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
 gen double Q0star = exp(H0W*eps2 + logQ0W)/(1 + exp(H0W*eps2 + logQ0W))
 gen double Q1star = exp(H1W*eps1 + logQ1W)/(1 + exp(H1W*eps1 + logQ1W))
-gen double cin = (Y - $a)/($b - $a)
+gen double cin = ($b - $a)
 
-gen double POM1 = cond($flag == 1, Q1star, Q1star*cin, .)
-gen double POM0 = cond($flag == 1, Q0star, Q0star*cin, .)
+gen double POM1 = cond($flag == 1, Q1star, Q1star * cin, .)
+gen double POM0 = cond($flag == 1, Q0star, Q0star * cin, .)
 
 gen   PS = ps
 summ  POM1 POM0 PS
 
 // Estimating the updated targeted ATE binary outcome
-gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star)*cin, .)
+gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star) * cin, .)
 qui sum ATE
 local ATEtmle = r(mean)
 
@@ -195,14 +195,13 @@ local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
 // Statistical inference ATE 
 gen double d1 = (A * (Y - Q1star) / ps) + Q1star - `Q1'
 gen double d0 = (1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0'
-gen IC = d1 - d0
-
+gen double IC = (d1 - d0)
 qui sum IC
-local varICtmle = r(Var)/r(N)
-local varICitmle = (r(Var)/r(N))*cin
-local pvalue =  cond($flag == 1, 2 * (normalden(abs(`ATEtmle'/sqrt(`varICtmle')))), 2 * (normalden(abs(`ATEtmle'/sqrt(`varICitmle')))),.)
-local LCIa   =  cond($flag == 1, `ATEtmle' - 1.96 * sqrt(`varICtmle'), `ATEtmle' - 1.96 * sqrt(`varICitmle'), .)
-local UCIa   =  cond($flag == 1, `ATEtmle' + 1.96 * sqrt(`varICtmle'), `ATEtmle' + 1.96 * sqrt(`varICitmle'), .)
+local varICtmle = cond($flag == 1, r(Var)/r(N), (r(Var)/r(N)) * cin, .) 
+
+local pvalue =  2 * (normalden(abs(`ATEtmle'/sqrt(`varICtmle'))))
+local LCIa   =  `ATEtmle' - 1.96 * sqrt(`varICtmle')
+local UCIa   =  `ATEtmle' + 1.96 * sqrt(`varICtmle')
 
 // Statistical inference RR
 gen double ICrr = (1/`Q0' * d0) - ((1/`Q1') * d1)
@@ -220,35 +219,43 @@ local varICor = r(Var)/r(N)
 local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
 local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
-// IC for Additive Risk differences
-local LCIard =  `ATEtmle' - 1.96 * sqrt(`varICitmle')
-local UCIard =  `ATEtmle' + 1.96 * sqrt(`varICitmle')
-
 // Display Results 
-local bin  ""ATE (Risk Differences):  " %10.4f `ATEtmle' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIa' ","   %7.4f `UCIa' ")""
-local contrd ""Additive Causal effect:" %10.4f `ATEtmle' _col(5) "; SE:" %10.5f sqrt(`varICitmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIard' ","  %7.4f `UCIard' ")""
+local ATE  ""Risk Differences:"%10.2f `ATEtmle' "; SE:"%7.4f sqrt(`varICtmle') _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
+local line1 disp _dup(32) "_"
 
 if $flag==1 {
 di _newline
-di "TMLE: Average Treatment Effect" _newline
-di `bin'
+`line1'
+di "TMLE: Average Treatment Effect"
+`line1'
+disp _newline
+di `ATE'
 }
 else if $flag!=1{
 di _newline
-di "TMLE: Additive Causal Effect" _newline
-di `contrd'
+`line1'
+di "TMLE: Additive Causal Effect" 
+`line1'
+disp _newline
+di `ATE'
 }
 
-local rrbin ""RR:" %9.4f `RRtmle' _col(5) "; 95%CI:(" %5.4f `LCIrr' "," %7.4f `UCIrr' ")""
-local orbin ""OR:" %9.4f `ORtmle' _col(5) "; 95%CI:(" %5.4f `LCIOr' "," %7.4f `UCIOr' ")""
+local rrbin ""CRR:"%9.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ","%3.2f `UCIrr' ")""
+local orbin ""MOR:"%9.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ","%3.2f `UCIOr' ")""
 di _newline
-di "TMLE: Causal Relative Risk" _newline
+`line1'
+di "TMLE: Causal Relative Risk (CRR)" 
+`line1'
+disp _newline
 di `rrbin'
 di _newline
-di "TMLE: Marginal Odds Ratio" _newline
+`line1'
+di "TMLE: Marginal Odds Ratio (MOR)" 
+`line1'
+disp _newline
 di `orbin'
 
-drop ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps Y A eps* cin d1 d0
+drop ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps cin Y A eps* d1 d0
 
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
@@ -362,13 +369,13 @@ gen double eps2 = a[1,2]
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
 gen double Q0star = exp(H0W*eps2 + logQ0W)/(1 + exp(H0W*eps2 + logQ0W))
 gen double Q1star = exp(H1W*eps1 + logQ1W)/(1 + exp(H1W*eps1 + logQ1W))
-gen double cin = (Y - $a)/($b - $a)
+gen double cin = ($b - $a)
 
 gen double POM1 = cond($flag == 1, Q1star, Q1star * cin, .)
 gen double POM0 = cond($flag == 1, Q0star, Q0star * cin, .)
 
-gen  PS = ps
-summ POM1 POM0 PS
+gen   PS = ps
+summ  POM1 POM0 PS
 
 // Estimating the updated targeted ATE binary outcome
 gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star) * cin, .)
@@ -389,60 +396,68 @@ local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
 // Statistical inference ATE 
 gen double d1 = (A * (Y - Q1star) / ps) + Q1star - `Q1'
 gen double d0 = (1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0'
-gen IC = d1 - d0
-
+gen double IC = (d1 - d0)
 qui sum IC
-local varICtmle = r(Var)/r(N)
-local varICitmle = (r(Var)/r(N))*cin
-local pvalue =  cond($flag == 1, 2*(normalden(abs(`ATEtmle'/sqrt(`varICtmle')))), 2*(normalden(abs(`ATEtmle'/sqrt(`varICitmle')))),.)
-local LCIa   =  cond($flag == 1, `ATEtmle' -1.96*sqrt(`varICtmle'), `ATEtmle' - 1.96*sqrt(`varICitmle'), .)
-local UCIa   =  cond($flag == 1, `ATEtmle' +1.96*sqrt(`varICtmle'), `ATEtmle' + 1.96*sqrt(`varICitmle'), .)
+local varICtmle = cond($flag == 1, r(Var)/r(N), (r(Var)/r(N)) * cin, .) 
+
+local pvalue =  2 * (normalden(abs(`ATEtmle'/sqrt(`varICtmle'))))
+local LCIa   =  `ATEtmle' - 1.96 * sqrt(`varICtmle')
+local UCIa   =  `ATEtmle' + 1.96 * sqrt(`varICtmle')
 
 // Statistical inference RR
 gen double ICrr = (1/`Q0' * d0) - ((1/`Q1') * d1)
 qui sum ICrr
 local varICrr = r(Var)/r(N)
 
-local LCIrr =  exp(`logRRtmle' - 1.96*sqrt(`varICrr'))
-local UCIrr =  exp(`logRRtmle' + 1.96*sqrt(`varICrr'))
+local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
 // Statistical inference OR
 gen double ICor = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0 
 qui sum ICor
 local varICor = r(Var)/r(N)
 
-local LCIOr =  `ORtmle' - 1.96*sqrt(`varICor')
-local UCIOr =  `ORtmle' + 1.96*sqrt(`varICor')
-
-// IC for Additive Risk differences
-local LCIard =  `ATEtmle' -1.96*sqrt(`varICitmle')
-local UCIard =  `ATEtmle' +1.96*sqrt(`varICitmle')
+local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
+local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
 // Display Results 
-local bin  ""Risk Differences:  " %10.4f `ATEtmle' _col(5) "; SE:" %10.5f sqrt(`varICtmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIa' ","   %7.4f `UCIa' ")""
-local contrd ""Additive Causal Effect:" %10.4f `ATEtmle' _col(5) "; SE:" %10.5f sqrt(`varICitmle') _col(5) "; p-value:" %7.4f `pvalue' _col(5) "; 95%CI:("  %5.4f `LCIard' ","  %7.4f `UCIard' ")""
+local ATE  ""Risk Differences:"%10.2f `ATEtmle' "; SE:"%7.4f sqrt(`varICtmle') _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
+local line1 disp _dup(32) "_"
 
 if $flag==1 {
 di _newline
-di "TMLE: Average Treatment Effect" _newline
-di `bin'
+`line1'
+di "TMLE: Average Treatment Effect"
+`line1'
+disp _newline
+di `ATE'
 }
 else if $flag!=1{
 di _newline
-di "TMLE: Additive Causal Effect" _newline
-di `contrd'
+`line1'
+di "TMLE: Additive Causal Effect" 
+`line1'
+disp _newline
+di `ATE'
 }
 
-local rrbin ""RR:" %9.4f `RRtmle' _col(5) "; 95%CI:(" %5.4f `LCIrr' "," %7.4f `UCIrr' ")""
-local orbin ""OR:" %9.4f `ORtmle' _col(5) "; 95%CI:(" %5.4f `LCIOr' "," %7.4f `UCIOr' ")""
+local rrbin ""CRR:"%9.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ","%3.2f `UCIrr' ")""
+local orbin ""MOR:"%9.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ","%3.2f `UCIOr' ")""
 di _newline
-di "TMLE: Causal Relative Risk" _newline
+`line1'
+di "TMLE: Causal Relative Risk (CRR)" 
+`line1'
+disp _newline
 di `rrbin'
 di _newline
-di "TMLE: Marginal Odds Ratio" _newline
+`line1'
+di "TMLE: Marginal Odds Ratio (MOR)" 
+`line1'
+disp _newline
 di `orbin'
 
-drop ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps Y A eps* cin d1 d0
+drop ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps cin Y A eps* d1 d0
+
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ATE "Average Treatment Effect"
@@ -456,4 +471,3 @@ quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm .RData
 end
-
