@@ -20,7 +20,7 @@
 
 capture program drop eltmle
 program define eltmle
-     syntax varlist(min=3) [if] [pw] [, tmle tmlebgam] 
+     syntax varlist(min=3) [if] [pw] [, tmle tmlebgam tmleglsrf] 
 	 version 13.2
 	 marksample touse
 	 local var `varlist' if `touse'
