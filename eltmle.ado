@@ -1,4 +1,4 @@
-*! version 2.2.2  17.Sep.2018
+*! version 2.2.3  15.Oct.2018
 *! ELTMLE: Stata module for Ensemble Learning Targeted Maximum Likelihood Estimation
 *! by Miguel Angel Luque-Fernandez [cre,aut]
 *! Bug reports:
@@ -45,6 +45,7 @@ THE SOFTWARE.
 * Just one ado file for both Mac and Windows users
 * Included additive effect for continuous outcomes
 * Improved the display of the output
+* Fixed ATE 95%CI for additive risk difference 15.10.2018
 
 capture program drop eltmle
 program define eltmle
@@ -168,19 +169,27 @@ mat a= e(b)
 gen double eps1 = a[1,1]
 gen double eps2 = a[1,2]
 
+qui glm Y HAW, fam(binomial) offset(logQAW) robust noconstant
+mat a= e(b)
+gen double eps = a[1,1]
+
+
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
+gen double Qa0star = exp(H0W*eps + logQ0W)/(1 + exp(H0W*eps + logQ0W))
+gen double Qa1star = exp(H1W*eps + logQ1W)/(1 + exp(H1W*eps + logQ1W))
+
 gen double Q0star = exp(H0W*eps2 + logQ0W)/(1 + exp(H0W*eps2 + logQ0W))
 gen double Q1star = exp(H1W*eps1 + logQ1W)/(1 + exp(H1W*eps1 + logQ1W))
 gen double cin = ($b - $a)
 
-gen double POM1 = cond($flag == 1, Q1star, Q1star * cin, .)
-gen double POM0 = cond($flag == 1, Q0star, Q0star * cin, .)
+gen double POM1 = cond($flag == 1, Q1star, Qa1star * cin, .)
+gen double POM0 = cond($flag == 1, Q0star, Qa0star * cin, .)
 
 gen   PS = ps
 summ  POM1 POM0 PS
 
 // Estimating the updated targeted ATE binary outcome
-gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star) * cin, .)
+gen double ATE = cond($flag == 1,(Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
 qui sum ATE
 local ATEtmle = r(mean)
 
@@ -195,19 +204,21 @@ local RRtmle = `Q1'/`Q0'
 local logRRtmle = log(`Q1') - log(`Q0')
 local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
 
-// Statistical inference ATE 
-gen double d1 = (A * (Y - Q1star) / ps) + Q1star - `Q1'
-gen double d0 = (1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0'
-gen double IC = (d1 - d0)
-qui sum IC
-local varICtmle = cond($flag == 1, r(Var)/r(N), (r(Var)/r(N)) * cin, .) 
 
+// Statistical inference (Efficient Influence Curve)
+gen double d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+gen double d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+gen double IC = cond($flag == 1,(d1 - d0),(d1 - d0)* cin, .)
+qui sum IC
+local varICtmle = r(Var)/r(N)
+
+// Statistical inference ATE 
 local pvalue =  2 * (normalden(abs(`ATEtmle'/sqrt(`varICtmle'))))
 local LCIa   =  `ATEtmle' - 1.96 * sqrt(`varICtmle')
 local UCIa   =  `ATEtmle' + 1.96 * sqrt(`varICtmle')
 
 // Statistical inference RR
-gen double ICrr = (1/`Q0' * d0) - ((1/`Q1') * d1)
+gen double ICrr = (1/`Q1' * d1) + ((1/`Q0') * d0)
 qui sum ICrr
 local varICrr = r(Var)/r(N)
 
@@ -224,6 +235,7 @@ local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
 // Display Results 
 local ATE  ""Risk Differences:"%10.2f `ATEtmle' "; SE:"%7.4f sqrt(`varICtmle') _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
+local ATEb  ""Risk Differences:"%10.2f `ATEtmle' "; VAR:"%7.1f `varICtmle' _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
 local line1 disp _dup(32) "_"
 
 if $flag==1 {
@@ -238,7 +250,7 @@ di _newline
 `line1'
 di "TMLE: Additive Causal Effect" 
 `line1'
-di `ATE'
+di `ATEb'
 }
 
 local rrbin ""CRR:"%9.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ","%3.2f `UCIrr' ")""
@@ -367,19 +379,27 @@ mat a= e(b)
 gen double eps1 = a[1,1]
 gen double eps2 = a[1,2]
 
+qui glm Y HAW, fam(binomial) offset(logQAW) robust noconstant
+mat a= e(b)
+gen double eps = a[1,1]
+
+
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
+gen double Qa0star = exp(H0W*eps + logQ0W)/(1 + exp(H0W*eps + logQ0W))
+gen double Qa1star = exp(H1W*eps + logQ1W)/(1 + exp(H1W*eps + logQ1W))
+
 gen double Q0star = exp(H0W*eps2 + logQ0W)/(1 + exp(H0W*eps2 + logQ0W))
 gen double Q1star = exp(H1W*eps1 + logQ1W)/(1 + exp(H1W*eps1 + logQ1W))
 gen double cin = ($b - $a)
 
-gen double POM1 = cond($flag == 1, Q1star, Q1star * cin, .)
-gen double POM0 = cond($flag == 1, Q0star, Q0star * cin, .)
+gen double POM1 = cond($flag == 1, Q1star, Qa1star * cin, .)
+gen double POM0 = cond($flag == 1, Q0star, Qa0star * cin, .)
 
 gen   PS = ps
 summ  POM1 POM0 PS
 
 // Estimating the updated targeted ATE binary outcome
-gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star) * cin, .)
+gen double ATE = cond($flag == 1,(Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
 qui sum ATE
 local ATEtmle = r(mean)
 
@@ -394,19 +414,21 @@ local RRtmle = `Q1'/`Q0'
 local logRRtmle = log(`Q1') - log(`Q0')
 local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
 
-// Statistical inference ATE 
-gen double d1 = (A * (Y - Q1star) / ps) + Q1star - `Q1'
-gen double d0 = (1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0'
-gen double IC = (d1 - d0)
-qui sum IC
-local varICtmle = cond($flag == 1, r(Var)/r(N), (r(Var)/r(N)) * cin, .) 
 
+// Statistical inference (Efficient Influence Curve)
+gen double d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+gen double d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+gen double IC = cond($flag == 1,(d1 - d0),(d1 - d0)* cin, .)
+qui sum IC
+local varICtmle = r(Var)/r(N)
+
+// Statistical inference ATE 
 local pvalue =  2 * (normalden(abs(`ATEtmle'/sqrt(`varICtmle'))))
 local LCIa   =  `ATEtmle' - 1.96 * sqrt(`varICtmle')
 local UCIa   =  `ATEtmle' + 1.96 * sqrt(`varICtmle')
 
 // Statistical inference RR
-gen double ICrr = (1/`Q0' * d0) - ((1/`Q1') * d1)
+gen double ICrr = (1/`Q1' * d1) + ((1/`Q0') * d0)
 qui sum ICrr
 local varICrr = r(Var)/r(N)
 
@@ -423,6 +445,7 @@ local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
 // Display Results 
 local ATE  ""Risk Differences:"%10.2f `ATEtmle' "; SE:"%7.4f sqrt(`varICtmle') _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
+local ATEb  ""Risk Differences:"%10.2f `ATEtmle' "; VAR:"%7.1f `varICtmle' _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
 local line1 disp _dup(32) "_"
 
 if $flag==1 {
@@ -437,7 +460,7 @@ di _newline
 `line1'
 di "TMLE: Additive Causal Effect" 
 `line1'
-di `ATE'
+di `ATEb'
 }
 
 local rrbin ""CRR:"%9.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ","%3.2f `UCIrr' ")""
@@ -566,19 +589,27 @@ mat a= e(b)
 gen double eps1 = a[1,1]
 gen double eps2 = a[1,2]
 
+qui glm Y HAW, fam(binomial) offset(logQAW) robust noconstant
+mat a= e(b)
+gen double eps = a[1,1]
+
+
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
+gen double Qa0star = exp(H0W*eps + logQ0W)/(1 + exp(H0W*eps + logQ0W))
+gen double Qa1star = exp(H1W*eps + logQ1W)/(1 + exp(H1W*eps + logQ1W))
+
 gen double Q0star = exp(H0W*eps2 + logQ0W)/(1 + exp(H0W*eps2 + logQ0W))
 gen double Q1star = exp(H1W*eps1 + logQ1W)/(1 + exp(H1W*eps1 + logQ1W))
 gen double cin = ($b - $a)
 
-gen double POM1 = cond($flag == 1, Q1star, Q1star * cin, .)
-gen double POM0 = cond($flag == 1, Q0star, Q0star * cin, .)
+gen double POM1 = cond($flag == 1, Q1star, Qa1star * cin, .)
+gen double POM0 = cond($flag == 1, Q0star, Qa0star * cin, .)
 
 gen   PS = ps
 summ  POM1 POM0 PS
 
 // Estimating the updated targeted ATE binary outcome
-gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star) * cin, .)
+gen double ATE = cond($flag == 1,(Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
 qui sum ATE
 local ATEtmle = r(mean)
 
@@ -593,19 +624,21 @@ local RRtmle = `Q1'/`Q0'
 local logRRtmle = log(`Q1') - log(`Q0')
 local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
 
-// Statistical inference ATE 
-gen double d1 = (A * (Y - Q1star) / ps) + Q1star - `Q1'
-gen double d0 = (1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0'
-gen double IC = (d1 - d0)
-qui sum IC
-local varICtmle = cond($flag == 1, r(Var)/r(N), (r(Var)/r(N)) * cin, .) 
 
+// Statistical inference (Efficient Influence Curve)
+gen double d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+gen double d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+gen double IC = cond($flag == 1,(d1 - d0),(d1 - d0)* cin, .)
+qui sum IC
+local varICtmle = r(Var)/r(N)
+
+// Statistical inference ATE 
 local pvalue =  2 * (normalden(abs(`ATEtmle'/sqrt(`varICtmle'))))
 local LCIa   =  `ATEtmle' - 1.96 * sqrt(`varICtmle')
 local UCIa   =  `ATEtmle' + 1.96 * sqrt(`varICtmle')
 
 // Statistical inference RR
-gen double ICrr = (1/`Q0' * d0) - ((1/`Q1') * d1)
+gen double ICrr = (1/`Q1' * d1) + ((1/`Q0') * d0)
 qui sum ICrr
 local varICrr = r(Var)/r(N)
 
@@ -622,6 +655,7 @@ local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
 // Display Results 
 local ATE  ""Risk Differences:"%10.2f `ATEtmle' "; SE:"%7.4f sqrt(`varICtmle') _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
+local ATEb  ""Risk Differences:"%10.2f `ATEtmle' "; VAR:"%7.1f `varICtmle' _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
 local line1 disp _dup(32) "_"
 
 if $flag==1 {
@@ -636,7 +670,7 @@ di _newline
 `line1'
 di "TMLE: Additive Causal Effect" 
 `line1'
-di `ATE'
+di `ATEb'
 }
 
 local rrbin ""CRR:"%9.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ","%3.2f `UCIrr' ")""
