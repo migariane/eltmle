@@ -169,19 +169,27 @@ mat a= e(b)
 gen double eps1 = a[1,1]
 gen double eps2 = a[1,2]
 
+qui glm Y HAW, fam(binomial) offset(logQAW) robust noconstant
+mat a= e(b)
+gen double eps = a[1,1]
+
+
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
+gen double Qa0star = exp(H0W*eps + logQ0W)/(1 + exp(H0W*eps + logQ0W))
+gen double Qa1star = exp(H1W*eps + logQ1W)/(1 + exp(H1W*eps + logQ1W))
+
 gen double Q0star = exp(H0W*eps2 + logQ0W)/(1 + exp(H0W*eps2 + logQ0W))
 gen double Q1star = exp(H1W*eps1 + logQ1W)/(1 + exp(H1W*eps1 + logQ1W))
-gen double cin = ($b - $a) * $a
+gen double cin = ($b - $a)
 
-gen double POM1 = cond($flag == 1, Q1star, Q1star * cin, .)
-gen double POM0 = cond($flag == 1, Q0star, Q0star * cin, .)
+gen double POM1 = cond($flag == 1, Q1star, Qa1star * cin, .)
+gen double POM0 = cond($flag == 1, Q0star, Qa0star * cin, .)
 
 gen   PS = ps
 summ  POM1 POM0 PS
 
 // Estimating the updated targeted ATE binary outcome
-gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star) * cin, .)
+gen double ATE = cond($flag == 1,(Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
 qui sum ATE
 local ATEtmle = r(mean)
 
@@ -198,8 +206,8 @@ local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
 
 
 // Statistical inference (Efficient Influence Curve)
-gen double d1 = (A * (Y - Q1star) / ps) + Q1star - `Q1'
-gen double d0 = (1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0'
+gen double d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+gen double d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
 gen double IC = cond($flag == 1,(d1 - d0),(d1 - d0)* cin, .)
 qui sum IC
 local varICtmle = r(Var)/r(N)
@@ -391,7 +399,7 @@ gen   PS = ps
 summ  POM1 POM0 PS
 
 // Estimating the updated targeted ATE binary outcome
-gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star) * cin, .)
+gen double ATE = cond($flag == 1,(Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
 qui sum ATE
 local ATEtmle = r(mean)
 
@@ -601,7 +609,7 @@ gen   PS = ps
 summ  POM1 POM0 PS
 
 // Estimating the updated targeted ATE binary outcome
-gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star) * cin, .)
+gen double ATE = cond($flag == 1,(Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
 qui sum ATE
 local ATEtmle = r(mean)
 
