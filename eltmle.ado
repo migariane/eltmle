@@ -189,7 +189,7 @@ gen   PS = ps
 summ  POM1 POM0 PS
 
 // Estimating the updated targeted ATE binary outcome
-gen double ATE = cond($flag == 1,(Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
+gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star) * cin, .)
 qui sum ATE
 local ATEtmle = r(mean)
 
@@ -399,7 +399,7 @@ gen   PS = ps
 summ  POM1 POM0 PS
 
 // Estimating the updated targeted ATE binary outcome
-gen double ATE = cond($flag == 1,(Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
+gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star) * cin, .)
 qui sum ATE
 local ATEtmle = r(mean)
 
@@ -609,7 +609,7 @@ gen   PS = ps
 summ  POM1 POM0 PS
 
 // Estimating the updated targeted ATE binary outcome
-gen double ATE = cond($flag == 1,(Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
+gen double ATE = cond($flag == 1,(Q1star - Q0star), (Q1star - Q0star) * cin, .)
 qui sum ATE
 local ATEtmle = r(mean)
 
