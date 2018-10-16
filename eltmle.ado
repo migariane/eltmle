@@ -169,11 +169,6 @@ mat a= e(b)
 gen double eps1 = a[1,1]
 gen double eps2 = a[1,2]
 
-qui glm Y HAW, fam(binomial) offset(logQAW) robust noconstant
-mat a= e(b)
-gen double eps = a[1,1]
-
-
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
 gen double Q0star = exp(H0W*eps2 + logQ0W)/(1 + exp(H0W*eps2 + logQ0W))
 gen double Q1star = exp(H1W*eps1 + logQ1W)/(1 + exp(H1W*eps1 + logQ1W))
@@ -203,8 +198,8 @@ local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
 
 
 // Statistical inference (Efficient Influence Curve)
-gen double d1 = (A * (Y - Q1star) / ps) + Q1star - `Q1')
-gen double d0 = (1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0')
+gen double d1 = (A * (Y - Q1star) / ps) + Q1star - `Q1'
+gen double d0 = (1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0'
 gen double IC = cond($flag == 1,(d1 - d0),(d1 - d0)* cin, .)
 qui sum IC
 local varICtmle = r(Var)/r(N)
