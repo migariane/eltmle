@@ -58,6 +58,11 @@ Alternatively, if you have any questions, please e-mail me.
 You can cite this repository as:  
 Luque-Fernandez MA, (2018). Ensemble Targeted Maximum Likelihood Estimation for a Binary Treatment. 
 GitHub repository, https://github.com/migariane/eltmle          
+
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2560828.svg)](https://doi.org/10.5281/zenodo.2560828)
+
+
 Miguel Angel Luque-Fernandez    
 E-mail: miguel-angel.luque at lshtm.ac.uk  
 Twitter @WATZILEI  
