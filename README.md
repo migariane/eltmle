@@ -72,7 +72,7 @@ Email: Rhian.daniel at lshtm.ac.uk
 
 #Acknowledgements  
   
-I would like to thank Professors Bianca De Stavola (LSHTM), Simon Cousens (LSHTM), Aurelio Tobias (CSIC), Michel Coleman (LSHTM) for their comments and support and Haghish E. F. (CMBMI, Freiburg, Germany) for his wonderful **Github** and **MarkDoc** Stata packages.  
+I would like to thank Professors Bianca De Stavola (LSHTM), Simon Cousens (LSHTM), Aurelio Tobias (CSIC), Michel Coleman (LSHTM) for their comments and support and Haghish E. F. (CMBMI, Freiburg, Germany) for his wonderful **Github** and **MarkDoc** Stata packages. 
   
 In case you have updates or changes that you would like to make, please send me a pull request.  
 Alternatively, if you have any questions, please e-mail me.     
@@ -87,4 +87,4 @@ Twitter @WATZILEI
 
 This software is distributed under the GPL-2 license.
 
-
+![Figure Link](https://github.com/migariane/meltmle/blob/master/acknowledgement.png)   
