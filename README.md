@@ -87,4 +87,4 @@ Twitter @WATZILEI
 
 This software is distributed under the GPL-2 license.
 
-![Figure Link](https://github.com/migariane/meltmle/blob/master/acknowledgement.png)   
+![Figure Link](https://github.com/migariane/weltmle/blob/master/acknowledgement.png)   
