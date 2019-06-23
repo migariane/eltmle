@@ -46,36 +46,27 @@ Email: michael.schomaker at uct.ac.za
 Mireille E. Schnitzer, Faculté de pharmacie,     
 Université de Montréal, Montréal, Canada  
 Email: mireille.schnitzer at umontreal.ca   
-
-# Acknowledgements  
-Miguel Angel Luque Fernandez is supported by a Miguel Servet I Investigator Award (grant CP17/00206) from the Carlos III National Institute of Health, Madrid, Spain. 
-
+ 
 # Updates
 In case you have updates or changes that you would like to make, please send me a pull request.  
 Alternatively, if you have any questions, please e-mail me. 
+Miguel Angel Luque-Fernandez    
+E-mail: miguel-angel.luque at lshtm.ac.uk  
+Twitter @WATZILEI  
 
 # Citation    
 You can cite this repository as:  
 Luque-Fernandez MA, (2018). Ensemble Targeted Maximum Likelihood Estimation for a Binary Treatment. 
 GitHub repository, https://github.com/migariane/eltmle          
 
-
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2560828.svg)](https://doi.org/10.5281/zenodo.2560828)
-
-#Acknowledgements  
-  
-I would like to thank Professors Bianca De Stavola (LSHTM), Simon Cousens (LSHTM), Aurelio Tobias (CSIC), Michel Coleman (LSHTM) for their comments and support and Haghish E. F. (CMBMI, Freiburg, Germany) for his wonderful **Github** and **MarkDoc** Stata packages. 
-  
-In case you have updates or changes that you would like to make, please send me a pull request.  
-Alternatively, if you have any questions, please e-mail me.     
-You can cite this repository as:  
-Luque-Fernandez MA, (2017). Ensemble Taregeted Maximum Likelihood Estimation for a Binary Outcome and Treatment. 
-GitHub repository, https://github.com/migariane/weltmle (Windows users) or https://github.com/migariane/meltmle (MAC users)        
-Miguel Angel Luque-Fernandez    
-E-mail: miguel-angel.luque at lshtm.ac.uk  
-Twitter @WATZILEI  
 
 # Copyright
 This software is distributed under the GPL-2 license.
+
+# Acknowledgements  
+Miguel Angel Luque Fernandez is supported by a Miguel Servet I Investigator Award (grant CP17/00206) from the Carlos III National Institute of Health, Madrid, Spain.  
+  
+I would like to thank Professors Bianca De Stavola (LSHTM), Simon Cousens (LSHTM), Aurelio Tobias (CSIC), Michel Coleman (LSHTM) for their comments and support and Haghish E. F. (CMBMI, Freiburg, Germany) for his wonderful **Github** and **MarkDoc** Stata packages. 
 
 ![Figure Link](https://github.com/migariane/eltmle/blob/master/Acknowledgement.png)   
