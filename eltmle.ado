@@ -1,42 +1,77 @@
-*! version 1.5 Ensemble Learning Targeted Maximum Likelihodd by MALUQUE 05.APRIL.2017
-*************************************************************************************
-**MIGUEL ANGEL LUQUE FERNANDEZ
-**TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OUTCOME AND TREATMENT 
-**Improved AIPW with Super Learner (ensemble learning machine learning)
-**Submitted to the IJE December 2016 (under review)
-**IJE-2016-12-1473
-**March 2017 
-**This program requieres R to be installed in your computer (R-3.3)
-*************************************************************************************
+*! version 2.2.3  15.Oct.2018
+*! ELTMLE: Stata module for Ensemble Learning Targeted Maximum Likelihood Estimation
+*! by Miguel Angel Luque-Fernandez [cre,aut]
+*! Bug reports:
+*! miguel-angel.luque at lshtm.ac.uk
+
+/*
+Copyright (c) 2018  <Miguel Angel Luque-Fernandez>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+
+***************************************************************************
+** MIGUEL ANGEL LUQUE FERNANDEZ
+** mluquefe at hsph.havard.edu // miguel-angel.luque at lshtm.ac.uk
+** TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OR CONTINUOUS 
+** OUTCOME AND BINARY TREATMENT FOR MAC and WINDOWS USERS 
+** This program requires R to be installed in your computer
+** September 2018
+****************************************************************************
+
+* Improved the output including potential outcomes and propensity score 
+* Included estimation for continuous outcomes 
+* Included marginal odds ratio
+* Improved estimation of the clever covariate for both H1W and H0W
+* Included Influence curve (IC) estimation for the marginal OR
+* Improved IC estimation  
+* Update globals to locals where possible
+* Just one ado file for both Mac and Windows users
+* Included additive effect for continuous outcomes
+* Improved the display of the output
+* Fixed ATE 95%CI for additive risk difference 15.10.2018
+
 capture program drop eltmle
 program define eltmle
-     syntax [varlist] [if] [pw] [, slaipw slaipwgbm slaipwbgam tmle tmlegbm tmlebgam aipw] 
+     syntax varlist(min=3) [if] [pw] [, tmle tmlebgam tmleglsrf] 
+	 version 13.2
 	 marksample touse
 	 local var `varlist' if `touse'
+	 tokenize `var'
+	 local yvar = "`1'" 
+     global flag = cond(`yvar'<=1,1,0)
+	 qui sum `yvar'
+	 global b = `r(max)'
+	 global a = `r(min)'
+	 qui replace `yvar' = (`yvar' - `r(min)') / (`r(max)' - `r(min)') if `yvar'>1
      local dir `c(pwd)'
 	 cd "`dir'"
-	 export delimited `var' using "data.csv", nolabel replace 
-	 if "`slaipw'" == "" & "`slaipwgbm'" == "" & "`slaipwbgam'" == "" & "`tmlegbm'" == "" & "`tmlebgam'" == "" & "`aipw'" == ""{
-		tmle `varlist'
-	 }
-	 else if "`tmlegbm'" == "tmlegbm" { 
-		tmlegbm `varlist'
-	 }
+	 qui export delimited `var' using "data.csv", nolabel replace 
+	 if "`tmlebgam'" == "" & "`tmleglsrf'" == "" {
+		tmle `varlist'	
+		}
 	 else if "`tmlebgam'" == "tmlebgam" {
 		tmlebgam `varlist'
-	 }
-	 else if "`slaipw'" == "slaipw" { 
-	 slaipw `varlist'
-	 }
-	 else if "`slaipwgbm'" == "slaipwgbm" {
-		slaipwgbm `varlist'
-	 }
-	 else if "`slaipwbgam'" == "slaipwbgam" {
-		slaipwbgam `varlist'
-	 }
-	  else if "`aipw'" == "aipw" {
-		aipw `varlist'
-	 }
+		}
+	 else if "`tmleglsrf'" == "tmleglsrf" {
+		tmleglsrf `varlist'
+		}
 end 
 
 program tmle  
@@ -45,157 +80,73 @@ set more off
 qui: file close _all
 qui: file open rcode using SLS.R, write replace
 qui: file write rcode ///
-	`"set.seed(123)"' _newline ///
-	`"list.of.packages <- c("foreign","SuperLearner")"' _newline ///
-    `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-    `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
-	`"library(SuperLearner)"' _newline ///
-	`"library(foreign)"' _newline ///
-	`"data <- read.csv("data.csv", sep=",")"' _newline ///
-	`"attach(data)"' _newline ///
-	`"SL.library <- c("SL.glm","SL.step","SL.glm.interaction")"' _newline ///
-	`"n <- nrow(data)"' _newline ///
-	`"nvar <- dim(data)[[2]]"' _newline ///
-	`"Y <- data[,1]"' _newline ///
-	`"A <- data[,2]"' _newline ///
-	`"X <- data[,2:nvar]"' _newline ///
-	`"W <- data[,3:nvar]"' _newline ///
-	`"X1 <- X0 <- X"' _newline /// 
-	`"X1[,1] <- 1"' _newline ///
-	`"X0[,1] <- 0"' _newline ///
-	`"newdata <- rbind(X,X1,X0)"' _newline /// 
-	`"Q <- SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method="method.NNLS")"' _newline ///
-	`"Q <- as.data.frame(Q[[4]])"' _newline ///
-	`"QAW <- Q[1:n,]"' _newline ///
-	`"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
-	`"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
-	`"g <- SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS")"' _newline ///
-	`"ps <- g[[4]]"' _newline ///
-	`"ps[ps<0.025] <- 0.025"' _newline ///
-	`"ps[ps>0.975] <- 0.975"' _newline ///
-	`"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-	`"write.dta(data, "data2.dta")"'  
+        `"set.seed(123)"' _newline ///
+        `"list.of.packages <- c("foreign","SuperLearner")"' _newline ///
+        `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
+        `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
+        `"library(SuperLearner)"' _newline ///
+        `"library(foreign)"' _newline ///
+        `"data <- read.csv("data.csv", sep=",")"' _newline ///
+        `"attach(data)"' _newline ///
+        `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction")"' _newline ///
+        `"n <- nrow(data)"' _newline ///
+        `"nvar <- dim(data)[[2]]"' _newline ///
+        `"Y <- data[,1]"' _newline ///
+        `"A <- data[,2]"' _newline ///
+        `"X <- data[,2:nvar]"' _newline ///
+        `"W <- data[,3:nvar]"' _newline ///
+        `"X1 <- X0 <- X"' _newline /// 
+        `"X1[,1] <- 1"' _newline ///
+        `"X0[,1] <- 0"' _newline ///
+        `"newdata <- rbind(X,X1,X0)"' _newline /// 
+        `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
+        `"Q <- as.data.frame(Q[[4]])"' _newline ///
+        `"QAW <- Q[1:n,]"' _newline ///
+        `"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
+        `"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
+        `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"))"' _newline ///
+        `"ps <- g[[4]]"' _newline ///
+        `"ps[ps<0.025] <- 0.025"' _newline ///
+        `"ps[ps>0.975] <- 0.975"' _newline ///
+        `"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+        `"write.dta(data, "data2.dta")"'  
 qui: file close rcode
- 
+
+if "`c(os)'" == "MacOSX" {
 // Run R (you have to specify the path of your R executable file)
-forval i = 1/10 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-3.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
+//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
+shell "/usr/local/bin/r" CMD BATCH SLS.R 
 }
-
-// Read Revised Data Back to Stata
-clear
-quietly: use "data2.dta", clear
-
-// Q to logit scale
-gen logQAW = log(QAW/(1 - QAW))
-gen logQ1W = log(Q1W/(1 - Q1W))
-gen logQ0W = log(Q0W/(1 - Q0W))
-
-// Clever covariate HAW
-gen double HAW = (A/ps) - ((1 - A)/(1 - ps))
-gen double H1W = 1/ps
-gen double H0W = -1/(1 - ps)
-
-// Estimation of the substitution parameter (Epsilon)
-qui: glm Y HAW, fam(binomial) offset(logQAW) noconstant
-mat a= e(b)
-gen epsilon = a[1,1]
-
-// Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
-gen double  Qstar = exp(HAW*epsilon + logQAW)/(1 + exp(HAW*epsilon + logQAW))
-gen double Q0star = exp(H0W*epsilon + logQ0W)/(1 + exp(H0W*epsilon + logQ0W))
-gen double Q1star = exp(H1W*epsilon + logQ1W)/(1 + exp(H1W*epsilon + logQ1W))
-summ Q1star Q0star ps
-
-// Estimating the updated targeted ATE 
-gen double ATE = (Q1star - Q0star)
-qui: sum ATE
-global ATEtmle = r(mean)
-
-qui: sum Q1star
-global Q1 = r(mean)
-qui: sum Q0star
-global Q0 = r(mean)
-global RRtmle = $Q1/$Q0
-
-// Statistical inference ATE and RR
-// ATE
-gen double IC = (HAW*(Y - QAW)) + (Q1W - Q0W) - $ATEtmle
-qui: sum IC
-global var = r(Var)
-qui: count
-global n = r(N)
-global varICtmle = $var/$n
-global pvalue = 2*(normalden(abs($ATEtmle/sqrt($varICtmle))))
-global LCIa =  $ATEtmle -1.96*sqrt($varICtmle)
-global UCIa =  $ATEtmle +1.96*sqrt($varICtmle)
-
-// RR
-global LCIr =  exp(log($RRtmle) -1.96*sqrt(($varICtmle)/log($RRtmle)))
-global UCIr =  exp(log($RRtmle) +1.96*sqrt(($varICtmle)/log($RRtmle)))
-
-di _newline
-di "TMLE: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEtmle _col(5) "; SE:" %5.4f sqrt($varICtmle) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
-
-di _newline
-di "TMLE: Relative Risk" _newline 
-di "RR:" %9.4f $RRtmle _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
-
-// Clean up
-quietly: rm SLS.R
-//quietly: rm SLS.Rout
-quietly: rm data2.dta
-quietly: rm data.csv
-end
-
-///////////////////////////////////////
-
-program tmlegbm 
-// Write R Code dependencies: foreign Surperlearner 
+else{
+// Write bacth file to find R.exe path and R version
 set more off
 qui: file close _all
-qui: file open rcode using SLS.R, write replace
-qui: file write rcode ///
-	`"set.seed(123)"' _newline ///
-	`"list.of.packages <- c("foreign","SuperLearner")"' _newline ///
-    `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-    `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
-	`"library(SuperLearner)"' _newline ///
-	`"library(foreign)"' _newline ///
-	`"data <- read.csv("data.csv", sep=",")"' _newline ///
-	`"attach(data)"' _newline ///
-	`"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gbm")"' _newline ///
-	`"n <- nrow(data)"' _newline ///
-	`"nvar <- dim(data)[[2]]"' _newline ///
-	`"Y <- data[,1]"' _newline ///
-	`"A <- data[,2]"' _newline ///
-	`"X <- data[,2:nvar]"' _newline ///
-	`"W <- data[,3:nvar]"' _newline ///
-	`"X1 <- X0 <- X"' _newline /// 
-	`"X1[,1] <- 1"' _newline ///
-	`"X0[,1] <- 0"' _newline ///
-	`"newdata <- rbind(X,X1,X0)"' _newline /// 
-	`"Q <- SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method="method.NNLS")"' _newline ///
-	`"Q <- as.data.frame(Q[[4]])"' _newline ///
-	`"QAW <- Q[1:n,]"' _newline ///
-	`"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
-	`"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
-	`"g <- SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS")"' _newline ///
-	`"ps <- g[[4]]"' _newline ///
-	`"ps[ps<0.025] <- 0.025"' _newline ///
-	`"ps[ps>0.975] <- 0.975"' _newline ///
-	`"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-	`"write.dta(data, "data2.dta")"'  
-qui: file close rcode
- 
-// Run R (you have to specify the path of your R executable file)
-forval i = 1/10 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-3.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
+qui: file open bat using setup.bat, write replace
+qui: file write bat ///
+`"@echo off"' _newline ///
+`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+`"echo Locating path of R..."' _newline ///
+`"echo."' _newline ///
+`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
+        `"echo Found %%r"' _newline ///
+        `"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
+        `"echo All set!"' _newline ///  
+        `"goto:DONE"' _newline ///
+`")"' _newline ///
+`":NO_R"' _newline ///
+`"echo R is not installed in your system."' _newline ///
+`"echo."' _newline ///
+`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+`"echo Install it and re-run this script"' _newline ///
+`":DONE"' _newline ///
+`"echo."' _newline ///
+`"pause"'
+qui: file close bat
+//Run batch
+shell setup.bat 
+//Run R 
+do runr.do
 }
 
 // Read Revised Data Back to Stata
@@ -203,69 +154,135 @@ clear
 quietly: use "data2.dta", clear
 
 // Q to logit scale
-gen logQAW = log(QAW/(1 - QAW))
-gen logQ1W = log(Q1W/(1 - Q1W))
-gen logQ0W = log(Q0W/(1 - Q0W))
-
+gen double logQAW = log(QAW / (1 - QAW))
+gen double logQ1W = log(Q1W / (1 - Q1W))
+gen double logQ0W = log(Q0W / (1 - Q0W))
+ 
 // Clever covariate HAW
-gen double HAW = (A/ps) - ((1 - A)/(1 - ps))
-gen double H1W = 1/ps
-gen double H0W = -1/(1 - ps)
+gen double HAW = (A / ps) - ((1 - A) / (1 - ps))
+gen double H1W = A / ps
+gen double H0W = (1 - A) / (1 - ps)
 
 // Estimation of the substitution parameter (Epsilon)
-qui: glm Y HAW, fam(binomial) offset(logQAW) noconstant
+qui glm Y H1W H0W, fam(binomial) offset(logQAW) robust noconstant
 mat a= e(b)
-gen epsilon = a[1,1]
+gen double eps1 = a[1,1]
+gen double eps2 = a[1,2]
+
+qui glm Y HAW, fam(binomial) offset(logQAW) robust noconstant
+mat a= e(b)
+gen double eps = a[1,1]
+
 
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
-gen double  Qstar = exp(HAW*epsilon + logQAW)/(1 + exp(HAW*epsilon + logQAW))
-gen double Q0star = exp(H0W*epsilon + logQ0W)/(1 + exp(H0W*epsilon + logQ0W))
-gen double Q1star = exp(H1W*epsilon + logQ1W)/(1 + exp(H1W*epsilon + logQ1W))
-summ Q1star Q0star ps
+gen double Qa0star = exp(H0W*eps + logQ0W)/(1 + exp(H0W*eps + logQ0W))
+gen double Qa1star = exp(H1W*eps + logQ1W)/(1 + exp(H1W*eps + logQ1W))
 
-// Estimating the updated targeted ATE 
-gen double ATE = (Q1star - Q0star)
-qui: sum ATE
-global ATEtmlegbm = r(mean)
+gen double Q0star = exp(H0W*eps2 + logQ0W)/(1 + exp(H0W*eps2 + logQ0W))
+gen double Q1star = exp(H1W*eps1 + logQ1W)/(1 + exp(H1W*eps1 + logQ1W))
+gen double cin = ($b - $a)
 
-qui: sum Q1star
-global Q1 = r(mean)
-qui: sum Q0star
-global Q0 = r(mean)
-global RRtmlegbm = $Q1/$Q0
+gen double POM1 = cond($flag == 1, Q1star, Qa1star * cin, .)
+gen double POM0 = cond($flag == 1, Q0star, Qa0star * cin, .)
 
-// Statistical inference ATE and RR
+gen   PS = ps
+summ  POM1 POM0 PS
 
-// ATE
-gen double IC = (HAW*(Y - QAW)) + (Q1W - Q0W) - $ATEtmlegbm
-qui: sum IC
-global var = r(Var)
-qui: count
-global n = r(N)
-global varICtmlegbm = $var/$n
-global pvalue = 2*(normalden(abs($ATEtmlegbm/sqrt($varICtmlegbm))))
-global LCIa =  $ATEtmlegbm -1.96*sqrt($varICtmlegbm)
-global UCIa =  $ATEtmlegbm +1.96*sqrt($varICtmlegbm)
+// Estimating the updated targeted ATE binary outcome
+gen double ATE = cond($flag == 1,(Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
+qui sum ATE
+local ATEtmle = r(mean)
 
-// RR
-global LCIr =  exp(log($RRtmlegbm) -1.96*sqrt(($varICtmlegbm)/log($RRtmlegbm)))
-global UCIr =  exp(log($RRtmlegbm) +1.96*sqrt(($varICtmlegbm)/log($RRtmlegbm)))
+// Relative risk
+qui sum Q1star
+local Q1 = r(mean)
+qui sum Q0star
+local Q0 = r(mean)
+
+// Relative risk and Odds ratio 
+local RRtmle = `Q1'/`Q0'
+local logRRtmle = log(`Q1') - log(`Q0')
+local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+
+
+// Statistical inference (Efficient Influence Curve)
+gen double d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+gen double d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+gen double IC = cond($flag == 1,(d1 - d0),(d1 - d0)* cin, .)
+qui sum IC
+local varICtmle = r(Var)/r(N)
+
+// Statistical inference ATE 
+local pvalue =  2 * (normalden(abs(`ATEtmle'/sqrt(`varICtmle'))))
+local LCIa   =  `ATEtmle' - 1.96 * sqrt(`varICtmle')
+local UCIa   =  `ATEtmle' + 1.96 * sqrt(`varICtmle')
+
+// Statistical inference RR
+gen double ICrr = (1/`Q1' * d1) + ((1/`Q0') * d0)
+qui sum ICrr
+local varICrr = r(Var)/r(N)
+
+local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
+
+// Statistical inference OR
+gen double ICor = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0 
+qui sum ICor
+local varICor = r(Var)/r(N)
+
+local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
+local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
+
+// Display Results 
+local ATE  ""Risk Differences:"%10.2f `ATEtmle' "; SE:"%7.4f sqrt(`varICtmle') _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
+local ATEb  ""Risk Differences:"%10.2f `ATEtmle' "; VAR:"%7.1f `varICtmle' _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
+local line1 disp _dup(32) "_"
+
+if $flag==1 {
+di _newline
+`line1'
+di "TMLE: Average Treatment Effect"
+`line1'
+di `ATE'
+}
+else if $flag!=1{
+di _newline
+`line1'
+di "TMLE: Additive Causal Effect" 
+`line1'
+di `ATEb'
+}
+
+local rrbin ""CRR:"%9.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ","%3.2f `UCIrr' ")""
+local orbin ""MOR:"%9.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ","%3.2f `UCIOr' ")""
 
 di _newline
-di "TMLE + GBM: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEtmlegbm _col(5) "; SE:" %5.4f sqrt($varICtmlegbm) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
+`line1'
+di "TMLE: Causal Risk Ratio (CRR)" 
+`line1'
+di `rrbin'
 
 di _newline
-di "TMLE + GBM: Relative Risk" _newline 
-di "RR:" %9.4f $RRtmlegbm _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
+`line1'
+di "TMLE: Marginal Odds Ratio (MOR)" 
+`line1'
+di `orbin'
+
+drop ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps cin Y A eps* d1 d0
+
+label var POM1 "Potential Outcome Y(1)"
+label var POM0 "Potential Otucome Y(0)"
+label var ATE "Average Treatment Effect"
+label var IC "Variance ATE"
+label var PS "Propensity Score"
 
 // Clean up
 quietly: rm SLS.R
-//quietly: rm SLS.Rout
+quietly: rm SLS.Rout
 quietly: rm data2.dta
-quietly: rm data.csv
+//quietly: rm data.csv
+quietly: rm .RData
 end
-///////////////////////////////////////
 
 program tmlebgam 
 // Write R Code dependencies: foreign Surperlearner 
@@ -273,44 +290,73 @@ set more off
 qui: file close _all
 qui: file open rcode using SLS.R, write replace
 qui: file write rcode ///
-	`"set.seed(123)"' _newline ///
-	`"list.of.packages <- c("foreign","SuperLearner","gam")"' _newline ///
-    `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-    `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
-	`"library(SuperLearner)"' _newline ///
-	`"library(foreign)"' _newline ///
-	`"library(gam)"' _newline ///
-	`"data <- read.csv("data.csv", sep=",")"' _newline ///
-	`"attach(data)"' _newline ///
-	`"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.bayesglm")"' _newline ///
-	`"n <- nrow(data)"' _newline ///
-	`"nvar <- dim(data)[[2]]"' _newline ///
-	`"Y <- data[,1]"' _newline ///
-	`"A <- data[,2]"' _newline ///
-	`"X <- data[,2:nvar]"' _newline ///
-	`"W <- data[,3:nvar]"' _newline ///
-	`"X1 <- X0 <- X"' _newline /// 
-	`"X1[,1] <- 1"' _newline ///
-	`"X0[,1] <- 0"' _newline ///
-	`"newdata <- rbind(X,X1,X0)"' _newline /// 
-	`"Q <- SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method= "method.NNLS")"' _newline ///
-	`"Q <- as.data.frame(Q[[4]])"' _newline ///
-	`"QAW <- Q[1:n,]"' _newline ///
-	`"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
-	`"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
-	`"g <- SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS")"' _newline ///
-	`"ps <- g[[4]]"' _newline ///
-	`"ps[ps<0.025] <- 0.025"' _newline ///
-	`"ps[ps>0.975] <- 0.975"' _newline ///
-	`"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-	`"write.dta(data, "data2.dta")"'  
+        `"set.seed(123)"' _newline ///
+        `"list.of.packages <- c("foreign","SuperLearner","gam","arm")"' _newline ///
+        `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
+        `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
+        `"library(SuperLearner)"' _newline ///
+        `"library(foreign)"' _newline ///
+        `"data <- read.csv("data.csv", sep=",")"' _newline ///
+        `"attach(data)"' _newline ///
+        `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.bayesglm")"' _newline ///
+        `"n <- nrow(data)"' _newline ///
+        `"nvar <- dim(data)[[2]]"' _newline ///
+        `"Y <- data[,1]"' _newline ///
+        `"A <- data[,2]"' _newline ///
+        `"X <- data[,2:nvar]"' _newline ///
+        `"W <- data[,3:nvar]"' _newline ///
+        `"X1 <- X0 <- X"' _newline /// 
+        `"X1[,1] <- 1"' _newline ///
+        `"X0[,1] <- 0"' _newline ///
+        `"newdata <- rbind(X,X1,X0)"' _newline /// 
+        `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
+        `"Q <- as.data.frame(Q[[4]])"' _newline ///
+        `"QAW <- Q[1:n,]"' _newline ///
+        `"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
+        `"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
+        `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"))"' _newline ///
+        `"ps <- g[[4]]"' _newline ///
+        `"ps[ps<0.025] <- 0.025"' _newline ///
+        `"ps[ps>0.975] <- 0.975"' _newline ///
+        `"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+        `"write.dta(data, "data2.dta")"'  
 qui: file close rcode
- 
+
+if "`c(os)'" == "MacOSX" {
 // Run R (you have to specify the path of your R executable file)
-forval i = 1/10 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-3.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
+//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
+shell "/usr/local/bin/r" CMD BATCH SLS.R 
+}
+else{
+// Write bacth file to find R.exe path and R version
+set more off
+qui: file close _all
+qui: file open bat using setup.bat, write replace
+qui: file write bat ///
+`"@echo off"' _newline ///
+`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+`"echo Locating path of R..."' _newline ///
+`"echo."' _newline ///
+`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
+        `"echo Found %%r"' _newline ///
+        `"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
+        `"echo All set!"' _newline ///  
+        `"goto:DONE"' _newline ///
+`")"' _newline ///
+`":NO_R"' _newline ///
+`"echo R is not installed in your system."' _newline ///
+`"echo."' _newline ///
+`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+`"echo Install it and re-run this script"' _newline ///
+`":DONE"' _newline ///
+`"echo."' _newline ///
+`"pause"'
+qui: file close bat
+//Run batch
+shell setup.bat 
+//Run R 
+do runr.do
 }
 
 // Read Revised Data Back to Stata
@@ -318,481 +364,342 @@ clear
 quietly: use "data2.dta", clear
 
 // Q to logit scale
-gen logQAW = log(QAW/(1 - QAW))
-gen logQ1W = log(Q1W/(1 - Q1W))
-gen logQ0W = log(Q0W/(1 - Q0W))
-
+gen double logQAW = log(QAW / (1 - QAW))
+gen double logQ1W = log(Q1W / (1 - Q1W))
+gen double logQ0W = log(Q0W / (1 - Q0W))
+ 
 // Clever covariate HAW
-gen double HAW = (A/ps) - ((1 - A)/(1 - ps))
-gen double H1W = 1/ps
-gen double H0W = -1/(1 - ps)
+gen double HAW = (A / ps) - ((1 - A) / (1 - ps))
+gen double H1W = A / ps
+gen double H0W = (1 - A) / (1 - ps)
 
 // Estimation of the substitution parameter (Epsilon)
-qui: glm Y HAW, fam(binomial) offset(logQAW) noconstant
+qui glm Y H1W H0W, fam(binomial) offset(logQAW) robust noconstant
 mat a= e(b)
-gen epsilon = a[1,1]
+gen double eps1 = a[1,1]
+gen double eps2 = a[1,2]
+
+qui glm Y HAW, fam(binomial) offset(logQAW) robust noconstant
+mat a= e(b)
+gen double eps = a[1,1]
+
 
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
-gen double  Qstar = exp(HAW*epsilon + logQAW)/(1 + exp(HAW*epsilon + logQAW))
-gen double Q0star = exp(H0W*epsilon + logQ0W)/(1 + exp(H0W*epsilon + logQ0W))
-gen double Q1star = exp(H1W*epsilon + logQ1W)/(1 + exp(H1W*epsilon + logQ1W))
-summ Q1star Q0star ps
+gen double Qa0star = exp(H0W*eps + logQ0W)/(1 + exp(H0W*eps + logQ0W))
+gen double Qa1star = exp(H1W*eps + logQ1W)/(1 + exp(H1W*eps + logQ1W))
 
-// Estimating the updated targeted ATE 
-gen double ATE = (Q1star - Q0star)
-qui: sum ATE
-global ATEtmlebg = r(mean)
+gen double Q0star = exp(H0W*eps2 + logQ0W)/(1 + exp(H0W*eps2 + logQ0W))
+gen double Q1star = exp(H1W*eps1 + logQ1W)/(1 + exp(H1W*eps1 + logQ1W))
+gen double cin = ($b - $a)
 
-qui: sum Q1star
-global Q1 = r(mean)
-qui: sum Q0star
-global Q0 = r(mean)
-global RRtmlebg = $Q1/$Q0
+gen double POM1 = cond($flag == 1, Q1star, Qa1star * cin, .)
+gen double POM0 = cond($flag == 1, Q0star, Qa0star * cin, .)
 
-// Statistical inference ATE and RR
-// ATE
-gen double IC = (HAW*(Y - QAW)) + (Q1W - Q0W) - $ATEtmlebg
-qui: sum IC
-global var = r(Var)
-qui: count
-global n = r(N)
-global varICtmlebg = $var/$n
-global pvalue = 2*(normalden(abs($ATEtmlebg/sqrt($varICtmlebg))))
-global LCIa =  $ATEtmlebg -1.96*sqrt($varICtmlebg)
-global UCIa =  $ATEtmlebg +1.96*sqrt($varICtmlebg)
+gen   PS = ps
+summ  POM1 POM0 PS
 
-// RR
-global LCIr =  exp(log($RRtmlebg) -1.96*sqrt(($varICtmlebg)/log($RRtmlebg)))
-global UCIr =  exp(log($RRtmlebg) +1.96*sqrt(($varICtmlebg)/log($RRtmlebg)))
+// Estimating the updated targeted ATE binary outcome
+gen double ATE = cond($flag == 1,(Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
+qui sum ATE
+local ATEtmle = r(mean)
 
-di _newline
-di "TMLE + Bayes GLM and GAM: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEtmlebg _col(5) "; SE:" %5.4f sqrt($varICtmlebg) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
+// Relative risk
+qui sum Q1star
+local Q1 = r(mean)
+qui sum Q0star
+local Q0 = r(mean)
 
-di _newline
-di "TMLE + Bayes GLM and GAM: Relative Risk" _newline 
-di "RR:" %9.4f $RRtmlebg _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
+// Relative risk and Odds ratio 
+local RRtmle = `Q1'/`Q0'
+local logRRtmle = log(`Q1') - log(`Q0')
+local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
 
-// Clean up
-quietly: rm SLS.R
-//quietly: rm SLS.Rout
-quietly: rm data2.dta
-quietly: rm data.csv
-end
 
-////////////////////////////////////
-
-program slaipw
-// Write R Code dependencies: foreign Surperlearner 
-set more off
-qui: file close _all
-qui: file open rcode using SLS.R, write replace
-qui: file write rcode ///
-	`"set.seed(123)"' _newline ///
-	`"list.of.packages <- c("foreign","SuperLearner")"' _newline ///
-    `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-    `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
-	`"library(SuperLearner)"' _newline ///
-	`"library(foreign)"' _newline ///
-	`"data <- read.csv("data.csv", sep=",")"' _newline ///
-	`"attach(data)"' _newline ///
-	`"SL.library <- c("SL.glm","SL.step", "SL.glm.interaction")"' _newline ///
-	`"n <- nrow(data)"' _newline ///
-	`"nvar <- dim(data)[[2]]"' _newline ///
-	`"Y <- data[,1]"' _newline ///
-	`"A <- data[,2]"' _newline ///
-	`"X <- data[,2:nvar]"' _newline ///
-	`"W <- data[,3:nvar]"' _newline ///
-	`"X1 <- X0 <- X"' _newline /// 
-	`"X1[,1] <- 1"' _newline ///
-	`"X0[,1] <- 0"' _newline ///
-	`"newdata <- rbind(X,X1,X0)"' _newline /// 
-	`"Q <- SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method="method.NNLS")"' _newline ///
-	`"Q <- as.data.frame(Q[[4]])"' _newline ///
-	`"QAW <- Q[1:n,]"' _newline ///
-	`"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
-	`"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
-	`"g <- SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS")"' _newline ///
-	`"ps <- g[[4]]"'  _newline ///
-	`"ps[ps<0.025] <- 0.025"' _newline ///
-	`"ps[ps>0.975] <- 0.975"' _newline ///
-	`"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-	`"write.dta(data, "data2.dta")"'  
-qui: file close rcode
- 
-// Run R (you have to specify the path of your R executable file)
-forval i = 1/10 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-3.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
-}
-
-// Read Revised Data Back to Stata
-clear
-quietly: use "data2.dta", clear
-
-// IPTW
-gen double HAW = (A/ps) - ((1 - A)/(1 - ps))
-gen double H1W =  1/ps
-gen double H0W =  -1/(1 - ps)
-
-// AIPTW 
-gen double ATE = HAW*(Y - QAW) + (Q1W - Q0W)
-qui: sum ATE
-global ATEslaipw = r(mean)
-
-// Statistical inference ATE
-
-// ATE
-gen double IC = (HAW*(Y - QAW)) + (Q1W - Q0W) - $ATEslaipw
-qui: sum IC
-global var = r(Var)
-qui: count
-global n = r(N)
-global varICslaipw = $var/$n
-global pvalue = 2*(normalden(abs($ATEslaipw/sqrt($varICslaipw))))
-global LCIa =  $ATEslaipw -1.96*sqrt($varICslaipw)
-global UCIa =  $ATEslaipw +1.96*sqrt($varICslaipw)
-
-// Augemented Q
-gen double aQ1W = Q1W+(H1W*(Y-QAW))
-gen double aQ0W = Q0W+(H0W*(Y-QAW))
-sum aQ1W aQ0W ps
-
-// RR
-qui: sum aQ1W
-global Q1 = r(mean)
-qui: sum aQ0W
-global Q0 = r(mean)
-global RRslaipw = $Q1/$Q0
-
-// RR
-global LCIr =  exp(log($RRslaipw) -1.96*sqrt(($varICslaipw)/log($RRslaipw)))
-global UCIr =  exp(log($RRslaipw) +1.96*sqrt(($varICslaipw)/log($RRslaipw)))
-
-di _newline
-di "AIPW ensemble learning: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEslaipw _col(5) "; SE:" %5.4f sqrt($varICslaipw) _col(5) "; p-value:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
-
-di _newline
-di "AIPW ensemble learning: Relative Risk" _newline 
-di "RR:" %9.4f $RRslaipw _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
-
-// Clean up
-quietly: rm SLS.R
-//quietly: rm SLS.Rout
-quietly: rm data2.dta
-quietly: rm data.csv
-end
-
-///////////////////////
-
-program slaipwgbm
-// Write R Code dependencies: foreign Surperlearner 
-set more off
-qui: file close _all
-qui: file open rcode using SLS.R, write replace
-qui: file write rcode ///
-	`"set.seed(123)"' _newline ///
-	`"list.of.packages <- c("foreign","SuperLearner")"' _newline ///
-    `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-    `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
-	`"library(SuperLearner)"' _newline ///
-	`"library(foreign)"' _newline ///
-	`"data <- read.csv("data.csv", sep=",")"' _newline ///
-	`"attach(data)"' _newline ///
-	`"SL.library <- c("SL.glm","SL.step", "SL.glm.interaction","SL.gbm")"' _newline ///
-	`"n <- nrow(data)"' _newline ///
-	`"nvar <- dim(data)[[2]]"' _newline ///
-	`"Y <- data[,1]"' _newline ///
-	`"A <- data[,2]"' _newline ///
-	`"X <- data[,2:nvar]"' _newline ///
-	`"W <- data[,3:nvar]"' _newline ///
-	`"X1 <- X0 <- X"' _newline /// 
-	`"X1[,1] <- 1"' _newline ///
-	`"X0[,1] <- 0"' _newline ///
-	`"newdata <- rbind(X,X1,X0)"' _newline /// 
-	`"Q <- SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = binomial(), newX=newdata, method="method.NNLS")"' _newline ///
-	`"Q <- as.data.frame(Q[[4]])"' _newline ///
-	`"QAW <- Q[1:n,]"' _newline ///
-	`"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
-	`"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
-	`"g <- SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS")"' _newline ///
-	`"ps <- g[[4]]"'  _newline ///
-	`"ps[ps<0.025] <- 0.025"' _newline ///
-	`"ps[ps>0.975] <- 0.975"' _newline ///
-	`"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-	`"write.dta(data, "data2.dta")"'  
-qui: file close rcode
- 
-// Run R (you have to specify the path of your R executable file)
-forval i = 1/10 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-3.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
-}
-
-// Read Revised Data Back to Stata
-clear
-quietly: use "data2.dta", clear
-
-// IPTW
-gen double HAW = (A/ps) - ((1 - A)/(1 - ps))
-gen double H1W =  1/ps
-gen double H0W =  -1/(1 - ps)
-
-// AIPTW 
-gen double ATE = HAW*(Y - QAW) + (Q1W - Q0W)
-qui: sum ATE
-global ATEslaipwgbm = r(mean)
-
-// Augmented Q
-gen double aQ1W = Q1W+(H1W*(Y-QAW))
-gen double aQ0W = Q0W+(H0W*(Y-QAW))
-sum aQ1W aQ0W ps
-
-// RR
-qui: sum aQ1W
-global Q1 = r(mean)
-qui: sum aQ0W
-global Q0 = r(mean)
-global RRslaipwgbm = $Q1/$Q0
+// Statistical inference (Efficient Influence Curve)
+gen double d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+gen double d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+gen double IC = cond($flag == 1,(d1 - d0),(d1 - d0)* cin, .)
+qui sum IC
+local varICtmle = r(Var)/r(N)
 
 // Statistical inference ATE 
+local pvalue =  2 * (normalden(abs(`ATEtmle'/sqrt(`varICtmle'))))
+local LCIa   =  `ATEtmle' - 1.96 * sqrt(`varICtmle')
+local UCIa   =  `ATEtmle' + 1.96 * sqrt(`varICtmle')
 
-// ATE
-gen double IC = (HAW*(Y - QAW)) + (Q1W - Q0W) - $ATEslaipwrf
-qui: sum IC
-global var = r(Var)
-qui: count
-global n = r(N)
-global varICslaipwgbm = $var/$n
-global pvalue = 2*(normalden(abs($ATEslaipwgbm/sqrt($varICslaipwgbm))))
-global LCIa =  $ATEslaipwgbm -1.96*sqrt($varICslaipwgbm)
-global UCIa =  $ATEslaipwgbm +1.96*sqrt($varICslaipwgbm)
+// Statistical inference RR
+gen double ICrr = (1/`Q1' * d1) + ((1/`Q0') * d0)
+qui sum ICrr
+local varICrr = r(Var)/r(N)
 
-// RR
-global LCIr =  exp(log($RRslaipwgbm) -1.96*sqrt(($varICslaipwgbm)/log($RRslaipwgbm)))
-global UCIr =  exp(log($RRslaipwgbm) +1.96*sqrt(($varICslaipwgbm)/log($RRslaipwgbm)))
+local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
+
+// Statistical inference OR
+gen double ICor = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0 
+qui sum ICor
+local varICor = r(Var)/r(N)
+
+local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
+local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
+
+// Display Results 
+local ATE  ""Risk Differences:"%10.2f `ATEtmle' "; SE:"%7.4f sqrt(`varICtmle') _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
+local ATEb  ""Risk Differences:"%10.2f `ATEtmle' "; VAR:"%7.1f `varICtmle' _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
+local line1 disp _dup(32) "_"
+
+if $flag==1 {
+di _newline
+`line1'
+di "TMLE: Average Treatment Effect"
+`line1'
+di `ATE'
+}
+else if $flag!=1{
+di _newline
+`line1'
+di "TMLE: Additive Causal Effect" 
+`line1'
+di `ATEb'
+}
+
+local rrbin ""CRR:"%9.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ","%3.2f `UCIrr' ")""
+local orbin ""MOR:"%9.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ","%3.2f `UCIOr' ")""
 
 di _newline
-di "AIPW Random Forest : Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEslaipwgbm _col(5) "; SE:" %5.4f sqrt($varICslaipwgbm) _col(5) "; pvalue:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
+`line1'
+di "TMLE: Causal Risk Ratio (CRR)" 
+`line1'
+di `rrbin'
 
 di _newline
-di "AIPW Random Forest: Relative Risk" _newline 
-di "RR:" %9.4f $RRslaipwgbm _col(5) "; 95%CI:(" %9.4f $LCIr "," %9.4f $UCIr ")"
+`line1'
+di "TMLE: Marginal Odds Ratio (MOR)" 
+`line1'
+di `orbin'
+
+drop ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps cin Y A eps* d1 d0
+
+label var POM1 "Potential Outcome Y(1)"
+label var POM0 "Potential Otucome Y(0)"
+label var ATE "Average Treatment Effect"
+label var IC "Variance ATE"
+label var PS "Propensity Score"
 
 // Clean up
 quietly: rm SLS.R
-//quietly: rm SLS.Rout
+quietly: rm SLS.Rout
 quietly: rm data2.dta
-quietly: rm data.csv
+//quietly: rm data.csv
+quietly: rm .RData
 end
 
-//////////////////////////////
-
-program slaipwbgam
+program tmleglsrf
 // Write R Code dependencies: foreign Surperlearner 
 set more off
 qui: file close _all
 qui: file open rcode using SLS.R, write replace
 qui: file write rcode ///
-	`"set.seed(123)"' _newline ///
-	`"list.of.packages <- c("foreign","SuperLearner","gam")"' _newline ///
-    `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-    `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
-	`"library(SuperLearner)"' _newline ///
-	`"library(foreign)"' _newline ///
-	`"library(gam)"' _newline ///
-	`"data <- read.csv("data.csv", sep=",")"' _newline ///
-	`"attach(data)"' _newline ///
-	`"SL.library <- c("SL.glm","SL.step","SL.bayesglm","SL.gam","SL.glm.interaction")"' _newline ///
-	`"n <- nrow(data)"' _newline ///
-	`"nvar <- dim(data)[[2]]"' _newline ///
-	`"Y <- data[,1]"' _newline ///
-	`"A <- data[,2]"' _newline ///
-	`"X <- data[,2:nvar]"' _newline ///
-	`"W <- data[,3:nvar]"' _newline ///
-	`"X1 <- X0 <- X"' _newline /// 
-	`"X1[,1] <- 1"' _newline ///
-	`"X0[,1] <- 0"' _newline ///
-	`"newdata <- rbind(X,X1,X0)"' _newline /// 
-	`"Q <- SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family=binomial(), newX=newdata, method="method.NNLS")"' _newline ///
-	`"Q <- as.data.frame(Q[[4]])"' _newline ///
-	`"QAW <- Q[1:n,]"' _newline ///
-	`"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
-	`"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
-	`"g <- SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = binomial(), method = "method.NNLS")"' _newline ///
-	`"ps <- g[[4]]"'  _newline ///
-	`"ps[ps<0.025] <- 0.025"' _newline ///
-	`"ps[ps>0.975] <- 0.975"' _newline ///
-	`"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-	`"write.dta(data, "data2.dta")"'  
+        `"set.seed(123)"' _newline ///
+        `"list.of.packages <- c("foreign","SuperLearner","glmnet","randomForest")"' _newline ///
+        `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
+        `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
+        `"library(SuperLearner)"' _newline ///
+        `"library(foreign)"' _newline ///
+        `"data <- read.csv("data.csv", sep=",")"' _newline ///
+        `"attach(data)"' _newline ///
+        `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.glmnet","SL.randomForest")"' _newline ///
+        `"n <- nrow(data)"' _newline ///
+        `"nvar <- dim(data)[[2]]"' _newline ///
+        `"Y <- data[,1]"' _newline ///
+        `"A <- data[,2]"' _newline ///
+        `"X <- data[,2:nvar]"' _newline ///
+        `"W <- data[,3:nvar]"' _newline ///
+        `"X1 <- X0 <- X"' _newline /// 
+        `"X1[,1] <- 1"' _newline ///
+        `"X0[,1] <- 0"' _newline ///
+        `"newdata <- rbind(X,X1,X0)"' _newline /// 
+        `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
+        `"Q <- as.data.frame(Q[[4]])"' _newline ///
+        `"QAW <- Q[1:n,]"' _newline ///
+        `"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
+        `"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
+        `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"))"' _newline ///
+        `"ps <- g[[4]]"' _newline ///
+        `"ps[ps<0.025] <- 0.025"' _newline ///
+        `"ps[ps>0.975] <- 0.975"' _newline ///
+        `"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+        `"write.dta(data, "data2.dta")"'  
 qui: file close rcode
- 
+
+if "`c(os)'" == "MacOSX" {
 // Run R (you have to specify the path of your R executable file)
-forval i = 1/10 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-3.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
+//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
+shell "/usr/local/bin/r" CMD BATCH SLS.R 
+}
+else{
+// Write bacth file to find R.exe path and R version
+set more off
+qui: file close _all
+qui: file open bat using setup.bat, write replace
+qui: file write bat ///
+`"@echo off"' _newline ///
+`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+`"echo Locating path of R..."' _newline ///
+`"echo."' _newline ///
+`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
+        `"echo Found %%r"' _newline ///
+        `"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
+        `"echo All set!"' _newline ///  
+        `"goto:DONE"' _newline ///
+`")"' _newline ///
+`":NO_R"' _newline ///
+`"echo R is not installed in your system."' _newline ///
+`"echo."' _newline ///
+`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+`"echo Install it and re-run this script"' _newline ///
+`":DONE"' _newline ///
+`"echo."' _newline ///
+`"pause"'
+qui: file close bat
+//Run batch
+shell setup.bat 
+//Run R 
+do runr.do
 }
 
 // Read Revised Data Back to Stata
 clear
 quietly: use "data2.dta", clear
 
-// IPTW
-gen double HAW = (A/ps) - ((1 - A)/(1 - ps))
-gen double H1W =  1/ps
-gen double H0W =  -1/(1 - ps)
-
-// AIPTW 
-gen double ATE = HAW*(Y - QAW) + (Q1W - Q0W)
-qui: sum ATE
-global ATEslaipwbg = r(mean)
-
-// Augmented Q
-gen double aQ1W = Q1W+(H1W*(Y-QAW))
-gen double aQ0W = Q0W+(H0W*(Y-QAW))
-sum aQ1W aQ0W ps
-
-// RR
-qui: sum aQ1W
-global Q1 = r(mean)
-qui: sum aQ0W
-global Q0 = r(mean)
-global RRslaipwbg = $Q1/$Q0
-
-// Statistical inference ATE
-
-// ATE
-gen double IC = (HAW*(Y - QAW)) + (Q1W - Q0W) - $ATEslaipwbg
-qui: sum IC
-global var = r(Var)
-qui: count
-global n = r(N)
-global varICslaipwbg = $var/$n
-global pvalue = 2*(normalden(abs($ATEslaipwbg/sqrt($varICslaipwbg))))
-global LCIa =  $ATEslaipwbg -1.96*sqrt($varICslaipwbg)
-global UCIa =  $ATEslaipwbg +1.96*sqrt($varICslaipwbg)
-
-// RR
-global LCIr = exp(log($RRslaipwbg) -1.96*sqrt(($varICslaipwbg)/log($RRslaipwbg)))
-global UCIr = exp(log($RRslaipwbg) +1.96*sqrt(($varICslaipwbg)/log($RRslaipwbg)))
-
-di _newline
-di "AIPW Bayes GLM and GAM: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATEslaipwbg _col(5) "; SE:" %5.4f sqrt($varICslaipwbg) _col(5) "; pvalue:" %5.4f $pvalue _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
-
-di _newline
-di "AIPW Bayes GLM and GAM: Relative Risk" _newline 
-di "RR:" %9.4f $RRslaipwbg _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
-
-// Clean up
-quietly: rm SLS.R
-//quietly: rm SLS.Rout
-quietly: rm data2.dta
-quietly: rm data.csv
-end
-
-program aipw
-// Write R Code dependencies: foreign Surperlearner 
-set more off
-qui: file close _all
-qui: file open rcode using SLS.R, write replace
-qui: file write rcode ///
-	`"set.seed(123)"' _newline ///
-	`"list.of.packages <- c("foreign")"' _newline ///
-    `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-    `"if(length(new.packages)) install.packages(new.packages)"' _newline ///
-	`"library(foreign)"' _newline ///
-	`"data <- read.csv("data.csv", sep=",")"' _newline ///
-	`"attach(data)"' _newline ///
-	`"nvar <- dim(data)[[2]]"' _newline ///
-	`"Y <- data[,1]"' _newline ///
-	`"A <- data[,2]"' _newline ///
-	`"X <- data[,2:nvar]"' _newline ///
-	`"W <- data[,3:nvar]"' _newline ///
-	`"nvarX <- dim(X)[[2]]"' _newline ///
-	`"xnam <- paste0("w", 2:nvarX-1)"' _newline ///
-	`"fmlaY <- as.formula(paste("Y ~ A +", paste(names(W), collapse= "+")))"' _newline ///
-	`"fmlaA <- as.formula(paste("A ~ ", paste(names(W), collapse= "+")))"' _newline ///
-	`"Q <- glm(fmlaY, family=binomial, data=data)"' _newline ///
-	`"QAW <- predict(Q, type="response")"' _newline ///
-	`"Q1W = predict(Q, newdata = data.frame(A = 1, W), type="response")"' _newline ///
-	`"Q0W = predict(Q, newdata = data.frame(A = 0, W), type="response")"' _newline ///
-	`"g <- glm(fmlaA, family=binomial, data=data)"' _newline ///
-	`"ps <- predict(g, type="response")"' _newline ///
-	`"ps[ps<0.025] <- 0.025"' _newline ///
-	`"ps[ps>0.975] <- 0.975"' _newline ///
-	`"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-	`"write.dta(data, "data2.dta")"'  
-qui: file close rcode
+// Q to logit scale
+gen double logQAW = log(QAW / (1 - QAW))
+gen double logQ1W = log(Q1W / (1 - Q1W))
+gen double logQ0W = log(Q0W / (1 - Q0W))
  
-// Run R (you have to specify the path of your R executable file)
-forval i = 1/10 {
-	forval j = 0/5 {
-shell "C:\Program Files\R\R-3.`i'.`j'\bin\x64\R.exe" CMD BATCH SLS.R 
-	}
+// Clever covariate HAW
+gen double HAW = (A / ps) - ((1 - A) / (1 - ps))
+gen double H1W = A / ps
+gen double H0W = (1 - A) / (1 - ps)
+
+// Estimation of the substitution parameter (Epsilon)
+qui glm Y H1W H0W, fam(binomial) offset(logQAW) robust noconstant
+mat a= e(b)
+gen double eps1 = a[1,1]
+gen double eps2 = a[1,2]
+
+qui glm Y HAW, fam(binomial) offset(logQAW) robust noconstant
+mat a= e(b)
+gen double eps = a[1,1]
+
+
+// Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
+gen double Qa0star = exp(H0W*eps + logQ0W)/(1 + exp(H0W*eps + logQ0W))
+gen double Qa1star = exp(H1W*eps + logQ1W)/(1 + exp(H1W*eps + logQ1W))
+
+gen double Q0star = exp(H0W*eps2 + logQ0W)/(1 + exp(H0W*eps2 + logQ0W))
+gen double Q1star = exp(H1W*eps1 + logQ1W)/(1 + exp(H1W*eps1 + logQ1W))
+gen double cin = ($b - $a)
+
+gen double POM1 = cond($flag == 1, Q1star, Qa1star * cin, .)
+gen double POM0 = cond($flag == 1, Q0star, Qa0star * cin, .)
+
+gen   PS = ps
+summ  POM1 POM0 PS
+
+// Estimating the updated targeted ATE binary outcome
+gen double ATE = cond($flag == 1,(Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
+qui sum ATE
+local ATEtmle = r(mean)
+
+// Relative risk
+qui sum Q1star
+local Q1 = r(mean)
+qui sum Q0star
+local Q0 = r(mean)
+
+// Relative risk and Odds ratio 
+local RRtmle = `Q1'/`Q0'
+local logRRtmle = log(`Q1') - log(`Q0')
+local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+
+
+// Statistical inference (Efficient Influence Curve)
+gen double d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+gen double d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+gen double IC = cond($flag == 1,(d1 - d0),(d1 - d0)* cin, .)
+qui sum IC
+local varICtmle = r(Var)/r(N)
+
+// Statistical inference ATE 
+local pvalue =  2 * (normalden(abs(`ATEtmle'/sqrt(`varICtmle'))))
+local LCIa   =  `ATEtmle' - 1.96 * sqrt(`varICtmle')
+local UCIa   =  `ATEtmle' + 1.96 * sqrt(`varICtmle')
+
+// Statistical inference RR
+gen double ICrr = (1/`Q1' * d1) + ((1/`Q0') * d0)
+qui sum ICrr
+local varICrr = r(Var)/r(N)
+
+local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
+
+// Statistical inference OR
+gen double ICor = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0 
+qui sum ICor
+local varICor = r(Var)/r(N)
+
+local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
+local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
+
+// Display Results 
+local ATE  ""Risk Differences:"%10.2f `ATEtmle' "; SE:"%7.4f sqrt(`varICtmle') _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
+local ATEb  ""Risk Differences:"%10.2f `ATEtmle' "; VAR:"%7.1f `varICtmle' _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
+local line1 disp _dup(32) "_"
+
+if $flag==1 {
+di _newline
+`line1'
+di "TMLE: Average Treatment Effect"
+`line1'
+di `ATE'
+}
+else if $flag!=1{
+di _newline
+`line1'
+di "TMLE: Additive Causal Effect" 
+`line1'
+di `ATEb'
 }
 
-// Read Revised Data Back to Stata
-clear
-quietly: use "data2.dta", clear
-
-// IPTW
-gen double HAW = (A/ps) - ((1 - A)/(1 - ps))
-gen double H1W =  1/ps
-gen double H0W =  -1/(1 - ps)
-
-// AIPTW 
-gen double ATE = (HAW*(Y - QAW)) + (Q1W - Q0W)
-qui: sum ATE
-global ATE = r(mean)
-
-// Augmented Q
-gen double aQ1W = Q1W+(H1W*(Y-QAW))
-gen double aQ0W = Q0W+(H0W*(Y-QAW))
-sum aQ1W aQ0W ps
-
-// RR
-qui: sum aQ1W
-global Q1 = r(mean)
-qui: sum aQ0W
-global Q0 = r(mean)
-global RR = $Q1/$Q0
-
-// Statistical inference ATE
-
-// ATE
-gen double IC = (HAW*(Y - QAW)) + (Q1W - Q0W) - $ATE
-qui: sum IC
-global var = r(Var)
-qui: count
-global n = r(N)
-global varIC = $var/$n
-global pvalue = 2*(normalden(abs($ATE/sqrt($varIC))))
-global LCIa =  $ATE -1.96*sqrt($varIC)
-global UCIa =  $ATE +1.96*sqrt($varIC)
-
-// RR
-global LCIr =  exp(log($RR) -1.96*sqrt(($varIC)/log($RR)))
-global UCIr =  exp(log($RR) +1.96*sqrt(($varIC)/log($RR)))
+local rrbin ""CRR:"%9.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ","%3.2f `UCIrr' ")""
+local orbin ""MOR:"%9.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ","%3.2f `UCIOr' ")""
 
 di _newline
-di "AIPW: Average Treatment Effect" _newline
-di "ATE:" %9.4f $ATE _col(5) "; SE:" %5.4f sqrt($varIC) _col(5) "; pvalue:" %5.4f $p-value _col(5) "; 95%CI:(" %8.6f $LCIa ","  %8.6f $UCIa ")"
+`line1'
+di "TMLE: Causal Risk Ratio (CRR)" 
+`line1'
+di `rrbin'
 
 di _newline
-di "AIPW: Relative Risk" _newline 
-di "RR:" %9.4f $RR _col(5) "; 95%CI:(" %6.4f $LCIr "," %6.4f $UCIr ")"
+`line1'
+di "TMLE: Marginal Odds Ratio (MOR)" 
+`line1'
+di `orbin'
+
+drop ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps cin Y A eps* d1 d0
+
+label var POM1 "Potential Outcome Y(1)"
+label var POM0 "Potential Otucome Y(0)"
+label var ATE "Average Treatment Effect"
+label var IC "Variance ATE"
+label var PS "Propensity Score"
 
 // Clean up
 quietly: rm SLS.R
-//quietly: rm SLS.Rout
+quietly: rm SLS.Rout
 quietly: rm data2.dta
-quietly: rm data.csv
+//quietly: rm data.csv
+quietly: rm .RData
 end
-
-//program drop eltmle tmle tmlebgam tmlegbm slaipw slaipwgbm slaipwbgam aipw
