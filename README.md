@@ -62,8 +62,6 @@ GitHub repository, https://github.com/migariane/eltmle
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2560828.svg)](https://doi.org/10.5281/zenodo.2560828)
 
-
-<<<<<<< HEAD
 #Acknowledgements  
   
 I would like to thank Professors Bianca De Stavola (LSHTM), Simon Cousens (LSHTM), Aurelio Tobias (CSIC), Michel Coleman (LSHTM) for their comments and support and Haghish E. F. (CMBMI, Freiburg, Germany) for his wonderful **Github** and **MarkDoc** Stata packages. 
@@ -72,9 +70,7 @@ In case you have updates or changes that you would like to make, please send me 
 Alternatively, if you have any questions, please e-mail me.     
 You can cite this repository as:  
 Luque-Fernandez MA, (2017). Ensemble Taregeted Maximum Likelihood Estimation for a Binary Outcome and Treatment. 
-GitHub repository, https://github.com/migariane/weltmle (Windows users) or https://github.com/migariane/meltmle (MAC users)        
-=======
->>>>>>> 33496a129768644b144c03d151943df58500afc2
+GitHub repository, https://github.com/migariane/weltmle (Windows users) or https://github.com/migariane/meltmle (MAC users)        
 Miguel Angel Luque-Fernandez    
 E-mail: miguel-angel.luque at lshtm.ac.uk  
 Twitter @WATZILEI  
@@ -82,4 +78,4 @@ Twitter @WATZILEI
 # Copyright
 This software is distributed under the GPL-2 license.
 
-![Figure Link](https://github.com/migariane/weltmle/blob/master/acknowledgement.png)   
+![Figure Link](https://github.com/migariane/weltmle/blob/master/Acknowledgement.png)   
