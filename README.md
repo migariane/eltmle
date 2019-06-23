@@ -49,7 +49,7 @@ Email: mireille.schnitzer at umontreal.ca
  
 # Updates
 In case you have updates or changes that you would like to make, please send me a pull request.  
-Alternatively, if you have any questions, please e-mail me. 
+Alternatively, if you have any questions, please e-mail me.   
 Miguel Angel Luque-Fernandez    
 E-mail: miguel-angel.luque at lshtm.ac.uk  
 Twitter @WATZILEI  
