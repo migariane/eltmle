@@ -66,7 +66,5 @@ This software is distributed under the GPL-2 license.
 
 # Acknowledgments  
 Miguel Angel Luque Fernandez is supported by a Miguel Servet I Investigator Award (grant CP17/00206) from the Carlos III National Institute of Health, Madrid, Spain.  
-  
-I would like to thank Professors Bianca De Stavola (LSHTM), Simon Cousens (LSHTM), Aurelio Tobias (CSIC), Michel Coleman (LSHTM) for their comments and support and Haghish E. F. (CMBMI, Freiburg, Germany) for his wonderful **Github** and **MarkDoc** Stata packages. 
 
 ![Figure Link](https://github.com/migariane/eltmle/blob/master/Acknowledgment.png)   
