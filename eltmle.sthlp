@@ -1,5 +1,5 @@
 {smcl}
-{right: version 2.2.3 October 15th, 2018}
+{right: version 2.2.4  July 24th, 2018}
 {...}
 
 {title:Title}
@@ -68,11 +68,13 @@ TMLE algorithm plus the super-Learner ensemble learning for the main three machi
 {p 4 4 2 120}
 {hi:tmlebgam}: this option may be specified or unspecified. When specified, it does include in addition to the above default
 implementation, the Bayes Generalized Linear Models and Generalized Additive Models as Super-Learner algorithms for the tmle estimator.
+This option might be suitable for non-linear treatment effects.
 {p_end}
 
 {p 4 4 2 120}
 {hi:tmleglsrf}: this option may be specified or unspecified. When specified, it does include in addition to the three main learning algorithms 
 described above, the Lasso (glmnet R package), Random Forest (randomForest R package) and the Generalized Additive Models as Super-Learner algorithms for the tmle estimator.
+This option might be suitable for heterogeneous treatment effects.
 {p_end}
 
 {title:Example}
@@ -94,94 +96,103 @@ described above, the Lasso (glmnet R package), Random Forest (randomForest R pac
 ******************
 
 ******************************************************
+.preserve
 .eltmle lbw mbsmoke mage medu prenatal mmarried, tmle
+.restore
 ******************************************************
 
     Variable |        Obs        Mean    Std. Dev.       Min        Max
 -------------+---------------------------------------------------------
         POM1 |      4,642    .1023406    .0401616   .0201151   .3747893
-        POM0 |      4,642     .051377    .0251473   .0208754   .1706158
-          PS |      4,642    .1861267     .110755   .0372202   .8494988
-		  
-________________________________
+        POM0 |      4,642    .1023406    .0401616   .0201151   .3747893
+          ps |      4,642    .1861267     .110755   .0372202   .8494988
+--------------------------------
 TMLE: Average Treatment Effect
-________________________________
-
-Risk Differences: 0.05; SE: 0.0122; p-value: 0.0001; 95%CI:(0.03, 0.07)
-
-________________________________
+--------------------------------
+ATE:      | 0.0507
+SE:       | 0.0122
+P-value:  | 0.0001
+95%CI:    | 0.0268, 0.0745
+--------------------------------
+-----------------------------
 TMLE: Causal Risk Ratio (CRR)
-________________________________
-
-CRR:  1.99; 95%CI:(1.53, 2.60)
-
-________________________________
+-----------------------------
+CRR: 1.99; 95%CI:(1.53, 2.60)
+-----------------------------
+-------------------------------
 TMLE: Marginal Odds Ratio (MOR)
-________________________________
-
-MOR:  2.11; 95%CI:(1.50, 2.72)
+-------------------------------
+MOR: 2.11; 95%CI:(1.50, 2.72)
+-------------------------------
 
 **********************
 // Continuous outcome 
 **********************
 
 ***********************************************************
+.preserve 
 .eltmle bweight mbsmoke mage medu prenatal mmarried, tmle
+.restore
 ***********************************************************
 
     Variable |        Obs        Mean    Std. Dev.       Min        Max
 -------------+---------------------------------------------------------
         POM1 |      4,642    2833.081    74.84581   2580.186   2958.981
         POM0 |      4,642    3062.785    89.55875   2867.102   3166.985
-          PS |      4,642    .1861267     .110755   .0372202   .8494988
-
-________________________________
-TMLE: Additive Causal Effect
-________________________________
-Risk Differences:   -229.70; VAR:  600.9; p-value: 0.0000; 95%CI:(-277.75, -181.66)
-
-________________________________
+          ps |      4,642    .1861267     .110755   .0372202   .8494988
+--------------------------------
+TMLE: Average Treatment Effect
+--------------------------------
+ATE:      | -229.7
+SE:       |   24.5
+P-value:  | 0.0000
+95%CI:    | -277.8, -181.7
+--------------------------------
+-----------------------------
 TMLE: Causal Risk Ratio (CRR)
-________________________________
-CRR:   0.93; 95%CI:(0.91, 0.94)
-
-________________________________
+-----------------------------
+CRR: 0.93; 95%CI:(0.91, 0.94)
+-----------------------------
+-------------------------------
 TMLE: Marginal Odds Ratio (MOR)
-________________________________
-MOR:   0.83; 95%CI:(0.80, 0.87)
-
+-------------------------------
+MOR: 0.83; 95%CI:(0.80, 0.87)
+-------------------------------
 
 ***************************************************************
-// Continuous outcome: preserving original dataset and using 
+// Continuous outcome and 
 // more advance machine learning techniques
 ***************************************************************
 
 ***************************************************************
-preserve
-eltmle bweight mbsmoke mage medu prenatal mmarried, tmleglsrf
-restore
+.preserve
+.eltmle bweight mbsmoke mage medu prenatal mmarried, tmleglsrf
+.restore
 ***************************************************************
-   Variable |        Obs        Mean    Std. Dev.       Min        Max
-------------+---------------------------------------------------------
-       POM1 |      4,642    2834.267    74.94768   2582.177   2964.985
-       POM0 |      4,642    3063.768    89.56743   2867.587   3168.283
-         PS |      4,642     .154641    .1111959       .025   .6236143
 
-
-________________________________
-TMLE: Additive Causal Effect
-________________________________
-Risk Differences:  -229.50; VAR:  907.5; p-value: 0.0000; 95%CI:(-288.55, -170.46)
-
-________________________________
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+        POM1 |      4,642    2834.267    74.94767   2582.177   2964.985
+        POM0 |      4,642    3063.768    89.56743   2867.587   3168.283
+          ps |      4,642     .154641    .1111959       .025   .6236143
+--------------------------------
+TMLE: Average Treatment Effect
+--------------------------------
+ATE:      | -229.5
+SE:       |   30.1
+P-value:  | 0.0000
+95%CI:    | -288.5, -170.5
+--------------------------------
+-----------------------------
 TMLE: Causal Risk Ratio (CRR)
-________________________________
-CRR:   0.93; 95%CI:(0.91, 0.94)
-
-________________________________
+-----------------------------
+CRR: 0.93; 95%CI:(0.91, 0.94)
+-----------------------------
+-------------------------------
 TMLE: Marginal Odds Ratio (MOR)
-________________________________
-MOR:   0.83; 95%CI:(0.80, 0.87)
+-------------------------------
+MOR: 0.83; 95%CI:(0.80, 0.87)
+-------------------------------
 
 **********************************************************************************************
 
@@ -219,8 +230,24 @@ Remember 6: In case you want to preserve the original dataset you can use the
 preserve restore Stata functionality in combination to the Stata {hi: eltmle} command as shown in the previous example.
 {p_end}
 
-{title:References}
+{title:Stored results}
 
+eltmle stores the following in {hi: r()}:
+
+Scalars
+
+	{hi: r(SE_log_MOR)}          Standard error marginal odds ratio
+               {hi: r(MOR)} 		Marginal odds ratio
+        {hi: r(SE_log_CRR)} 		Standard error causal risk ratio
+        {hi:        r(CRR)} 		Causal risk ratio
+        {hi:   r(ATE_UCIa)} 		Risk difference upper 95%CI 
+        {hi:   r(ATE_LCIa)} 		Risk difference lower 95%CI
+        {hi: r(ATE_pvalue)} 		Risk difference pvalue
+        {hi: (ATE_SE_tmle)} 		Standard error Risk difference
+        {hi:    r(ATEtmle)} 		Risk difference
+
+{title:References}
+	
 {p 4 4 2 120}
 Miguel Angel Luque‐Fernandez, M Schomaker, B Rachet, M Schnitzer (2018). Targeted maximum likelihood estimation for a binary treatment: A tutorial.
 Statistics in medicine. {browse "https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.7628":Download here}.

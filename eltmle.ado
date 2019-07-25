@@ -1,11 +1,11 @@
-*! version 2.2.3  15.Oct.2018
+*! version 2.2.4  24.July.2019
 *! ELTMLE: Stata module for Ensemble Learning Targeted Maximum Likelihood Estimation
 *! by Miguel Angel Luque-Fernandez [cre,aut]
 *! Bug reports:
 *! miguel-angel.luque at lshtm.ac.uk
 
 /*
-Copyright (c) 2018  <Miguel Angel Luque-Fernandez>
+Copyright (c) 2019  <Miguel Angel Luque-Fernandez>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ THE SOFTWARE.
 ** TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OR CONTINUOUS 
 ** OUTCOME AND BINARY TREATMENT FOR MAC and WINDOWS USERS 
 ** This program requires R to be installed in your computer
-** September 2018
+** June 2019
 ****************************************************************************
 
 * Improved the output including potential outcomes and propensity score 
@@ -44,37 +44,41 @@ THE SOFTWARE.
 * Update globals to locals where possible
 * Just one ado file for both Mac and Windows users
 * Included additive effect for continuous outcomes
-* Improved the display of the output
 * Fixed ATE 95%CI for additive risk difference 15.10.2018
+* Included HAW as a sampling weight in MLE for targerted step (gain in efficiency) for the ATE
+* Updated as a rclass programm: returning scalars for ATE, ATE 95%CI, ATE SE, CRR, MOR and CRR, MOR SEs
+* Improved the output display 
 
 capture program drop eltmle
 program define eltmle
-     syntax varlist(min=3) [if] [pw] [, tmle tmlebgam tmleglsrf] 
-	 version 13.2
-	 marksample touse
-	 local var `varlist' if `touse'
-	 tokenize `var'
-	 local yvar = "`1'" 
-     global flag = cond(`yvar'<=1,1,0)
-	 qui sum `yvar'
-	 global b = `r(max)'
-	 global a = `r(min)'
-	 qui replace `yvar' = (`yvar' - `r(min)') / (`r(max)' - `r(min)') if `yvar'>1
-     local dir `c(pwd)'
-	 cd "`dir'"
-	 qui export delimited `var' using "data.csv", nolabel replace 
-	 if "`tmlebgam'" == "" & "`tmleglsrf'" == "" {
-		tmle `varlist'	
-		}
-	 else if "`tmlebgam'" == "tmlebgam" {
-		tmlebgam `varlist'
-		}
-	 else if "`tmleglsrf'" == "tmleglsrf" {
-		tmleglsrf `varlist'
-		}
-end 
+		 syntax varlist(min=3) [if] [pw] [, tmle tmlebgam tmleglsrf] 
+         version 13.2
+         marksample touse
+         local var `varlist' if `touse'
+         tokenize `var'
+         local yvar = "`1'" 
+         global flag = cond(`yvar'<=1,1,0)
+         qui sum `yvar'
+         global b = `r(max)'
+         global a = `r(min)'
+         qui replace `yvar' = (`yvar' - `r(min)') / (`r(max)' - `r(min)') if `yvar'>1
+         local dir `c(pwd)'
+         cd "`dir'"
+		 tempfile data
+		 qui save "`data'.dta", replace 
+         qui export delimited `var' using "data.csv", nolabel replace 
+         if "`tmlebgam'" == "" & "`tmleglsrf'" == "" {
+                tmle `varlist'  
+                }
+         else if "`tmlebgam'" == "tmlebgam" {
+                tmlebgam `varlist'
+                }
+         else if "`tmleglsrf'" == "tmleglsrf" {
+                tmleglsrf `varlist'
+                }
+end
 
-program tmle  
+program tmle, rclass 
 // Write R Code dependencies: foreign Surperlearner 
 set more off
 qui: file close _all
@@ -112,86 +116,86 @@ qui: file write rcode ///
         `"write.dta(data, "data2.dta")"'  
 qui: file close rcode
 
-if "`c(os)'" == "MacOSX" {
-// Run R (you have to specify the path of your R executable file)
-//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
-shell "/usr/local/bin/r" CMD BATCH SLS.R 
-}
-else{
-// Write bacth file to find R.exe path and R version
-set more off
-qui: file close _all
-qui: file open bat using setup.bat, write replace
-qui: file write bat ///
-`"@echo off"' _newline ///
-`"SET PATHROOT=C:\Program Files\R\"' _newline ///
-`"echo Locating path of R..."' _newline ///
-`"echo."' _newline ///
-`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
-`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
-        `"echo Found %%r"' _newline ///
-        `"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-        `"echo All set!"' _newline ///  
-        `"goto:DONE"' _newline ///
-`")"' _newline ///
-`":NO_R"' _newline ///
-`"echo R is not installed in your system."' _newline ///
-`"echo."' _newline ///
-`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
-`"echo Install it and re-run this script"' _newline ///
-`":DONE"' _newline ///
-`"echo."' _newline ///
-`"pause"'
-qui: file close bat
-//Run batch
-shell setup.bat 
-//Run R 
-do runr.do
-}
+	if "`c(os)'" == "MacOSX" {
+	// Run R (you have to specify the path of your R executable file)
+	//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
+	shell "/usr/local/bin/r" CMD BATCH SLS.R 
+	}
+	else{
+	// Write bacth file to find R.exe path and R version
+	set more off
+	qui: file close _all
+	qui: file open bat using setup.bat, write replace
+	qui: file write bat ///
+	`"@echo off"' _newline ///
+	`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+	`"echo Locating path of R..."' _newline ///
+	`"echo."' _newline ///
+	`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+	`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
+			`"echo Found %%r"' _newline ///
+			`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
+			`"echo All set!"' _newline ///  
+			`"goto:DONE"' _newline ///
+	`")"' _newline ///
+	`":NO_R"' _newline ///
+	`"echo R is not installed in your system."' _newline ///
+	`"echo."' _newline ///
+	`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+	`"echo Install it and re-run this script"' _newline ///
+	`":DONE"' _newline ///
+	`"echo."' _newline ///
+	`"pause"'
+	qui: file close bat
+	//Run batch
+	shell setup.bat 
+	//Run R 
+	do runr.do
+	}
 
 // Read Revised Data Back to Stata
 clear
 quietly: use "data2.dta", clear
-
+tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 // Q to logit scale
-gen double logQAW = log(QAW / (1 - QAW))
-gen double logQ1W = log(Q1W / (1 - Q1W))
-gen double logQ0W = log(Q0W / (1 - Q0W))
+gen `logQAW' = log(QAW / (1 - QAW))
+gen `logQ1W' = log(Q1W / (1 - Q1W))
+gen `logQ0W' = log(Q0W / (1 - Q0W))
  
 // Clever covariate HAW
-gen double HAW = (A / ps) - ((1 - A) / (1 - ps))
-gen double H1W = A / ps
-gen double H0W = (1 - A) / (1 - ps)
+gen  `HAW' = (A / ps) - ((1 - A) / (1 - ps))
+gen  `H1W' = A / ps
+gen  `H0W' = (1 - A) / (1 - ps)
 
 // Estimation of the substitution parameter (Epsilon)
-qui glm Y H1W H0W, fam(binomial) offset(logQAW) robust noconstant
+qui glm Y `H1W' `H0W', fam(binomial) offset(`logQAW') robust noconstant
 mat a= e(b)
-gen double eps1 = a[1,1]
-gen double eps2 = a[1,2]
+gen `eps1' = a[1,1]
+gen `eps2' = a[1,2]
 
-qui glm Y HAW, fam(binomial) offset(logQAW) robust noconstant
+qui glm Y `HAW', fam(binomial) offset(`logQAW') robust noconstant
 mat a= e(b)
-gen double eps = a[1,1]
+gen `eps' = a[1,1]
 
 
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
-gen double Qa0star = exp(H0W*eps + logQ0W)/(1 + exp(H0W*eps + logQ0W))
-gen double Qa1star = exp(H1W*eps + logQ1W)/(1 + exp(H1W*eps + logQ1W))
+gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
+gen double Qa1star = exp(`H1W'*`eps' + `logQ1W')/(1 + exp(`H1W'*`eps' + `logQ1W'))
 
-gen double Q0star = exp(H0W*eps2 + logQ0W)/(1 + exp(H0W*eps2 + logQ0W))
-gen double Q1star = exp(H1W*eps1 + logQ1W)/(1 + exp(H1W*eps1 + logQ1W))
+gen double Q0star = exp(`H0W'*`eps2' + `logQ0W')/(1 + exp(`H0W'*`eps2' + `logQ0W'))
+gen double Q1star = exp(`H1W'*`eps1' + `logQ1W')/(1 + exp(`H1W'*`eps1' + `logQ1W'))
+
 gen double cin = ($b - $a)
 
 gen double POM1 = cond($flag == 1, Q1star, Qa1star * cin, .)
-gen double POM0 = cond($flag == 1, Q0star, Qa0star * cin, .)
+gen double POM0 = cond($flag == 1, Q1star, Qa0star * cin, .)
 
-gen   PS = ps
-summ  POM1 POM0 PS
+summ POM1 POM0 ps
 
 // Estimating the updated targeted ATE binary outcome
-gen double ATE = cond($flag == 1,(Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
+gen double ATE = cond($flag == 1, (Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
 qui sum ATE
-local ATEtmle = r(mean)
+return scalar ATEtmle = r(mean)
 
 // Relative risk
 qui sum Q1star
@@ -204,93 +208,97 @@ local RRtmle = `Q1'/`Q0'
 local logRRtmle = log(`Q1') - log(`Q0')
 local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
 
-
 // Statistical inference (Efficient Influence Curve)
-gen double d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
-gen double d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
-gen double IC = cond($flag == 1,(d1 - d0),(d1 - d0)* cin, .)
+gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
 qui sum IC
-local varICtmle = r(Var)/r(N)
+return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
 
 // Statistical inference ATE 
-local pvalue =  2 * (normalden(abs(`ATEtmle'/sqrt(`varICtmle'))))
-local LCIa   =  `ATEtmle' - 1.96 * sqrt(`varICtmle')
-local UCIa   =  `ATEtmle' + 1.96 * sqrt(`varICtmle')
+return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
+return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
+return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
 
 // Statistical inference RR
-gen double ICrr = (1/`Q1' * d1) + ((1/`Q0') * d0)
-qui sum ICrr
+gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
+qui sum `ICrr'
 local varICrr = r(Var)/r(N)
 
 local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
 local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
 // Statistical inference OR
-gen double ICor = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0 
-qui sum ICor
+gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0 
+qui sum `ICor'
 local varICor = r(Var)/r(N)
 
 local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
 local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
 // Display Results 
-local ATE  ""Risk Differences:"%10.2f `ATEtmle' "; SE:"%7.4f sqrt(`varICtmle') _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
-local ATEb  ""Risk Differences:"%10.2f `ATEtmle' "; VAR:"%7.1f `varICtmle' _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
-local line1 disp _dup(32) "_"
+
+return scalar CRR = `RRtmle'
+return scalar SE_log_CRR  = sqrt(`varICrr')
+return scalar MOR = `ORtmle'
+return scalar SE_log_MOR  = sqrt(`varICor')
 
 if $flag==1 {
-di _newline
-`line1'
+disp as text "{hline 32}"
 di "TMLE: Average Treatment Effect"
-`line1'
-di `ATE'
+disp as text "{hline 32}"
+disp as text "ATE:      " "{c |}" %7.4f as result return(ATEtmle)
+disp as text "SE:       " "{c |}" %7.4f as result return(ATE_SE_tmle)
+disp as text "P-value:  " "{c |}" %7.4f as result return(ATE_pvalue)
+disp as text "95%CI:    " "{c |}" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa)
+disp as text "{hline 32}"
 }
 else if $flag!=1{
-di _newline
-`line1'
-di "TMLE: Additive Causal Effect" 
-`line1'
-di `ATEb'
+disp as text "{hline 32}"
+di "TMLE: Average Treatment Effect"
+disp as text "{hline 32}"
+disp as text "ATE:      " "{c |}" %7.1f as result return(ATEtmle)
+disp as text "SE:       " "{c |}" %7.1f as result return(ATE_SE_tmle)
+disp as text "P-value:  " "{c |}" %7.4f as result return(ATE_pvalue)
+disp as text "95%CI:    " "{c |}" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa)
+disp as text "{hline 32}"
 }
 
-local rrbin ""CRR:"%9.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ","%3.2f `UCIrr' ")""
-local orbin ""MOR:"%9.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ","%3.2f `UCIOr' ")""
+local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
+local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
 
-di _newline
-`line1'
+disp as text "{hline 29}"
 di "TMLE: Causal Risk Ratio (CRR)" 
-`line1'
+disp as text "{hline 29}"
 di `rrbin'
-
-di _newline
-`line1'
+disp as text "{hline 29}"
+disp as text "{hline 31}"
 di "TMLE: Marginal Odds Ratio (MOR)" 
-`line1'
+disp as text "{hline 31}"
 di `orbin'
-
-drop ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps cin Y A eps* d1 d0
+disp as text "{hline 31}"
 
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
-label var ATE "Average Treatment Effect"
-label var IC "Variance ATE"
-label var PS "Propensity Score"
+label var ps "Propensity Score"
+
+drop d1 d0 POM1 POM0 ps QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin
 
 // Clean up
 quietly: rm SLS.R
 quietly: rm SLS.Rout
 quietly: rm data2.dta
-//quietly: rm data.csv
+quietly: rm data.csv
 quietly: rm .RData
 end
 
-program tmlebgam 
+program tmlebgam, rclass 
 // Write R Code dependencies: foreign Surperlearner 
 set more off
 qui: file close _all
 qui: file open rcode using SLS.R, write replace
 qui: file write rcode ///
-        `"set.seed(123)"' _newline ///
+		`"set.seed(123)"' _newline ///
         `"list.of.packages <- c("foreign","SuperLearner","gam","arm")"' _newline ///
         `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
         `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
@@ -319,89 +327,89 @@ qui: file write rcode ///
         `"ps[ps<0.025] <- 0.025"' _newline ///
         `"ps[ps>0.975] <- 0.975"' _newline ///
         `"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-        `"write.dta(data, "data2.dta")"'  
+        `"write.dta(data, "data2.dta")"'    
 qui: file close rcode
 
-if "`c(os)'" == "MacOSX" {
-// Run R (you have to specify the path of your R executable file)
-//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
-shell "/usr/local/bin/r" CMD BATCH SLS.R 
-}
-else{
-// Write bacth file to find R.exe path and R version
-set more off
-qui: file close _all
-qui: file open bat using setup.bat, write replace
-qui: file write bat ///
-`"@echo off"' _newline ///
-`"SET PATHROOT=C:\Program Files\R\"' _newline ///
-`"echo Locating path of R..."' _newline ///
-`"echo."' _newline ///
-`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
-`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
-        `"echo Found %%r"' _newline ///
-        `"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-        `"echo All set!"' _newline ///  
-        `"goto:DONE"' _newline ///
-`")"' _newline ///
-`":NO_R"' _newline ///
-`"echo R is not installed in your system."' _newline ///
-`"echo."' _newline ///
-`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
-`"echo Install it and re-run this script"' _newline ///
-`":DONE"' _newline ///
-`"echo."' _newline ///
-`"pause"'
-qui: file close bat
-//Run batch
-shell setup.bat 
-//Run R 
-do runr.do
-}
+	if "`c(os)'" == "MacOSX" {
+	// Run R (you have to specify the path of your R executable file)
+	//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
+	shell "/usr/local/bin/r" CMD BATCH SLS.R 
+	}
+	else{
+	// Write bacth file to find R.exe path and R version
+	set more off
+	qui: file close _all
+	qui: file open bat using setup.bat, write replace
+	qui: file write bat ///
+	`"@echo off"' _newline ///
+	`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+	`"echo Locating path of R..."' _newline ///
+	`"echo."' _newline ///
+	`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+	`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
+			`"echo Found %%r"' _newline ///
+			`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
+			`"echo All set!"' _newline ///  
+			`"goto:DONE"' _newline ///
+	`")"' _newline ///
+	`":NO_R"' _newline ///
+	`"echo R is not installed in your system."' _newline ///
+	`"echo."' _newline ///
+	`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+	`"echo Install it and re-run this script"' _newline ///
+	`":DONE"' _newline ///
+	`"echo."' _newline ///
+	`"pause"'
+	qui: file close bat
+	//Run batch
+	shell setup.bat 
+	//Run R 
+	do runr.do
+	}
 
 // Read Revised Data Back to Stata
 clear
 quietly: use "data2.dta", clear
-
+tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 // Q to logit scale
-gen double logQAW = log(QAW / (1 - QAW))
-gen double logQ1W = log(Q1W / (1 - Q1W))
-gen double logQ0W = log(Q0W / (1 - Q0W))
+gen `logQAW' = log(QAW / (1 - QAW))
+gen `logQ1W' = log(Q1W / (1 - Q1W))
+gen `logQ0W' = log(Q0W / (1 - Q0W))
  
 // Clever covariate HAW
-gen double HAW = (A / ps) - ((1 - A) / (1 - ps))
-gen double H1W = A / ps
-gen double H0W = (1 - A) / (1 - ps)
+gen  `HAW' = (A / ps) - ((1 - A) / (1 - ps))
+gen  `H1W' = A / ps
+gen  `H0W' = (1 - A) / (1 - ps)
 
 // Estimation of the substitution parameter (Epsilon)
-qui glm Y H1W H0W, fam(binomial) offset(logQAW) robust noconstant
+qui glm Y `H1W' `H0W', fam(binomial) offset(`logQAW') robust noconstant
 mat a= e(b)
-gen double eps1 = a[1,1]
-gen double eps2 = a[1,2]
+gen `eps1' = a[1,1]
+gen `eps2' = a[1,2]
 
-qui glm Y HAW, fam(binomial) offset(logQAW) robust noconstant
+qui glm Y `HAW', fam(binomial) offset(`logQAW') robust noconstant
 mat a= e(b)
-gen double eps = a[1,1]
+gen `eps' = a[1,1]
 
 
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
-gen double Qa0star = exp(H0W*eps + logQ0W)/(1 + exp(H0W*eps + logQ0W))
-gen double Qa1star = exp(H1W*eps + logQ1W)/(1 + exp(H1W*eps + logQ1W))
+gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
+gen double Qa1star = exp(`H1W'*`eps' + `logQ1W')/(1 + exp(`H1W'*`eps' + `logQ1W'))
 
-gen double Q0star = exp(H0W*eps2 + logQ0W)/(1 + exp(H0W*eps2 + logQ0W))
-gen double Q1star = exp(H1W*eps1 + logQ1W)/(1 + exp(H1W*eps1 + logQ1W))
+gen double Q0star = exp(`H0W'*`eps2' + `logQ0W')/(1 + exp(`H0W'*`eps2' + `logQ0W'))
+gen double Q1star = exp(`H1W'*`eps1' + `logQ1W')/(1 + exp(`H1W'*`eps1' + `logQ1W'))
+
 gen double cin = ($b - $a)
 
 gen double POM1 = cond($flag == 1, Q1star, Qa1star * cin, .)
-gen double POM0 = cond($flag == 1, Q0star, Qa0star * cin, .)
+gen double POM0 = cond($flag == 1, Q1star, Qa0star * cin, .)
 
-gen   PS = ps
-summ  POM1 POM0 PS
+summ POM1 POM0 ps
 
 // Estimating the updated targeted ATE binary outcome
-gen double ATE = cond($flag == 1,(Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
+gen double ATE = cond($flag == 1, (Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
 qui sum ATE
-local ATEtmle = r(mean)
+return scalar ATEtmle = r(mean)
 
 // Relative risk
 qui sum Q1star
@@ -414,93 +422,97 @@ local RRtmle = `Q1'/`Q0'
 local logRRtmle = log(`Q1') - log(`Q0')
 local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
 
-
 // Statistical inference (Efficient Influence Curve)
-gen double d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
-gen double d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
-gen double IC = cond($flag == 1,(d1 - d0),(d1 - d0)* cin, .)
+gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
 qui sum IC
-local varICtmle = r(Var)/r(N)
+return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
 
 // Statistical inference ATE 
-local pvalue =  2 * (normalden(abs(`ATEtmle'/sqrt(`varICtmle'))))
-local LCIa   =  `ATEtmle' - 1.96 * sqrt(`varICtmle')
-local UCIa   =  `ATEtmle' + 1.96 * sqrt(`varICtmle')
+return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
+return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
+return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
 
 // Statistical inference RR
-gen double ICrr = (1/`Q1' * d1) + ((1/`Q0') * d0)
-qui sum ICrr
+gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
+qui sum `ICrr'
 local varICrr = r(Var)/r(N)
 
 local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
 local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
 // Statistical inference OR
-gen double ICor = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0 
-qui sum ICor
+gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0 
+qui sum `ICor'
 local varICor = r(Var)/r(N)
 
 local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
 local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
 // Display Results 
-local ATE  ""Risk Differences:"%10.2f `ATEtmle' "; SE:"%7.4f sqrt(`varICtmle') _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
-local ATEb  ""Risk Differences:"%10.2f `ATEtmle' "; VAR:"%7.1f `varICtmle' _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
-local line1 disp _dup(32) "_"
+
+return scalar CRR = `RRtmle'
+return scalar SE_log_CRR  = sqrt(`varICrr')
+return scalar MOR = `ORtmle'
+return scalar SE_log_MOR  = sqrt(`varICor')
 
 if $flag==1 {
-di _newline
-`line1'
+disp as text "{hline 32}"
 di "TMLE: Average Treatment Effect"
-`line1'
-di `ATE'
+disp as text "{hline 32}"
+disp as text "ATE:      " "{c |}" %7.4f as result return(ATEtmle)
+disp as text "SE:       " "{c |}" %7.4f as result return(ATE_SE_tmle)
+disp as text "P-value:  " "{c |}" %7.4f as result return(ATE_pvalue)
+disp as text "95%CI:    " "{c |}" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa)
+disp as text "{hline 32}"
 }
 else if $flag!=1{
-di _newline
-`line1'
-di "TMLE: Additive Causal Effect" 
-`line1'
-di `ATEb'
+disp as text "{hline 32}"
+di "TMLE: Average Treatment Effect"
+disp as text "{hline 32}"
+disp as text "ATE:      " "{c |}" %7.1f as result return(ATEtmle)
+disp as text "SE:       " "{c |}" %7.1f as result return(ATE_SE_tmle)
+disp as text "P-value:  " "{c |}" %7.4f as result return(ATE_pvalue)
+disp as text "95%CI:    " "{c |}" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa)
+disp as text "{hline 32}"
 }
 
-local rrbin ""CRR:"%9.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ","%3.2f `UCIrr' ")""
-local orbin ""MOR:"%9.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ","%3.2f `UCIOr' ")""
+local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
+local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
 
-di _newline
-`line1'
+disp as text "{hline 29}"
 di "TMLE: Causal Risk Ratio (CRR)" 
-`line1'
+disp as text "{hline 29}"
 di `rrbin'
-
-di _newline
-`line1'
+disp as text "{hline 29}"
+disp as text "{hline 31}"
 di "TMLE: Marginal Odds Ratio (MOR)" 
-`line1'
+disp as text "{hline 31}"
 di `orbin'
-
-drop ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps cin Y A eps* d1 d0
+disp as text "{hline 31}"
 
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
-label var ATE "Average Treatment Effect"
-label var IC "Variance ATE"
-label var PS "Propensity Score"
+label var ps "Propensity Score"
+
+drop d1 d0 POM1 POM0 ps QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin
 
 // Clean up
 quietly: rm SLS.R
 quietly: rm SLS.Rout
 quietly: rm data2.dta
-//quietly: rm data.csv
+quietly: rm data.csv
 quietly: rm .RData
 end
 
-program tmleglsrf
+program tmleglsrf, rclass 
 // Write R Code dependencies: foreign Surperlearner 
 set more off
 qui: file close _all
 qui: file open rcode using SLS.R, write replace
 qui: file write rcode ///
-        `"set.seed(123)"' _newline ///
+		`"set.seed(123)"' _newline ///
         `"list.of.packages <- c("foreign","SuperLearner","glmnet","randomForest")"' _newline ///
         `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
         `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
@@ -532,86 +544,86 @@ qui: file write rcode ///
         `"write.dta(data, "data2.dta")"'  
 qui: file close rcode
 
-if "`c(os)'" == "MacOSX" {
-// Run R (you have to specify the path of your R executable file)
-//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
-shell "/usr/local/bin/r" CMD BATCH SLS.R 
-}
-else{
-// Write bacth file to find R.exe path and R version
-set more off
-qui: file close _all
-qui: file open bat using setup.bat, write replace
-qui: file write bat ///
-`"@echo off"' _newline ///
-`"SET PATHROOT=C:\Program Files\R\"' _newline ///
-`"echo Locating path of R..."' _newline ///
-`"echo."' _newline ///
-`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
-`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
-        `"echo Found %%r"' _newline ///
-        `"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-        `"echo All set!"' _newline ///  
-        `"goto:DONE"' _newline ///
-`")"' _newline ///
-`":NO_R"' _newline ///
-`"echo R is not installed in your system."' _newline ///
-`"echo."' _newline ///
-`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
-`"echo Install it and re-run this script"' _newline ///
-`":DONE"' _newline ///
-`"echo."' _newline ///
-`"pause"'
-qui: file close bat
-//Run batch
-shell setup.bat 
-//Run R 
-do runr.do
-}
+	if "`c(os)'" == "MacOSX" {
+	// Run R (you have to specify the path of your R executable file)
+	//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
+	shell "/usr/local/bin/r" CMD BATCH SLS.R 
+	}
+	else{
+	// Write bacth file to find R.exe path and R version
+	set more off
+	qui: file close _all
+	qui: file open bat using setup.bat, write replace
+	qui: file write bat ///
+	`"@echo off"' _newline ///
+	`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+	`"echo Locating path of R..."' _newline ///
+	`"echo."' _newline ///
+	`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+	`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
+			`"echo Found %%r"' _newline ///
+			`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
+			`"echo All set!"' _newline ///  
+			`"goto:DONE"' _newline ///
+	`")"' _newline ///
+	`":NO_R"' _newline ///
+	`"echo R is not installed in your system."' _newline ///
+	`"echo."' _newline ///
+	`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+	`"echo Install it and re-run this script"' _newline ///
+	`":DONE"' _newline ///
+	`"echo."' _newline ///
+	`"pause"'
+	qui: file close bat
+	//Run batch
+	shell setup.bat 
+	//Run R 
+	do runr.do
+	}
 
 // Read Revised Data Back to Stata
 clear
 quietly: use "data2.dta", clear
-
+tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 // Q to logit scale
-gen double logQAW = log(QAW / (1 - QAW))
-gen double logQ1W = log(Q1W / (1 - Q1W))
-gen double logQ0W = log(Q0W / (1 - Q0W))
+gen `logQAW' = log(QAW / (1 - QAW))
+gen `logQ1W' = log(Q1W / (1 - Q1W))
+gen `logQ0W' = log(Q0W / (1 - Q0W))
  
 // Clever covariate HAW
-gen double HAW = (A / ps) - ((1 - A) / (1 - ps))
-gen double H1W = A / ps
-gen double H0W = (1 - A) / (1 - ps)
+gen  `HAW' = (A / ps) - ((1 - A) / (1 - ps))
+gen  `H1W' = A / ps
+gen  `H0W' = (1 - A) / (1 - ps)
 
 // Estimation of the substitution parameter (Epsilon)
-qui glm Y H1W H0W, fam(binomial) offset(logQAW) robust noconstant
+qui glm Y `H1W' `H0W', fam(binomial) offset(`logQAW') robust noconstant
 mat a= e(b)
-gen double eps1 = a[1,1]
-gen double eps2 = a[1,2]
+gen `eps1' = a[1,1]
+gen `eps2' = a[1,2]
 
-qui glm Y HAW, fam(binomial) offset(logQAW) robust noconstant
+qui glm Y `HAW', fam(binomial) offset(`logQAW') robust noconstant
 mat a= e(b)
-gen double eps = a[1,1]
+gen `eps' = a[1,1]
 
 
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
-gen double Qa0star = exp(H0W*eps + logQ0W)/(1 + exp(H0W*eps + logQ0W))
-gen double Qa1star = exp(H1W*eps + logQ1W)/(1 + exp(H1W*eps + logQ1W))
+gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
+gen double Qa1star = exp(`H1W'*`eps' + `logQ1W')/(1 + exp(`H1W'*`eps' + `logQ1W'))
 
-gen double Q0star = exp(H0W*eps2 + logQ0W)/(1 + exp(H0W*eps2 + logQ0W))
-gen double Q1star = exp(H1W*eps1 + logQ1W)/(1 + exp(H1W*eps1 + logQ1W))
+gen double Q0star = exp(`H0W'*`eps2' + `logQ0W')/(1 + exp(`H0W'*`eps2' + `logQ0W'))
+gen double Q1star = exp(`H1W'*`eps1' + `logQ1W')/(1 + exp(`H1W'*`eps1' + `logQ1W'))
+
 gen double cin = ($b - $a)
 
 gen double POM1 = cond($flag == 1, Q1star, Qa1star * cin, .)
-gen double POM0 = cond($flag == 1, Q0star, Qa0star * cin, .)
+gen double POM0 = cond($flag == 1, Q1star, Qa0star * cin, .)
 
-gen   PS = ps
-summ  POM1 POM0 PS
+summ POM1 POM0 ps
 
 // Estimating the updated targeted ATE binary outcome
-gen double ATE = cond($flag == 1,(Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
+gen double ATE = cond($flag == 1, (Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
 qui sum ATE
-local ATEtmle = r(mean)
+return scalar ATEtmle = r(mean)
 
 // Relative risk
 qui sum Q1star
@@ -624,82 +636,86 @@ local RRtmle = `Q1'/`Q0'
 local logRRtmle = log(`Q1') - log(`Q0')
 local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
 
-
 // Statistical inference (Efficient Influence Curve)
-gen double d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
-gen double d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
-gen double IC = cond($flag == 1,(d1 - d0),(d1 - d0)* cin, .)
+gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
 qui sum IC
-local varICtmle = r(Var)/r(N)
+return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
 
 // Statistical inference ATE 
-local pvalue =  2 * (normalden(abs(`ATEtmle'/sqrt(`varICtmle'))))
-local LCIa   =  `ATEtmle' - 1.96 * sqrt(`varICtmle')
-local UCIa   =  `ATEtmle' + 1.96 * sqrt(`varICtmle')
+return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
+return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
+return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
 
 // Statistical inference RR
-gen double ICrr = (1/`Q1' * d1) + ((1/`Q0') * d0)
-qui sum ICrr
+gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
+qui sum `ICrr'
 local varICrr = r(Var)/r(N)
 
 local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
 local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
 // Statistical inference OR
-gen double ICor = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0 
-qui sum ICor
+gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0 
+qui sum `ICor'
 local varICor = r(Var)/r(N)
 
 local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
 local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
 // Display Results 
-local ATE  ""Risk Differences:"%10.2f `ATEtmle' "; SE:"%7.4f sqrt(`varICtmle') _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
-local ATEb  ""Risk Differences:"%10.2f `ATEtmle' "; VAR:"%7.1f `varICtmle' _col(1) "; p-value:"%7.4f `pvalue' _col(1)"; 95%CI:("%7.2f `LCIa' ","%7.2f `UCIa' ")""
-local line1 disp _dup(32) "_"
+
+return scalar CRR = `RRtmle'
+return scalar SE_log_CRR  = sqrt(`varICrr')
+return scalar MOR = `ORtmle'
+return scalar SE_log_MOR  = sqrt(`varICor')
 
 if $flag==1 {
-di _newline
-`line1'
+disp as text "{hline 32}"
 di "TMLE: Average Treatment Effect"
-`line1'
-di `ATE'
+disp as text "{hline 32}"
+disp as text "ATE:      " "{c |}" %7.4f as result return(ATEtmle)
+disp as text "SE:       " "{c |}" %7.4f as result return(ATE_SE_tmle)
+disp as text "P-value:  " "{c |}" %7.4f as result return(ATE_pvalue)
+disp as text "95%CI:    " "{c |}" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa)
+disp as text "{hline 32}"
 }
 else if $flag!=1{
-di _newline
-`line1'
-di "TMLE: Additive Causal Effect" 
-`line1'
-di `ATEb'
+disp as text "{hline 32}"
+di "TMLE: Average Treatment Effect"
+disp as text "{hline 32}"
+disp as text "ATE:      " "{c |}" %7.1f as result return(ATEtmle)
+disp as text "SE:       " "{c |}" %7.1f as result return(ATE_SE_tmle)
+disp as text "P-value:  " "{c |}" %7.4f as result return(ATE_pvalue)
+disp as text "95%CI:    " "{c |}" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa)
+disp as text "{hline 32}"
 }
 
-local rrbin ""CRR:"%9.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ","%3.2f `UCIrr' ")""
-local orbin ""MOR:"%9.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ","%3.2f `UCIOr' ")""
+local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
+local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
 
-di _newline
-`line1'
+disp as text "{hline 29}"
 di "TMLE: Causal Risk Ratio (CRR)" 
-`line1'
+disp as text "{hline 29}"
 di `rrbin'
-
-di _newline
-`line1'
+disp as text "{hline 29}"
+disp as text "{hline 31}"
 di "TMLE: Marginal Odds Ratio (MOR)" 
-`line1'
+disp as text "{hline 31}"
 di `orbin'
-
-drop ICrr ICor logQAW logQ1W logQ0W HAW H1W H0W QAW Q1W Q0W Q1star Q0star ps cin Y A eps* d1 d0
+disp as text "{hline 31}"
 
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
-label var ATE "Average Treatment Effect"
-label var IC "Variance ATE"
-label var PS "Propensity Score"
+label var ps "Propensity Score"
+
+drop d1 d0 POM1 POM0 ps QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin
 
 // Clean up
 quietly: rm SLS.R
 quietly: rm SLS.Rout
 quietly: rm data2.dta
-//quietly: rm data.csv
+quietly: rm data.csv
 quietly: rm .RData
 end
