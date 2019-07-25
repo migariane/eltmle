@@ -1,5 +1,5 @@
 {smcl}
-{right: version 2.2.4  July 24th, 2018}
+{right: version 2.2.4  July 24th, 2019}
 {...}
 
 {title:Title}
