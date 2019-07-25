@@ -187,8 +187,8 @@ gen double Q1star = exp(`H1W'*`eps1' + `logQ1W')/(1 + exp(`H1W'*`eps1' + `logQ1W
 
 gen double cin = ($b - $a)
 
-gen double POM1 = cond($flag == 1, Q1star, Qa1star * cin, .)
-gen double POM0 = cond($flag == 1, Q0star, Qa0star * cin, .)
+gen double POM1 = cond($flag == 1, Qa1star, Qa1star * cin, .)
+gen double POM0 = cond($flag == 1, Qa0star, Qa0star * cin, .)
 
 summ POM1 POM0 ps
 
@@ -401,8 +401,8 @@ gen double Q1star = exp(`H1W'*`eps1' + `logQ1W')/(1 + exp(`H1W'*`eps1' + `logQ1W
 
 gen double cin = ($b - $a)
 
-gen double POM1 = cond($flag == 1, Q1star, Qa1star * cin, .)
-gen double POM0 = cond($flag == 1, Q0star, Qa0star * cin, .)
+gen double POM1 = cond($flag == 1, Qa1star, Qa1star * cin, .)
+gen double POM0 = cond($flag == 1, Qa0star, Qa0star * cin, .)
 
 summ POM1 POM0 ps
 
@@ -615,8 +615,8 @@ gen double Q1star = exp(`H1W'*`eps1' + `logQ1W')/(1 + exp(`H1W'*`eps1' + `logQ1W
 
 gen double cin = ($b - $a)
 
-gen double POM1 = cond($flag == 1, Q1star, Qa1star * cin, .)
-gen double POM0 = cond($flag == 1, Q0star, Qa0star * cin, .)
+gen double POM1 = cond($flag == 1, Qa1star, Qa1star * cin, .)
+gen double POM0 = cond($flag == 1, Qa0star, Qa0star * cin, .)
 
 summ POM1 POM0 ps
 
