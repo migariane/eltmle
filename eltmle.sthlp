@@ -77,6 +77,16 @@ described above, the Lasso (glmnet R package), Random Forest (randomForest R pac
 This option might be suitable for heterogeneous treatment effects.
 {p_end}
 
+
+{title:Resutls}
+
+In addtion to the ATE, the ATE's standard error and p-value, the marginal odds ratio (MOR), and the causal risk ratio (CRR), 
+including their respective type Wald 95%CIs, {hi:eltmle} output provides a descriptive summary for the potential outcomes (POM) and the propensity score (ps):
+{hi: POM1}: Potential outcome among the treated
+{hi: POM0}: Potential outcome among the non-treated
+{hi: ps}: Propensity score 
+
+
 {title:Example}
 
 **********************************************
@@ -245,6 +255,10 @@ Scalars
         {hi: r(ATE_pvalue)} 		Risk difference pvalue
         {hi: (ATE_SE_tmle)} 		Standard error Risk difference
         {hi:    r(ATEtmle)} 		Risk difference
+		
+{title:Version in development: updates}		
+
+{browse "https://github.com/migariane/eltmle/tree/master": https://github.com/migariane/eltmle/tree/master}
 
 {title:References}
 	
