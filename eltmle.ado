@@ -286,7 +286,7 @@ label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ps "Propensity Score"
 
-drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin
+drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin POM1 POM0 ps
 
 // Clean up
 quietly: rm SLS.R
@@ -295,6 +295,7 @@ quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm fulldata.csv
 quietly: rm .RData
+quietly: memory clean
 end
 
 program tmlebgam, rclass 
@@ -501,7 +502,7 @@ label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ps "Propensity Score"
 
-drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin
+drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin POM1 POM0 ps
 
 // Clean up
 quietly: rm SLS.R
@@ -510,7 +511,8 @@ quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm fulldata.csv
 quietly: rm .RData
-end
+quietly: memory clean
+end 
 
 program tmleglsrf, rclass 
 // Write R Code dependencies: foreign Surperlearner 
@@ -716,7 +718,7 @@ label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ps "Propensity Score"
 
-drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin
+drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin POM1 POM0 ps
 
 // Clean up
 quietly: rm SLS.R
@@ -725,4 +727,5 @@ quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm fulldata.csv
 quietly: rm .RData
+quietly: memory clean
 end
