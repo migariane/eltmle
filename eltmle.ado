@@ -334,7 +334,7 @@ qui: file write rcode ///
         `"ps[ps<0.025] <- 0.025"' _newline ///
         `"ps[ps>0.975] <- 0.975"' _newline ///
         `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-        `"write.dta(data, "data2.dta")"'  _newline ///  
+        `"write.dta(data, "data2.dta")"'   
 qui: file close rcode
 
 	if "`c(os)'" == "MacOSX" {
@@ -550,7 +550,7 @@ qui: file write rcode ///
         `"ps[ps<0.025] <- 0.025"' _newline ///
         `"ps[ps>0.975] <- 0.975"' _newline ///
         `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-        `"write.dta(data, "data2.dta")"'  _newline ///
+        `"write.dta(data, "data2.dta")"' 
 qui: file close rcode
 
 	if "`c(os)'" == "MacOSX" {
