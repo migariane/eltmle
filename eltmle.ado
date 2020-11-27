@@ -71,7 +71,7 @@ program define eltmle
 		 qui save "`data'.dta", replace 
          qui export delimited `var' using "data.csv", nolabel replace 
          qui export delimited using "fulldata.csv", nolabel replace 
-       if "`tmlebgam'" == "" & "`tmleglsrf'" == "" {
+         if "`tmlebgam'" == "" & "`tmleglsrf'" == "" {
                 tmle `varlist'  
                 }
          else if "`tmlebgam'" == "tmlebgam" {
@@ -288,6 +288,11 @@ label var ps "Propensity Score"
 
 drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin POM1 POM0 ps
 
+capture confirm variable cin
+if (_rc == 0) {
+   drop cin
+}
+
 // Clean up
 quietly: rm SLS.R
 quietly: rm SLS.Rout
@@ -503,6 +508,10 @@ label var POM0 "Potential Otucome Y(0)"
 label var ps "Propensity Score"
 
 drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin POM1 POM0 ps
+capture confirm variable cin
+if (_rc == 0) {
+   drop cin
+}
 
 // Clean up
 quietly: rm SLS.R
@@ -719,6 +728,10 @@ label var POM0 "Potential Otucome Y(0)"
 label var ps "Propensity Score"
 
 drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin POM1 POM0 ps
+capture confirm variable cin
+if (_rc == 0) {
+   drop cin
+}
 
 // Clean up
 quietly: rm SLS.R
