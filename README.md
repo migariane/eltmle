@@ -1,5 +1,4 @@
 # eltmle: Ensemble Learning Targeted Maximum Likelihood Estimation (Implementation for Stata software)  
-# modified by Camille
 
 **Modern Epidemiology** has been able to identify significant limitations of classic epidemiological methods, like outcome regression analysis, when estimating causal quantities such as the average treatment effect (ATE) or the causal odds ratio, for observational data.       
 
