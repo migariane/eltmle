@@ -41,14 +41,14 @@ THE SOFTWARE.
 * Included estimation for continuous outcomes 
 * Included marginal odds ratio
 * Improved estimation of the clever covariate for both H1W and H0W
-* Included Influence curve (IC) estimation for the marginal OR
-* Improved IC estimation  
+* Included Influence function (IF) estimation for the marginal OR
+* Improved IF estimation  
 * Update globals to locals where possible
 * Just one ado file for both Mac and Windows users
 * Included additive effect for continuous outcomes
 * Fixed ATE 95%CI for additive risk difference 15.10.2018
 * Included HAW as a sampling weight in MLE for targeted step (gain in efficiency) for the ATE
-* Updated as a rclass programm: returning scalars for ATE, ATE 95%CI, ATE SE, CRR, MOR and CRR, MOR SEs
+* Updated as a rclass program: returning scalars for ATE, ATE 95%CI, ATE SE, CRR, MOR and CRR, MOR SEs
 * Improved the output display 
 * Keep initial dataset 20.11.2020
 
@@ -116,9 +116,9 @@ qui: file write rcode ///
         `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"))"' _newline ///
         `"ps <- g[[4]]"' _newline ///
         `"ps[ps<0.025] <- 0.025"' _newline ///
-        `"ps[ps>0.975] <- 0.975"' _newline ///
-        `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-        `"write.dta(data, "data2.dta")"'  
+		`"ps[ps>0.975] <- 0.975"' _newline ///
+		`"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+		`"write.dta(data, "data2.dta")"'
 qui: file close rcode
 
 	if "`c(os)'" == "MacOSX" {
@@ -332,9 +332,9 @@ qui: file write rcode ///
         `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"))"' _newline ///
         `"ps <- g[[4]]"' _newline ///
         `"ps[ps<0.025] <- 0.025"' _newline ///
-        `"ps[ps>0.975] <- 0.975"' _newline ///
-        `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-        `"write.dta(data, "data2.dta")"'   
+		`"ps[ps>0.975] <- 0.975"' _newline ///
+		`"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+		`"write.dta(data, "data2.dta")"'
 qui: file close rcode
 
 	if "`c(os)'" == "MacOSX" {
@@ -548,9 +548,9 @@ qui: file write rcode ///
         `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"))"' _newline ///
         `"ps <- g[[4]]"' _newline ///
         `"ps[ps<0.025] <- 0.025"' _newline ///
-        `"ps[ps>0.975] <- 0.975"' _newline ///
-        `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-        `"write.dta(data, "data2.dta")"' 
+		`"ps[ps>0.975] <- 0.975"' _newline ///
+		`"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+		`"write.dta(data, "data2.dta")"'
 qui: file close rcode
 
 	if "`c(os)'" == "MacOSX" {
