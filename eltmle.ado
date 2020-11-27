@@ -120,10 +120,8 @@ qui: file write rcode ///
 		`"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
 		`"write.dta(data, "data2.dta")"'
 qui: file close rcode
-
+	
 	if "`c(os)'" == "MacOSX" {
-	// Run R (you have to specify the path of your R executable file)
-	//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
 	shell "/usr/local/bin/r" CMD BATCH SLS.R 
 	}
 	else{
@@ -339,8 +337,6 @@ qui: file write rcode ///
 qui: file close rcode
 
 	if "`c(os)'" == "MacOSX" {
-	// Run R (you have to specify the path of your R executable file)
-	//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
 	shell "/usr/local/bin/r" CMD BATCH SLS.R 
 	}
 	else{
@@ -556,8 +552,6 @@ qui: file write rcode ///
 qui: file close rcode
 
 	if "`c(os)'" == "MacOSX" {
-	// Run R (you have to specify the path of your R executable file)
-	//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
 	shell "/usr/local/bin/r" CMD BATCH SLS.R 
 	}
 	else{
