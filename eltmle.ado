@@ -1,11 +1,13 @@
-*! version 2.2.4  24.July.2019
+*! version 2.2.5  20.Nov.2020
 *! ELTMLE: Stata module for Ensemble Learning Targeted Maximum Likelihood Estimation
 *! by Miguel Angel Luque-Fernandez [cre,aut]
+*! and Camille Maringe [aut]
 *! Bug reports:
 *! miguel-angel.luque at lshtm.ac.uk
+*! camille.maringe at lshtm.ac.uk
 
 /*
-Copyright (c) 2019  <Miguel Angel Luque-Fernandez>
+Copyright (c) 2020  <Miguel Angel Luque-Fernandez> & <Camille Maringe>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +34,7 @@ THE SOFTWARE.
 ** TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OR CONTINUOUS 
 ** OUTCOME AND BINARY TREATMENT FOR MAC and WINDOWS USERS 
 ** This program requires R to be installed in your computer
-** June 2019
+** November 2020
 ****************************************************************************
 
 * Improved the output including potential outcomes and propensity score 
@@ -45,9 +47,10 @@ THE SOFTWARE.
 * Just one ado file for both Mac and Windows users
 * Included additive effect for continuous outcomes
 * Fixed ATE 95%CI for additive risk difference 15.10.2018
-* Included HAW as a sampling weight in MLE for targerted step (gain in efficiency) for the ATE
+* Included HAW as a sampling weight in MLE for targeted step (gain in efficiency) for the ATE
 * Updated as a rclass programm: returning scalars for ATE, ATE 95%CI, ATE SE, CRR, MOR and CRR, MOR SEs
 * Improved the output display 
+* Keep initial dataset 20.11.2020
 
 capture program drop eltmle
 program define eltmle
@@ -67,7 +70,8 @@ program define eltmle
 		 tempfile data
 		 qui save "`data'.dta", replace 
          qui export delimited `var' using "data.csv", nolabel replace 
-         if "`tmlebgam'" == "" & "`tmleglsrf'" == "" {
+         qui export delimited using "fulldata.csv", nolabel replace 
+       if "`tmlebgam'" == "" & "`tmleglsrf'" == "" {
                 tmle `varlist'  
                 }
          else if "`tmlebgam'" == "tmlebgam" {
@@ -91,6 +95,7 @@ qui: file write rcode ///
         `"library(SuperLearner)"' _newline ///
         `"library(foreign)"' _newline ///
         `"data <- read.csv("data.csv", sep=",")"' _newline ///
+        `"fulldata <- read.csv("fulldata.csv", sep=",")"' _newline ///
         `"attach(data)"' _newline ///
         `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction")"' _newline ///
         `"n <- nrow(data)"' _newline ///
@@ -112,7 +117,7 @@ qui: file write rcode ///
         `"ps <- g[[4]]"' _newline ///
         `"ps[ps<0.025] <- 0.025"' _newline ///
         `"ps[ps>0.975] <- 0.975"' _newline ///
-        `"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+        `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
         `"write.dta(data, "data2.dta")"'  
 qui: file close rcode
 
@@ -156,6 +161,7 @@ qui: file close rcode
 // Read Revised Data Back to Stata
 clear
 quietly: use "data2.dta", clear
+qui cap drop X__000000
 tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 // Q to logit scale
 gen `logQAW' = log(QAW / (1 - QAW))
@@ -282,7 +288,7 @@ label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ps "Propensity Score"
 
-drop d1 d0 POM1 POM0 ps QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin
+drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin
 
 // Clean up
 quietly: rm SLS.R
@@ -305,6 +311,7 @@ qui: file write rcode ///
         `"library(SuperLearner)"' _newline ///
         `"library(foreign)"' _newline ///
         `"data <- read.csv("data.csv", sep=",")"' _newline ///
+        `"fulldata <- read.csv("fulldata.csv", sep=",")"' _newline ///
         `"attach(data)"' _newline ///
         `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.bayesglm")"' _newline ///
         `"n <- nrow(data)"' _newline ///
@@ -326,7 +333,7 @@ qui: file write rcode ///
         `"ps <- g[[4]]"' _newline ///
         `"ps[ps<0.025] <- 0.025"' _newline ///
         `"ps[ps>0.975] <- 0.975"' _newline ///
-        `"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+        `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
         `"write.dta(data, "data2.dta")"'    
 qui: file close rcode
 
@@ -370,6 +377,7 @@ qui: file close rcode
 // Read Revised Data Back to Stata
 clear
 quietly: use "data2.dta", clear
+qui cap drop X__000000
 tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 // Q to logit scale
 gen `logQAW' = log(QAW / (1 - QAW))
@@ -496,7 +504,7 @@ label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ps "Propensity Score"
 
-drop d1 d0 POM1 POM0 ps QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin
+drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin
 
 // Clean up
 quietly: rm SLS.R
@@ -519,6 +527,7 @@ qui: file write rcode ///
         `"library(SuperLearner)"' _newline ///
         `"library(foreign)"' _newline ///
         `"data <- read.csv("data.csv", sep=",")"' _newline ///
+        `"fulldata <- read.csv("fulldata.csv", sep=",")"' _newline ///
         `"attach(data)"' _newline ///
         `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.glmnet","SL.randomForest")"' _newline ///
         `"n <- nrow(data)"' _newline ///
@@ -540,7 +549,7 @@ qui: file write rcode ///
         `"ps <- g[[4]]"' _newline ///
         `"ps[ps<0.025] <- 0.025"' _newline ///
         `"ps[ps>0.975] <- 0.975"' _newline ///
-        `"data <- cbind(data,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+        `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
         `"write.dta(data, "data2.dta")"'  
 qui: file close rcode
 
@@ -584,6 +593,7 @@ qui: file close rcode
 // Read Revised Data Back to Stata
 clear
 quietly: use "data2.dta", clear
+qui cap drop X__000000
 tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 // Q to logit scale
 gen `logQAW' = log(QAW / (1 - QAW))
@@ -710,7 +720,7 @@ label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ps "Propensity Score"
 
-drop d1 d0 POM1 POM0 ps QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin
+drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin
 
 // Clean up
 quietly: rm SLS.R

@@ -1,5 +1,5 @@
 {smcl}
-{right: version 2.2.4  July 24th, 2019}
+{right: version 2.2.5  November 20th, 2020}
 {...}
 
 {title:Title}
@@ -106,9 +106,7 @@ including their respective type Wald 95%CIs, {hi:eltmle} output provides a descr
 ******************
 
 ******************************************************
-.preserve
 .eltmle lbw mbsmoke mage medu prenatal mmarried, tmle
-.restore
 ******************************************************
 
     Variable |        Obs        Mean    Std. Dev.       Min        Max
@@ -140,9 +138,7 @@ MOR: 2.11; 95%CI:(1.50, 2.72)
 **********************
 
 ***********************************************************
-.preserve 
 .eltmle bweight mbsmoke mage medu prenatal mmarried, tmle
-.restore
 ***********************************************************
 
     Variable |        Obs        Mean    Std. Dev.       Min        Max
@@ -175,9 +171,7 @@ MOR: 0.83; 95%CI:(0.80, 0.87)
 ***************************************************************
 
 ***************************************************************
-.preserve
 .eltmle bweight mbsmoke mage medu prenatal mmarried, tmleglsrf
-.restore
 ***************************************************************
 
     Variable |        Obs        Mean    Std. Dev.       Min        Max
@@ -235,10 +229,6 @@ at the following path: {hi:"C:\Program Files\R\R-X.X.X\bin\x64\R.exe"}. In case 
 is located in the above highlighted path users would like to keep the latest.
 {p_end}
 
-{p 4 4 2 120}
-Remember 6: In case you want to preserve the original dataset you can use the 
-preserve restore Stata functionality in combination to the Stata {hi: eltmle} command as shown in the previous example.
-{p_end}
 
 {title:Stored results}
 
@@ -303,5 +293,5 @@ London, UK.{p_end}
 {title:Also see}
 
 {psee}
-Online:  {helpb teffects}
+Online:  {help teffects}
 {p_end}
