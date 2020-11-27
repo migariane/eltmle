@@ -295,6 +295,7 @@ quietly: rm SLS.R
 quietly: rm SLS.Rout
 quietly: rm data2.dta
 quietly: rm data.csv
+quietly: rm fulldata.csv
 quietly: rm .RData
 end
 
@@ -511,6 +512,7 @@ quietly: rm SLS.R
 quietly: rm SLS.Rout
 quietly: rm data2.dta
 quietly: rm data.csv
+quietly: rm fulldata.csv
 quietly: rm .RData
 end
 
@@ -727,5 +729,6 @@ quietly: rm SLS.R
 quietly: rm SLS.Rout
 quietly: rm data2.dta
 quietly: rm data.csv
+quietly: rm fulldata.csv
 quietly: rm .RData
 end
