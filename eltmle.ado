@@ -47,9 +47,9 @@ THE SOFTWARE.
 * Just one ado file for both Mac and Windows users
 * Included additive effect for continuous outcomes
 * Fixed ATE 95%CI for additive risk difference 15.10.2018
-* Included HAW as a sampling weight in MLE for targeted step (gain in efficiency) for the ATE
+* Updated HAW as a sampling weight in MLE for targeted step (gain in efficiency) for the ATE
 * Updated as a rclass program: returning scalars for ATE, ATE 95%CI, ATE SE, CRR, MOR and CRR, MOR SEs
-* Improved the output display 
+* Improved the output display July 2019
 * Keep initial dataset 20.11.2020
 
 capture program drop eltmle
