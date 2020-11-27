@@ -56,6 +56,7 @@ capture program drop eltmle
 program define eltmle
 		 syntax varlist(min=3) [if] [pw] [, tmle tmlebgam tmleglsrf] 
          version 13.2
+		 qui export delimited using "fulldata.csv", nolabel replace 
          marksample touse
          local var `varlist' if `touse'
          tokenize `var'
@@ -70,7 +71,7 @@ program define eltmle
 		 tempfile data
 		 qui save "`data'.dta", replace 
          qui export delimited `var' using "data.csv", nolabel replace 
-         qui export delimited using "fulldata.csv", nolabel replace 
+
          if "`tmlebgam'" == "" & "`tmleglsrf'" == "" {
                 tmle `varlist'  
                 }
