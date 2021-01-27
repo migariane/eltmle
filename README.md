@@ -62,7 +62,7 @@ Twitter @WATZILEI
 You can cite this repository as:  
 Luque-Fernandez MA and Camille Maringe (2021). Ensemble Targeted Maximum Likelihood Estimation for a Binary Treatment. GitHub repository, https://github.com/migariane/eltmle          
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2560828.svg)](https://doi.org/10.5281/zenodo.2560828)
+[![DOI](https://zenodo.org/badge/84352161.svg)](https://zenodo.org/badge/latestdoi/84352161)
 
 # Copyright
 This software is distributed under the GPL-2 license.
