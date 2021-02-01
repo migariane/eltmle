@@ -266,7 +266,7 @@ Binary Outcome: Tutorial and Guided Implementation {browse "http://migariane.git
 {p_end}
 
 {p 4 4 2 120}
-Matthew James Smith, Camille Maringe, Bernard Rachet, Mohammad A. Mansournia, Paul Zivich, Stephen R. Cole, Miguel Angel Luque Fernandez (2021).  Tutorial: Introduction to computational causal inference for applied researchers and epidemiologists {browse "https://github.com/migariane/TutorialCausalInferenceEstimators":link}.
+Matthew James Smith, Mohammad A. Mansournia, Camille Maringe, Clemence Leyrat, Aurelien Belot, Bernard Rachet, Paul Zivich, Stephen R. Cole, Miguel Angel Luque Fernandez (2021). Tutorial: Introduction to computational causal inference for applied researchers and epidemiologists {browse "https://github.com/migariane/TutorialCausalInferenceEstimators":link}.
 {p_end}
 
 {p 4 4 2 120}
