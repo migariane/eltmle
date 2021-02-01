@@ -46,21 +46,18 @@ THE SOFTWARE.
 * Update globals to locals where possible
 * Just one ado file for both Mac and Windows users
 * Included additive effect for continuous outcomes
-<<<<<<< HEAD
 * Fixed ATE 95%CI for additive risk difference (Updated: 15.10.2018)
 * Included HAW as a sampling weight in MLE for targeted step (gain in efficiency) for the ATE (Updated: 05.02.2019)
 * Updated as a rclass programm: returning scalars for ATE, ATE 95%CI, ATE SE, CRR, MOR, CRR SEs, and MOR SEs (Updated: 01.07.2019)
 * Improved the output display (Updated: 01.07.2019)
 * Keep initial dataset (Updated: 20.11.2020)
 * Added bal option to visually display postivity violations (Updated: 09.01.2021)
-=======
 * Fixed ATE 95%CI for additive risk difference 15.10.2018
-* Included HAW as a sampling weight in MLE for targeted step (gain in efficiency) for the ATE 05.02.2019
-* Updated as a rclass programm: returning scalars for ATE, ATE 95%CI, ATE SE, CRR, MOR and CRR, MOR SEs 01.07.2019
-* Improved the output display 01.07.2019
-* Keep initial dataset 20.11.2020
-* Added bal option to visually display postivity violations 09.01.2021
->>>>>>> 19243d8a8f2bb4d1b123e7ec5071da8e0a7da491
+* Included HAW as a sampling weight in MLE for targeted step (gain in efficiency) for the ATE (Updated: 05.02.2019)
+* Updated as a rclass programm: returning scalars for ATE, ATE 95%CI, ATE SE, CRR, MOR and CRR, MOR SEs (Updated: 01.07.2019)
+* Improved the output display (Updated: 01.07.2019
+* Keep initial dataset (Updated: 20.11.2020)
+* Added bal option to visually display postivity violations (Updated: 09.01.2021)
 
 capture program drop eltmle
 program define eltmle
@@ -183,11 +180,8 @@ qui: file close rcode
 clear
 quietly: use "data2.dta", clear
 qui cap drop X__000000
-<<<<<<< HEAD
 tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor 
-=======
-tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
->>>>>>> 19243d8a8f2bb4d1b123e7ec5071da8e0a7da491
+
 // Q to logit scale
 gen `logQAW' = log(QAW / (1 - QAW))
 gen `logQ1W' = log(Q1W / (1 - Q1W))
@@ -221,15 +215,7 @@ gen double cin = ($b - $a)
 gen double POM1 = cond($flag == 1, Qa1star, Qa1star * cin, .)
 gen double POM0 = cond($flag == 1, Qa0star, Qa0star * cin, .)
 
-<<<<<<< HEAD
-label var POM1 "Potential Outcome Y(1)"
-label var POM0 "Potential Otucome Y(0)"
-label var   ps "Propensity Score"
-
 sum POM1 POM0 ps
-=======
-summ POM1 POM0 ps
->>>>>>> 19243d8a8f2bb4d1b123e7ec5071da8e0a7da491
 
 // Estimating the updated targeted ATE binary outcome
 gen double ATE = cond($flag == 1, (Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
@@ -317,15 +303,11 @@ disp as text "{hline 31}"
 di `orbin'
 disp as text "{hline 31}"
 
-<<<<<<< HEAD
-drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin ps POM0 POM1 
-=======
 label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ps "Propensity Score"
 
 drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin POM1 POM0 ps
->>>>>>> 19243d8a8f2bb4d1b123e7ec5071da8e0a7da491
 
 capture confirm variable cin
 if (_rc == 0) {
