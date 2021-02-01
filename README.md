@@ -32,12 +32,16 @@ To install eltmle directly from github you need to use a Stata module for instal
         .ado uninstall eltmle   
      
  
-# Author 
+# Authors  
 [Author and Developer]
-Miguel Angel Luque-Fernandez, LSHTM, NCDE, Cancer Survival Group, London, UK    
+Miguel Angel Luque-Fernandez, LSHTM, NCDE, ICON Group, London, UK    
 Email: miguel-angel.luque@lshtm.ac.uk 
 
-# Contributors:
+[Developer]
+Camille Maringe, LSHTM, NCDE, ICON Group, London, UK    
+Email: camille.maringe@lshtm.ac.uk 
+
+# Contributors  
 [Intellectual advice and suggestions for improvement]
 
 Michael Schomaker, CIDER, UCT, Cape Town, South Africa      
@@ -56,15 +60,14 @@ Twitter @WATZILEI
 
 # Citation    
 You can cite this repository as:  
-Luque-Fernandez MA, (2018). Ensemble Targeted Maximum Likelihood Estimation for a Binary Treatment. 
-GitHub repository, https://github.com/migariane/eltmle          
+Luque-Fernandez MA and Camille Maringe (2021). Ensemble Targeted Maximum Likelihood Estimation for a Binary Treatment. GitHub repository, https://github.com/migariane/eltmle          
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2560828.svg)](https://doi.org/10.5281/zenodo.2560828)
+[![DOI](https://zenodo.org/badge/84352161.svg)](https://zenodo.org/badge/latestdoi/84352161)
 
 # Copyright
 This software is distributed under the GPL-2 license.
 
 # Acknowledgments  
-Miguel Angel Luque Fernandez is supported by a Miguel Servet I Investigator Award (grant CP17/00206) from the Carlos III National Institute of Health, Madrid, Spain.  
+Miguel Angel Luque Fernandez is supported by a Miguel Servet I Investigator Award (grant CP17/00206) from the Carlos III National Institute of Health, Madrid, Spain.   
 
 ![Figure Link](https://github.com/migariane/eltmle/blob/master/Acknowledgment.png)   
