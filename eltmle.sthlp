@@ -215,19 +215,39 @@ Remember 2: You must change your working directory to the location of the Stata.
 {p_end}
 
 {p 4 4 2 120}
-Remember 3: Mac users must have installed R software on their personal computer as
+Remember 3: eltmle only works with complete case datasets (i.e., no missing data). 
+You must impute your missing values before running eltmle.
+See the example here below using the sys auto data:
+{p_end}
+
+{title:Example} 
+.clear 
+.sysuse auto
+.describe
+.misstable summarize
+.mi set wide
+.mi register imputed rep78
+.mi impute pmm rep78, add(1) knn(5) // Impute using predictive mean matching: only one dataset and knn(# nearest neighbors) to draw from
+.describe
+.drop _mi_miss rep78
+.rename _1_rep78 rep78
+.eltmle price foreign rep78 weight length, tmle
+
+
+{p 4 4 2 120}
+Remember 4: Mac users must have installed R software on their personal computer as
 eltmle calls R to implement the Super Learner. The R executable file must be located at 
 the following path: {hi:"/usr/local/bin/r"}.
 {p_end}
 
 {p 4 4 2 120}
-Remember 4: Windows users must have installed R software on their personal computer
+Remember 5: Windows users must have installed R software on their personal computer
 as eltmle calls R to implement the Super Learner. The R executable file must be located 
 at the following path: {hi:"C:\Program Files\R\R-X.X.X\bin\x64\R.exe"} (where X stands for the number of the version).
 {p_end}
 
 {p 4 4 2 120}
-Remember 5: Windows users must have only one version of R software installed on their personal computer
+Remember 6: Windows users must have only one version of R software installed on their personal computer
 at the following path: {hi:"C:\Program Files\R\R-X.X.X\bin\x64\R.exe"}. In case more than one different version 
 is located in the above highlighted path users would like to keep the latest.
 {p_end}
@@ -266,7 +286,7 @@ Binary Outcome: Tutorial and Guided Implementation {browse "http://migariane.git
 {p_end}
 
 {p 4 4 2 120}
-Matthew James Smith, Camille Maringe, Bernard Rachet, Mohammad A. Mansournia, Paul Zivich, Stephen R. Cole, Miguel Angel Luque Fernandez (2021).  Tutorial: Introduction to computational causal inference for applied researchers and epidemiologists {browse "https://github.com/migariane/TutorialCausalInferenceEstimators":link}.
+Matthew James Smith, Mohammad A. Mansournia, Camille Maringe, Clemence Leyrat, Aurelien Belot, Bernard Rachet, Paul Zivich, Stephen R. Cole, Miguel Angel Luque Fernandez (2021). Tutorial: Introduction to computational causal inference for applied researchers and epidemiologists {browse "https://github.com/migariane/TutorialCausalInferenceEstimators":link}.
 {p_end}
 
 {p 4 4 2 120}
