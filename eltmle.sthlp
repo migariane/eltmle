@@ -232,7 +232,6 @@ See the example here below using the sys auto data:
 		.rename _1_rep78 rep78
 		.eltmle price foreign rep78 weight length, tmle
 
-
 {p 4 4 2 120}
 Remember 4: Mac users must have installed R software on their personal computer as
 eltmle calls R to implement the Super Learner. The R executable file must be located at 
