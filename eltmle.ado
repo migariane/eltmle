@@ -34,7 +34,7 @@ THE SOFTWARE.
 ** TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OR CONTINUOUS 
 ** OUTCOME AND BINARY TREATMENT FOR MAC and WINDOWS USERS 
 ** This program requires R to be installed in your computer
-** Junuary 2021
+** June 2021
 ****************************************************************************
 
 * Improved the output including potential outcomes and propensity score 
@@ -57,12 +57,16 @@ THE SOFTWARE.
 * Updated as a rclass programm: returning scalars for ATE, ATE 95%CI, ATE SE, CRR, MOR and CRR, MOR SEs (Updated: 01.07.2019)
 * Improved the output display (Updated: 01.07.2019
 * Keep initial dataset (Updated: 20.11.2020)
+* Complete case (Listwise) analysis (Updated: 28.06.2021)
 * Added bal option to visually display postivity violations (Updated: 09.01.2021)
 
 capture program drop eltmle
 program define eltmle
 		 syntax varlist(min=3) [if] [pw] [, tmle tmlebgam tmleglsrf bal] 
          version 13.2
+		 foreach v of var * { 
+		 qui drop if missing(`v') 
+          }
 		 qui export delimited using "fulldata.csv", nolabel replace 
          marksample touse
          local var `varlist' if `touse'
