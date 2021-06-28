@@ -215,23 +215,22 @@ Remember 2: You must change your working directory to the location of the Stata.
 {p_end}
 
 {p 4 4 2 120}
-Remember 3: eltmle only works with complete case datasets (i.e., no missing data). 
-You must impute your missing values before running eltmle.
+Remember 3: eltmle automatically implements a complete case analysis (i.e., listwise delection for missing data). However, you would like to impute your missing values before running eltmle.
 See the example here below using the sys auto data:
 {p_end}
 
-{title:Example} 
-.clear 
-.sysuse auto
-.describe
-.misstable summarize
-.mi set wide
-.mi register imputed rep78
-.mi impute pmm rep78, add(1) knn(5) // Impute using predictive mean matching: only one dataset and knn(# nearest neighbors) to draw from
-.describe
-.drop _mi_miss rep78
-.rename _1_rep78 rep78
-.eltmle price foreign rep78 weight length, tmle
+		{title:Example of imputation using predictive mean matching} 
+		.clear 
+		.sysuse auto
+		.describe
+		.misstable summarize
+		.mi set wide
+		.mi register imputed rep78
+		.mi impute pmm rep78, add(1) knn(5) // Impute using predictive mean matching: only one dataset and knn(# nearest neighbors) to draw from
+		.describe
+		.drop _mi_miss rep78
+		.rename _1_rep78 rep78
+		.eltmle price foreign rep78 weight length, tmle
 
 
 {p 4 4 2 120}
