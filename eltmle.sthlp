@@ -1,5 +1,5 @@
 {smcl}
-{right: version 2.2.6  09.01.2021}
+{right: version 2.2.7  13.07.2022}
 {...}
 
 {title:Title}

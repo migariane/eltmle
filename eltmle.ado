@@ -1,4 +1,4 @@
-*! version 2.2.6  09.January.2021
+*! version 2.2.7  13.July.2022
 *! ELTMLE: Stata module for Ensemble Learning Targeted Maximum Likelihood Estimation
 *! by Miguel Angel Luque-Fernandez [cre,aut]
 *! and Camille Maringe [aut]
@@ -59,6 +59,7 @@ THE SOFTWARE.
 * Keep initial dataset (Updated: 20.11.2020)
 * Complete case (Listwise) analysis (Updated: 28.06.2021)
 * Added bal option to visually display postivity violations (Updated: 09.01.2021)
+* Improved display of the results Stata like format (updated: 13.7.2022)
 
 capture program drop eltmle
 program define eltmle
@@ -299,12 +300,16 @@ local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' "
 disp as text "{hline 29}"
 di "TMLE: Causal Risk Ratio (CRR)" 
 disp as text "{hline 29}"
-di `rrbin'
+disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
+disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
+
+
 disp as text "{hline 31}"
 di "TMLE: Marginal Odds Ratio (MOR)" 
 disp as text "{hline 31}"
-di `orbin'
+disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
+disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
 disp as text "{hline 31}"
 
 label var POM1 "Potential Outcome Y(1)"
@@ -531,12 +536,15 @@ local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' "
 disp as text "{hline 29}"
 di "TMLE: Causal Risk Ratio (CRR)" 
 disp as text "{hline 29}"
-di `rrbin'
+disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
+disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
+
 disp as text "{hline 31}"
 di "TMLE: Marginal Odds Ratio (MOR)" 
 disp as text "{hline 31}"
-di `orbin'
+disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
+disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
 disp as text "{hline 31}"
 
 label var POM1 "Potential Outcome Y(1)"
@@ -747,12 +755,15 @@ local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' "
 disp as text "{hline 29}"
 di "TMLE: Causal Risk Ratio (CRR)" 
 disp as text "{hline 29}"
-di `rrbin'
+disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
+disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
+
 disp as text "{hline 31}"
 di "TMLE: Marginal Odds Ratio (MOR)" 
 disp as text "{hline 31}"
-di `orbin'
+disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
+disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
 disp as text "{hline 31}"
 
 label var POM1 "Potential Outcome Y(1)"
@@ -979,12 +990,15 @@ local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' "
 disp as text "{hline 29}"
 di "TMLE: Causal Risk Ratio (CRR)" 
 disp as text "{hline 29}"
-di `rrbin'
+disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
+disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
+
 disp as text "{hline 31}"
 di "TMLE: Marginal Odds Ratio (MOR)" 
 disp as text "{hline 31}"
-di `orbin'
+disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
+disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
 disp as text "{hline 31}"
 
 label var POM1 "Potential Outcome Y(1)"
@@ -1202,12 +1216,15 @@ local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' "
 disp as text "{hline 29}"
 di "TMLE: Causal Risk Ratio (CRR)" 
 disp as text "{hline 29}"
-di `rrbin'
+disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
+disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
+
 disp as text "{hline 31}"
 di "TMLE: Marginal Odds Ratio (MOR)" 
 disp as text "{hline 31}"
-di `orbin'
+disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
+disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
 disp as text "{hline 31}"
 
 label var POM1 "Potential Outcome Y(1)"
@@ -1321,7 +1338,6 @@ label variable d1A "density for A=1"
 label variable d0A "density for A=0"
 twoway (line d0A x0pointsa , yaxis(1))(line d1A x1pointsa, yaxis(2))
 
-
 // Q to logit scale
 gen `logQAW' = log(QAW / (1 - QAW))
 gen `logQ1W' = log(Q1W / (1 - Q1W))
@@ -1341,7 +1357,6 @@ gen `eps2' = a[1,2]
 qui glm Y `HAW', fam(binomial) offset(`logQAW') robust noconstant
 mat a= e(b)
 gen `eps' = a[1,1]
-
 
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
 gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
@@ -1435,12 +1450,15 @@ local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' "
 disp as text "{hline 29}"
 di "TMLE: Causal Risk Ratio (CRR)" 
 disp as text "{hline 29}"
-di `rrbin'
+disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
+disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
+
 disp as text "{hline 31}"
 di "TMLE: Marginal Odds Ratio (MOR)" 
 disp as text "{hline 31}"
-di `orbin'
+disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
+disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
 disp as text "{hline 31}"
 
 label var POM1 "Potential Outcome Y(1)"
