@@ -301,23 +301,16 @@ disp as text "{hline 29}"
 di "TMLE: Causal Risk Ratio (CRR)" 
 disp as text "{hline 29}"
 disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
-<<<<<<< HEAD
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-=======
-disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
->>>>>>> 21acc53d570d5102ed35a20da369d097a6f79266
+disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
-
 
 disp as text "{hline 31}"
 di "TMLE: Marginal Odds Ratio (MOR)" 
 disp as text "{hline 31}"
 disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
-<<<<<<< HEAD
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-=======
-disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
->>>>>>> 21acc53d570d5102ed35a20da369d097a6f79266
+disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
 disp as text "{hline 31}"
 
 label var POM1 "Potential Outcome Y(1)"
@@ -545,22 +538,16 @@ disp as text "{hline 29}"
 di "TMLE: Causal Risk Ratio (CRR)" 
 disp as text "{hline 29}"
 disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
-<<<<<<< HEAD
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-=======
-disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
->>>>>>> 21acc53d570d5102ed35a20da369d097a6f79266
+disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
 
 disp as text "{hline 31}"
 di "TMLE: Marginal Odds Ratio (MOR)" 
 disp as text "{hline 31}"
 disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
-<<<<<<< HEAD
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-=======
-disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
->>>>>>> 21acc53d570d5102ed35a20da369d097a6f79266
+disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
 disp as text "{hline 31}"
 
 label var POM1 "Potential Outcome Y(1)"
@@ -772,22 +759,16 @@ disp as text "{hline 29}"
 di "TMLE: Causal Risk Ratio (CRR)" 
 disp as text "{hline 29}"
 disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
-<<<<<<< HEAD
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-=======
-disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
->>>>>>> 21acc53d570d5102ed35a20da369d097a6f79266
+disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
 
 disp as text "{hline 31}"
 di "TMLE: Marginal Odds Ratio (MOR)" 
 disp as text "{hline 31}"
 disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
-<<<<<<< HEAD
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-=======
-disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
->>>>>>> 21acc53d570d5102ed35a20da369d097a6f79266
+disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
 disp as text "{hline 31}"
 
 label var POM1 "Potential Outcome Y(1)"
@@ -1015,22 +996,16 @@ disp as text "{hline 29}"
 di "TMLE: Causal Risk Ratio (CRR)" 
 disp as text "{hline 29}"
 disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
-<<<<<<< HEAD
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-=======
-disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
->>>>>>> 21acc53d570d5102ed35a20da369d097a6f79266
+disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
 
 disp as text "{hline 31}"
 di "TMLE: Marginal Odds Ratio (MOR)" 
 disp as text "{hline 31}"
 disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
-<<<<<<< HEAD
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-=======
-disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
->>>>>>> 21acc53d570d5102ed35a20da369d097a6f79266
+disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
 disp as text "{hline 31}"
 
 label var POM1 "Potential Outcome Y(1)"
@@ -1249,22 +1224,16 @@ disp as text "{hline 29}"
 di "TMLE: Causal Risk Ratio (CRR)" 
 disp as text "{hline 29}"
 disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
-<<<<<<< HEAD
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-=======
-disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
->>>>>>> 21acc53d570d5102ed35a20da369d097a6f79266
+disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
 
 disp as text "{hline 31}"
 di "TMLE: Marginal Odds Ratio (MOR)" 
 disp as text "{hline 31}"
 disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
-<<<<<<< HEAD
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-=======
-disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
->>>>>>> 21acc53d570d5102ed35a20da369d097a6f79266
+disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
 disp as text "{hline 31}"
 
 label var POM1 "Potential Outcome Y(1)"
@@ -1491,22 +1460,16 @@ disp as text "{hline 29}"
 di "TMLE: Causal Risk Ratio (CRR)" 
 disp as text "{hline 29}"
 disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
-<<<<<<< HEAD
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-=======
-disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
->>>>>>> 21acc53d570d5102ed35a20da369d097a6f79266
+disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
 
 disp as text "{hline 31}"
 di "TMLE: Marginal Odds Ratio (MOR)" 
 disp as text "{hline 31}"
 disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
-<<<<<<< HEAD
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-=======
-disp as text "95%CI: " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
->>>>>>> 21acc53d570d5102ed35a20da369d097a6f79266
+disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
 disp as text "{hline 31}"
 
 label var POM1 "Potential Outcome Y(1)"
