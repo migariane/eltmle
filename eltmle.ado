@@ -1164,13 +1164,19 @@ quietly: use "data2.dta", clear
 qui cap drop X__000000
 tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 
+// Create density plot to check positivity assumption
 sort A
 qui by A: summarize ps
 qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
 qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
-label variable d1A "density for A=1"
-label variable d0A "density for A=0"
-twoway (line d0A x0pointsa , yaxis(1))(line d1A x1pointsa, yaxis(2))
+label variable d1A "A = 1"
+label variable d0A "A = 0"
+twoway (line d0A x0pointsa) || ///
+		(line d1A x1pointsa), ///
+		xtitle("Propensity score") ///
+		ytitle("Density") ///
+		graphregion(color(white)) bgcolor(white) plotregion(fcolor(white)) ///
+		legend(region(style(none)))
 
 // Q to logit scale
 gen `logQAW' = log(QAW / (1 - QAW))
@@ -1785,13 +1791,19 @@ quietly: use "data2.dta", clear
 qui cap drop X__000000
 tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 
+// Create density plot to check positivity assumption
 sort A
 qui by A: summarize ps
 qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
 qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
-label variable d1A "density for A=1"
-label variable d0A "density for A=0"
-twoway (line d0A x0pointsa , yaxis(1))(line d1A x1pointsa, yaxis(2))
+label variable d1A "A = 1"
+label variable d0A "A = 0"
+twoway (line d0A x0pointsa) || ///
+		(line d1A x1pointsa), ///
+		xtitle("Propensity score") ///
+		ytitle("Density") ///
+		graphregion(color(white)) bgcolor(white) plotregion(fcolor(white)) ///
+		legend(region(style(none)))
 
 // Q to logit scale
 gen `logQAW' = log(QAW / (1 - QAW))
