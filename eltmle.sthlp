@@ -89,10 +89,13 @@ using formulas from Austin (2009) {it: Balance Diagnostics for Comparing the Dis
 {hi:elements}: this option may be specified or unspecified. When specified, the data set will retain the variables used for each step in TMLE such as the initial predictions, propensity score, updated predictions, etc.
 {p_end}
 
+
 {title:Results}
 
+{p 4 4 2 120}
 In addition to the ATE, the ATE's standard error and p-value, the marginal odds ratio (MOR), and the causal risk ratio (CRR),
-including their respective type Wald 95%CIs, {hi:eltmle} output provides a descriptive summary for the potential outcomes (POM) and the propensity score (ps):
+including their respective type Wald 95%CIs, {hi:eltmle} output provides a descriptive summary for the potential outcomes (POM)
+and the propensity score (ps):
 {hi: POM1}: Potential outcome among the treated
 {hi: POM0}: Potential outcome among the non-treated
 {hi: ps}: Propensity score
@@ -235,7 +238,8 @@ See the example here below using the sys auto data:
 		.misstable summarize
 		.mi set wide
 		.mi register imputed rep78
-		.mi impute pmm rep78, add(1) knn(5) // Impute using predictive mean matching: only one dataset and knn(# nearest neighbors) to draw from
+    // Impute using predictive mean matching: only one dataset and knn(# nearest neighbors) to draw from
+		.mi impute pmm rep78, add(1) knn(5)
 		.describe
 		.drop _mi_miss rep78
 		.rename _1_rep78 rep78
