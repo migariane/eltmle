@@ -31,18 +31,18 @@ THE SOFTWARE.
 ***************************************************************************
 ** MIGUEL ANGEL LUQUE FERNANDEZ
 ** mluquefe at hsph.havard.edu // miguel-angel.luque at lshtm.ac.uk
-** TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OR CONTINUOUS 
-** OUTCOME AND BINARY TREATMENT FOR MAC and WINDOWS USERS 
+** TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OR CONTINUOUS
+** OUTCOME AND BINARY TREATMENT FOR MAC and WINDOWS USERS
 ** This program requires R to be installed in your computer
 ** June 2021
 ****************************************************************************
 
-* Improved the output including potential outcomes and propensity score 
-* Included estimation for continuous outcomes 
+* Improved the output including potential outcomes and propensity score
+* Included estimation for continuous outcomes
 * Included marginal odds ratio
 * Improved estimation of the clever covariate for both H1W and H0W
 * Included Influence curve (IC) estimation for the marginal OR
-* Improved IC estimation  
+* Improved IC estimation
 * Update globals to locals where possible
 * Just one ado file for both Mac and Windows users
 * Included additive effect for continuous outcomes
@@ -63,16 +63,19 @@ THE SOFTWARE.
 
 capture program drop eltmle
 program define eltmle
-		 syntax varlist(min=3) [if] [pw] [, tmle tmlebgam tmleglsrf bal] 
+		 syntax varlist(min=3) [if] [pw] [, tmle tmlebgam tmleglsrf bal]
          version 13.2
-		 foreach v of var * { 
-		 qui drop if missing(`v') 
+		 foreach v of var * {
+		 qui drop if missing(`v')
           }
-		 qui export delimited using "fulldata.csv", nolabel replace 
+
+		 
+
+		 qui export delimited using "fulldata.csv", nolabel replace
          marksample touse
          local var `varlist' if `touse'
          tokenize `var'
-         local yvar = "`1'" 
+         local yvar = "`1'"
          global flag = cond(`yvar'<=1,1,0)
          qui sum `yvar'
          global b = `r(max)'
@@ -81,20 +84,20 @@ program define eltmle
          local dir `c(pwd)'
          cd "`dir'"
 		 tempfile data
-		 qui save "`data'.dta", replace 
-         qui export delimited `var' using "data.csv", nolabel replace 
-				
+		 qui save "`data'.dta", replace
+         qui export delimited `var' using "data.csv", nolabel replace
+
          if "`tmlebgam'" == "" & "`tmleglsrf'" == "" & "`bal'" == ""{
-                tmle `varlist'  
+                tmle `varlist'
                 }
 		 else if "`tmle'" == "tmle" & "`bal'" == "bal" {
-                tmlebal `varlist' 
+                tmlebal `varlist'
                 }
 		 else if "`tmlebgam'" == "tmlebgam" & "`bal'" == "bal" {
-                tmlebgambal `varlist' 
+                tmlebgambal `varlist'
                 }
 		 else if "`tmleglsrf'" == "tmleglsrf" & "`bal'" == "bal" {
-                tmleglsrfbal `varlist' 
+                tmleglsrfbal `varlist'
                 }
 		 else if "`tmlebgam'" == "tmlebgam" {
                 tmlebgam `varlist'
@@ -107,8 +110,8 @@ program define eltmle
                 }
 end
 
-program tmle, rclass 
-// Write R Code dependencies: foreign Surperlearner 
+program tmle, rclass
+// Write R Code dependencies: foreign Surperlearner
 set more off
 qui: file close _all
 qui: file open rcode using SLS.R, write replace
@@ -129,10 +132,10 @@ qui: file write rcode ///
         `"A <- data[,2]"' _newline ///
         `"X <- data[,2:nvar]"' _newline ///
         `"W <- data[,3:nvar]"' _newline ///
-        `"X1 <- X0 <- X"' _newline /// 
+        `"X1 <- X0 <- X"' _newline ///
         `"X1[,1] <- 1"' _newline ///
         `"X0[,1] <- 0"' _newline ///
-        `"newdata <- rbind(X,X1,X0)"' _newline /// 
+        `"newdata <- rbind(X,X1,X0)"' _newline ///
         `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
         `"Q <- as.data.frame(Q[[4]])"' _newline ///
         `"QAW <- Q[1:n,]"' _newline ///
@@ -145,9 +148,9 @@ qui: file write rcode ///
 		`"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
 		`"write.dta(data, "data2.dta")"'
 qui: file close rcode
-	
+
 	if "`c(os)'" == "MacOSX" {
-	shell "/usr/local/bin/r" CMD BATCH SLS.R 
+	shell "/usr/local/bin/r" CMD BATCH SLS.R
 	}
 	else{
 	// Write bacth file to find R.exe path and R version
@@ -163,7 +166,7 @@ qui: file close rcode
 	`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
 			`"echo Found %%r"' _newline ///
 			`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-			`"echo All set!"' _newline ///  
+			`"echo All set!"' _newline ///
 			`"goto:DONE"' _newline ///
 	`")"' _newline ///
 	`":NO_R"' _newline ///
@@ -176,8 +179,8 @@ qui: file close rcode
 	`"pause"'
 	qui: file close bat
 	//Run batch
-	shell setup.bat 
-	//Run R 
+	shell setup.bat
+	//Run R
 	do runr.do
 	}
 
@@ -185,13 +188,13 @@ qui: file close rcode
 clear
 quietly: use "data2.dta", clear
 qui cap drop X__000000
-tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor 
+tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 
 // Q to logit scale
 gen `logQAW' = log(QAW / (1 - QAW))
 gen `logQ1W' = log(Q1W / (1 - Q1W))
 gen `logQ0W' = log(Q0W / (1 - Q0W))
- 
+
 // Clever covariate HAW
 gen  `HAW' = (A / ps) - ((1 - A) / (1 - ps))
 gen  `H1W' = A / ps
@@ -233,7 +236,7 @@ local Q1 = r(mean)
 qui sum Q0star
 local Q0 = r(mean)
 
-// Relative risk and Odds ratio 
+// Relative risk and Odds ratio
 local RRtmle = `Q1'/`Q0'
 local logRRtmle = log(`Q1') - log(`Q0')
 local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
@@ -245,7 +248,7 @@ gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
 qui sum IC
 return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
 
-// Statistical inference ATE 
+// Statistical inference ATE
 return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
 return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
 return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
@@ -259,14 +262,14 @@ local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
 local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
 // Statistical inference OR
-gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0 
+gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0
 qui sum `ICor'
 local varICor = r(Var)/r(N)
 
 local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
 local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
-// Display Results 
+// Display Results
 
 return scalar CRR = `RRtmle'
 return scalar SE_log_CRR  = sqrt(`varICrr')
@@ -298,15 +301,15 @@ local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' "
 local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
 
 disp as text "{hline 29}"
-di "TMLE: Causal Risk Ratio (CRR)" 
+di "TMLE: Causal Risk Ratio (CRR)"
 disp as text "{hline 29}"
-disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
+disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle'
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
 
 disp as text "{hline 31}"
-di "TMLE: Marginal Odds Ratio (MOR)" 
+di "TMLE: Marginal Odds Ratio (MOR)"
 disp as text "{hline 31}"
 disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
@@ -334,8 +337,8 @@ quietly: rm .RData
 quietly: memory clean
 end
 
-program tmlebal, rclass 
-// Write R Code dependencies: foreign Surperlearner 
+program tmlebal, rclass
+// Write R Code dependencies: foreign Surperlearner
 set more off
 qui: file close _all
 qui: file open rcode using SLS.R, write replace
@@ -356,10 +359,10 @@ qui: file write rcode ///
         `"A <- data[,2]"' _newline ///
         `"X <- data[,2:nvar]"' _newline ///
         `"W <- data[,3:nvar]"' _newline ///
-        `"X1 <- X0 <- X"' _newline /// 
+        `"X1 <- X0 <- X"' _newline ///
         `"X1[,1] <- 1"' _newline ///
         `"X0[,1] <- 0"' _newline ///
-        `"newdata <- rbind(X,X1,X0)"' _newline /// 
+        `"newdata <- rbind(X,X1,X0)"' _newline ///
         `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
         `"Q <- as.data.frame(Q[[4]])"' _newline ///
         `"QAW <- Q[1:n,]"' _newline ///
@@ -370,13 +373,13 @@ qui: file write rcode ///
         `"ps[ps<0.025] <- 0.025"' _newline ///
         `"ps[ps>0.975] <- 0.975"' _newline ///
         `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-        `"write.dta(data, "data2.dta")"'  
+        `"write.dta(data, "data2.dta")"'
 qui: file close rcode
 
 	if "`c(os)'" == "MacOSX" {
 	// Run R (you have to specify the path of your R executable file)
-	//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
-	shell "/usr/local/bin/r" CMD BATCH SLS.R 
+	//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R
+	shell "/usr/local/bin/r" CMD BATCH SLS.R
 	}
 	else{
 	// Write bacth file to find R.exe path and R version
@@ -392,7 +395,7 @@ qui: file close rcode
 	`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
 			`"echo Found %%r"' _newline ///
 			`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-			`"echo All set!"' _newline ///  
+			`"echo All set!"' _newline ///
 			`"goto:DONE"' _newline ///
 	`")"' _newline ///
 	`":NO_R"' _newline ///
@@ -405,8 +408,8 @@ qui: file close rcode
 	`"pause"'
 	qui: file close bat
 	//Run batch
-	shell setup.bat 
-	//Run R 
+	shell setup.bat
+	//Run R
 	do runr.do
 	}
 
@@ -418,8 +421,8 @@ tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 
 sort A
 qui by A: summarize ps
-qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000) 
-qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000) 
+qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
+qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
 label variable d1A "density for A=1"
 label variable d0A "density for A=0"
 twoway (line d0A x0pointsa , yaxis(1))(line d1A x1pointsa, yaxis(2))
@@ -428,7 +431,7 @@ twoway (line d0A x0pointsa , yaxis(1))(line d1A x1pointsa, yaxis(2))
 gen `logQAW' = log(QAW / (1 - QAW))
 gen `logQ1W' = log(Q1W / (1 - Q1W))
 gen `logQ0W' = log(Q0W / (1 - Q0W))
- 
+
 // Clever covariate HAW
 gen  `HAW' = (A / ps) - ((1 - A) / (1 - ps))
 gen  `H1W' = A / ps
@@ -470,7 +473,7 @@ local Q1 = r(mean)
 qui sum Q0star
 local Q0 = r(mean)
 
-// Relative risk and Odds ratio 
+// Relative risk and Odds ratio
 local RRtmle = `Q1'/`Q0'
 local logRRtmle = log(`Q1') - log(`Q0')
 local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
@@ -482,7 +485,7 @@ gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
 qui sum IC
 return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
 
-// Statistical inference ATE 
+// Statistical inference ATE
 return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
 return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
 return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
@@ -496,14 +499,14 @@ local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
 local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
 // Statistical inference OR
-gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0 
+gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0
 qui sum `ICor'
 local varICor = r(Var)/r(N)
 
 local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
 local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
-// Display Results 
+// Display Results
 
 return scalar CRR = `RRtmle'
 return scalar SE_log_CRR  = sqrt(`varICrr')
@@ -535,15 +538,15 @@ local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' "
 local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
 
 disp as text "{hline 29}"
-di "TMLE: Causal Risk Ratio (CRR)" 
+di "TMLE: Causal Risk Ratio (CRR)"
 disp as text "{hline 29}"
-disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
+disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle'
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
 
 disp as text "{hline 31}"
-di "TMLE: Marginal Odds Ratio (MOR)" 
+di "TMLE: Marginal Odds Ratio (MOR)"
 disp as text "{hline 31}"
 disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
@@ -564,8 +567,8 @@ quietly: rm fulldata.csv
 quietly: rm .RData
 end
 
-program tmlebgam, rclass 
-// Write R Code dependencies: foreign Surperlearner 
+program tmlebgam, rclass
+// Write R Code dependencies: foreign Surperlearner
 set more off
 qui: file close _all
 qui: file open rcode using SLS.R, write replace
@@ -586,10 +589,10 @@ qui: file write rcode ///
         `"A <- data[,2]"' _newline ///
         `"X <- data[,2:nvar]"' _newline ///
         `"W <- data[,3:nvar]"' _newline ///
-        `"X1 <- X0 <- X"' _newline /// 
+        `"X1 <- X0 <- X"' _newline ///
         `"X1[,1] <- 1"' _newline ///
         `"X0[,1] <- 0"' _newline ///
-        `"newdata <- rbind(X,X1,X0)"' _newline /// 
+        `"newdata <- rbind(X,X1,X0)"' _newline ///
         `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
         `"Q <- as.data.frame(Q[[4]])"' _newline ///
         `"QAW <- Q[1:n,]"' _newline ///
@@ -600,13 +603,13 @@ qui: file write rcode ///
         `"ps[ps<0.025] <- 0.025"' _newline ///
         `"ps[ps>0.975] <- 0.975"' _newline ///
         `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-        `"write.dta(data, "data2.dta")"'   
+        `"write.dta(data, "data2.dta")"'
 qui: file close rcode
 
 	if "`c(os)'" == "MacOSX" {
 	// Run R (you have to specify the path of your R executable file)
-	//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
-	shell "/usr/local/bin/r" CMD BATCH SLS.R 
+	//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R
+	shell "/usr/local/bin/r" CMD BATCH SLS.R
 	}
 	else{
 	// Write bacth file to find R.exe path and R version
@@ -622,7 +625,7 @@ qui: file close rcode
 	`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
 			`"echo Found %%r"' _newline ///
 			`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-			`"echo All set!"' _newline ///  
+			`"echo All set!"' _newline ///
 			`"goto:DONE"' _newline ///
 	`")"' _newline ///
 	`":NO_R"' _newline ///
@@ -635,8 +638,8 @@ qui: file close rcode
 	`"pause"'
 	qui: file close bat
 	//Run batch
-	shell setup.bat 
-	//Run R 
+	shell setup.bat
+	//Run R
 	do runr.do
 	}
 
@@ -649,7 +652,7 @@ tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 gen `logQAW' = log(QAW / (1 - QAW))
 gen `logQ1W' = log(Q1W / (1 - Q1W))
 gen `logQ0W' = log(Q0W / (1 - Q0W))
- 
+
 // Clever covariate HAW
 gen  `HAW' = (A / ps) - ((1 - A) / (1 - ps))
 gen  `H1W' = A / ps
@@ -691,7 +694,7 @@ local Q1 = r(mean)
 qui sum Q0star
 local Q0 = r(mean)
 
-// Relative risk and Odds ratio 
+// Relative risk and Odds ratio
 local RRtmle = `Q1'/`Q0'
 local logRRtmle = log(`Q1') - log(`Q0')
 local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
@@ -703,7 +706,7 @@ gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
 qui sum IC
 return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
 
-// Statistical inference ATE 
+// Statistical inference ATE
 return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
 return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
 return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
@@ -717,14 +720,14 @@ local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
 local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
 // Statistical inference OR
-gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0 
+gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0
 qui sum `ICor'
 local varICor = r(Var)/r(N)
 
 local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
 local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
-// Display Results 
+// Display Results
 
 return scalar CRR = `RRtmle'
 return scalar SE_log_CRR  = sqrt(`varICrr')
@@ -756,15 +759,15 @@ local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' "
 local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
 
 disp as text "{hline 29}"
-di "TMLE: Causal Risk Ratio (CRR)" 
+di "TMLE: Causal Risk Ratio (CRR)"
 disp as text "{hline 29}"
-disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
+disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle'
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
 
 disp as text "{hline 31}"
-di "TMLE: Marginal Odds Ratio (MOR)" 
+di "TMLE: Marginal Odds Ratio (MOR)"
 disp as text "{hline 31}"
 disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
@@ -792,8 +795,8 @@ quietly: rm .RData
 quietly: memory clean
 end
 
-program tmlebgambal, rclass 
-// Write R Code dependencies: foreign Surperlearner 
+program tmlebgambal, rclass
+// Write R Code dependencies: foreign Surperlearner
 set more off
 qui: file close _all
 qui: file open rcode using SLS.R, write replace
@@ -814,10 +817,10 @@ qui: file write rcode ///
         `"A <- data[,2]"' _newline ///
         `"X <- data[,2:nvar]"' _newline ///
         `"W <- data[,3:nvar]"' _newline ///
-        `"X1 <- X0 <- X"' _newline /// 
+        `"X1 <- X0 <- X"' _newline ///
         `"X1[,1] <- 1"' _newline ///
         `"X0[,1] <- 0"' _newline ///
-        `"newdata <- rbind(X,X1,X0)"' _newline /// 
+        `"newdata <- rbind(X,X1,X0)"' _newline ///
         `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
         `"Q <- as.data.frame(Q[[4]])"' _newline ///
         `"QAW <- Q[1:n,]"' _newline ///
@@ -828,13 +831,13 @@ qui: file write rcode ///
         `"ps[ps<0.025] <- 0.025"' _newline ///
         `"ps[ps>0.975] <- 0.975"' _newline ///
         `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-        `"write.dta(data, "data2.dta")"'   
+        `"write.dta(data, "data2.dta")"'
 qui: file close rcode
 
 	if "`c(os)'" == "MacOSX" {
 	// Run R (you have to specify the path of your R executable file)
-	//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
-	shell "/usr/local/bin/r" CMD BATCH SLS.R 
+	//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R
+	shell "/usr/local/bin/r" CMD BATCH SLS.R
 	}
 	else{
 	// Write bacth file to find R.exe path and R version
@@ -850,7 +853,7 @@ qui: file close rcode
 	`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
 			`"echo Found %%r"' _newline ///
 			`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-			`"echo All set!"' _newline ///  
+			`"echo All set!"' _newline ///
 			`"goto:DONE"' _newline ///
 	`")"' _newline ///
 	`":NO_R"' _newline ///
@@ -863,8 +866,8 @@ qui: file close rcode
 	`"pause"'
 	qui: file close bat
 	//Run batch
-	shell setup.bat 
-	//Run R 
+	shell setup.bat
+	//Run R
 	do runr.do
 	}
 
@@ -876,8 +879,8 @@ tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 
 sort A
 qui by A: summarize ps
-qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000) 
-qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000) 
+qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
+qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
 label variable d1A "density for A=1"
 label variable d0A "density for A=0"
 twoway (line d0A x0pointsa , yaxis(1))(line d1A x1pointsa, yaxis(2))
@@ -886,7 +889,7 @@ twoway (line d0A x0pointsa , yaxis(1))(line d1A x1pointsa, yaxis(2))
 gen `logQAW' = log(QAW / (1 - QAW))
 gen `logQ1W' = log(Q1W / (1 - Q1W))
 gen `logQ0W' = log(Q0W / (1 - Q0W))
- 
+
 // Clever covariate HAW
 gen  `HAW' = (A / ps) - ((1 - A) / (1 - ps))
 gen  `H1W' = A / ps
@@ -928,7 +931,7 @@ local Q1 = r(mean)
 qui sum Q0star
 local Q0 = r(mean)
 
-// Relative risk and Odds ratio 
+// Relative risk and Odds ratio
 local RRtmle = `Q1'/`Q0'
 local logRRtmle = log(`Q1') - log(`Q0')
 local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
@@ -940,7 +943,7 @@ gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
 qui sum IC
 return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
 
-// Statistical inference ATE 
+// Statistical inference ATE
 return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
 return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
 return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
@@ -954,14 +957,14 @@ local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
 local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
 // Statistical inference OR
-gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0 
+gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0
 qui sum `ICor'
 local varICor = r(Var)/r(N)
 
 local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
 local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
-// Display Results 
+// Display Results
 
 return scalar CRR = `RRtmle'
 return scalar SE_log_CRR  = sqrt(`varICrr')
@@ -993,15 +996,15 @@ local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' "
 local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
 
 disp as text "{hline 29}"
-di "TMLE: Causal Risk Ratio (CRR)" 
+di "TMLE: Causal Risk Ratio (CRR)"
 disp as text "{hline 29}"
-disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
+disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle'
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
 
 disp as text "{hline 31}"
-di "TMLE: Marginal Odds Ratio (MOR)" 
+di "TMLE: Marginal Odds Ratio (MOR)"
 disp as text "{hline 31}"
 disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
@@ -1029,8 +1032,8 @@ quietly: rm .RData
 quietly: memory clean
 end
 
-program tmleglsrf, rclass 
-// Write R Code dependencies: foreign Surperlearner 
+program tmleglsrf, rclass
+// Write R Code dependencies: foreign Surperlearner
 set more off
 qui: file close _all
 qui: file open rcode using SLS.R, write replace
@@ -1051,10 +1054,10 @@ qui: file write rcode ///
         `"A <- data[,2]"' _newline ///
         `"X <- data[,2:nvar]"' _newline ///
         `"W <- data[,3:nvar]"' _newline ///
-        `"X1 <- X0 <- X"' _newline /// 
+        `"X1 <- X0 <- X"' _newline ///
         `"X1[,1] <- 1"' _newline ///
         `"X0[,1] <- 0"' _newline ///
-        `"newdata <- rbind(X,X1,X0)"' _newline /// 
+        `"newdata <- rbind(X,X1,X0)"' _newline ///
         `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
         `"Q <- as.data.frame(Q[[4]])"' _newline ///
         `"QAW <- Q[1:n,]"' _newline ///
@@ -1065,13 +1068,13 @@ qui: file write rcode ///
         `"ps[ps<0.025] <- 0.025"' _newline ///
         `"ps[ps>0.975] <- 0.975"' _newline ///
         `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-        `"write.dta(data, "data2.dta")"' 
+        `"write.dta(data, "data2.dta")"'
 qui: file close rcode
 
 	if "`c(os)'" == "MacOSX" {
 	// Run R (you have to specify the path of your R executable file)
-	//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
-	shell "/usr/local/bin/r" CMD BATCH SLS.R 
+	//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R
+	shell "/usr/local/bin/r" CMD BATCH SLS.R
 	}
 	else{
 	// Write bacth file to find R.exe path and R version
@@ -1087,7 +1090,7 @@ qui: file close rcode
 	`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
 			`"echo Found %%r"' _newline ///
 			`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-			`"echo All set!"' _newline ///  
+			`"echo All set!"' _newline ///
 			`"goto:DONE"' _newline ///
 	`")"' _newline ///
 	`":NO_R"' _newline ///
@@ -1100,8 +1103,8 @@ qui: file close rcode
 	`"pause"'
 	qui: file close bat
 	//Run batch
-	shell setup.bat 
-	//Run R 
+	shell setup.bat
+	//Run R
 	do runr.do
 	}
 
@@ -1114,7 +1117,7 @@ tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 gen `logQAW' = log(QAW / (1 - QAW))
 gen `logQ1W' = log(Q1W / (1 - Q1W))
 gen `logQ0W' = log(Q0W / (1 - Q0W))
- 
+
 // Clever covariate HAW
 gen  `HAW' = (A / ps) - ((1 - A) / (1 - ps))
 gen  `H1W' = A / ps
@@ -1156,7 +1159,7 @@ local Q1 = r(mean)
 qui sum Q0star
 local Q0 = r(mean)
 
-// Relative risk and Odds ratio 
+// Relative risk and Odds ratio
 local RRtmle = `Q1'/`Q0'
 local logRRtmle = log(`Q1') - log(`Q0')
 local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
@@ -1168,7 +1171,7 @@ gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
 qui sum IC
 return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
 
-// Statistical inference ATE 
+// Statistical inference ATE
 return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
 return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
 return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
@@ -1182,14 +1185,14 @@ local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
 local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
 // Statistical inference OR
-gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0 
+gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0
 qui sum `ICor'
 local varICor = r(Var)/r(N)
 
 local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
 local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
-// Display Results 
+// Display Results
 
 return scalar CRR = `RRtmle'
 return scalar SE_log_CRR  = sqrt(`varICrr')
@@ -1221,15 +1224,15 @@ local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' "
 local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
 
 disp as text "{hline 29}"
-di "TMLE: Causal Risk Ratio (CRR)" 
+di "TMLE: Causal Risk Ratio (CRR)"
 disp as text "{hline 29}"
-disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
+disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle'
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
 
 disp as text "{hline 31}"
-di "TMLE: Marginal Odds Ratio (MOR)" 
+di "TMLE: Marginal Odds Ratio (MOR)"
 disp as text "{hline 31}"
 disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
@@ -1257,8 +1260,8 @@ quietly: rm .RData
 quietly: memory clean
 end
 
-program tmleglsrfbal, rclass 
-// Write R Code dependencies: foreign Surperlearner 
+program tmleglsrfbal, rclass
+// Write R Code dependencies: foreign Surperlearner
 set more off
 qui: file close _all
 qui: file open rcode using SLS.R, write replace
@@ -1279,10 +1282,10 @@ qui: file write rcode ///
         `"A <- data[,2]"' _newline ///
         `"X <- data[,2:nvar]"' _newline ///
         `"W <- data[,3:nvar]"' _newline ///
-        `"X1 <- X0 <- X"' _newline /// 
+        `"X1 <- X0 <- X"' _newline ///
         `"X1[,1] <- 1"' _newline ///
         `"X0[,1] <- 0"' _newline ///
-        `"newdata <- rbind(X,X1,X0)"' _newline /// 
+        `"newdata <- rbind(X,X1,X0)"' _newline ///
         `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
         `"Q <- as.data.frame(Q[[4]])"' _newline ///
         `"QAW <- Q[1:n,]"' _newline ///
@@ -1293,13 +1296,13 @@ qui: file write rcode ///
         `"ps[ps<0.025] <- 0.025"' _newline ///
         `"ps[ps>0.975] <- 0.975"' _newline ///
         `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
-        `"write.dta(data, "data2.dta")"' 
+        `"write.dta(data, "data2.dta")"'
 qui: file close rcode
 
 	if "`c(os)'" == "MacOSX" {
 	// Run R (you have to specify the path of your R executable file)
-	//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R 
-	shell "/usr/local/bin/r" CMD BATCH SLS.R 
+	//shell "C:\Program Files\R\R-3.3.2\bin\x64\R.exe" CMD BATCH SLSTATA.R
+	shell "/usr/local/bin/r" CMD BATCH SLS.R
 	}
 	else{
 	// Write bacth file to find R.exe path and R version
@@ -1315,7 +1318,7 @@ qui: file close rcode
 	`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
 			`"echo Found %%r"' _newline ///
 			`"echo shell "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-			`"echo All set!"' _newline ///  
+			`"echo All set!"' _newline ///
 			`"goto:DONE"' _newline ///
 	`")"' _newline ///
 	`":NO_R"' _newline ///
@@ -1328,8 +1331,8 @@ qui: file close rcode
 	`"pause"'
 	qui: file close bat
 	//Run batch
-	shell setup.bat 
-	//Run R 
+	shell setup.bat
+	//Run R
 	do runr.do
 	}
 
@@ -1341,8 +1344,8 @@ tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 
 sort A
 qui by A: summarize ps
-qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000) 
-qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000) 
+qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
+qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
 label variable d1A "density for A=1"
 label variable d0A "density for A=0"
 twoway (line d0A x0pointsa , yaxis(1))(line d1A x1pointsa, yaxis(2))
@@ -1351,7 +1354,7 @@ twoway (line d0A x0pointsa , yaxis(1))(line d1A x1pointsa, yaxis(2))
 gen `logQAW' = log(QAW / (1 - QAW))
 gen `logQ1W' = log(Q1W / (1 - Q1W))
 gen `logQ0W' = log(Q0W / (1 - Q0W))
- 
+
 // Clever covariate HAW
 gen  `HAW' = (A / ps) - ((1 - A) / (1 - ps))
 gen  `H1W' = A / ps
@@ -1392,7 +1395,7 @@ local Q1 = r(mean)
 qui sum Q0star
 local Q0 = r(mean)
 
-// Relative risk and Odds ratio 
+// Relative risk and Odds ratio
 local RRtmle = `Q1'/`Q0'
 local logRRtmle = log(`Q1') - log(`Q0')
 local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
@@ -1404,7 +1407,7 @@ gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
 qui sum IC
 return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
 
-// Statistical inference ATE 
+// Statistical inference ATE
 return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
 return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
 return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
@@ -1418,14 +1421,14 @@ local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
 local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
 // Statistical inference OR
-gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0 
+gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0
 qui sum `ICor'
 local varICor = r(Var)/r(N)
 
 local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
 local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
-// Display Results 
+// Display Results
 
 return scalar CRR = `RRtmle'
 return scalar SE_log_CRR  = sqrt(`varICrr')
@@ -1457,15 +1460,15 @@ local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' "
 local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
 
 disp as text "{hline 29}"
-di "TMLE: Causal Risk Ratio (CRR)" 
+di "TMLE: Causal Risk Ratio (CRR)"
 disp as text "{hline 29}"
-disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle' 
+disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle'
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 disp as text "{hline 29}"
 
 disp as text "{hline 31}"
-di "TMLE: Marginal Odds Ratio (MOR)" 
+di "TMLE: Marginal Odds Ratio (MOR)"
 disp as text "{hline 31}"
 disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
 disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
