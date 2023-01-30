@@ -374,7 +374,6 @@ qui: file close rcode
 		}
 	*/
 
-
 // Drop the variables if the elements option is not specified
 		if $keepvars == 0 {
 			drop d1 d0
@@ -385,7 +384,6 @@ qui: file close rcode
 			drop POM1 POM0 ps
 			drop cin
 		}
-
 
 // Rename and label the variables if the elements option *is* specified
 		if $keepvars == 1 {
@@ -807,6 +805,8 @@ qui: file close rcode
 		quietly: rm .RData
 end
 
+
+
 program tmlebgam, rclass
 // Write R Code dependencies: foreign Surperlearner
 set more off
@@ -1018,12 +1018,44 @@ label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ps "Propensity Score"
 
-drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin ps POM0 POM1
+// Drop the variables if the elements option is not specified
+	if $keepvars == 0 {
+		drop d1 d0
+		drop QAW Q1W Q0W
+		drop Q1star Qa1star Q0star Qa0star
+		drop ATE IC
+		drop Y A
+		drop POM1 POM0 ps
+		drop cin
+	}
 
-capture confirm variable cin
-if (_rc == 0) {
-   drop cin
-}
+// Rename and label the variables if the elements option *is* specified
+	if $keepvars == 1 {
+		* Label the variables
+			lab var d1 "Parameter for the influence curve"
+			lab var d0 "Parameter for the influence curve"
+			lab var QAW "Initial prediction of the outcome"
+			lab var Q1W "Initial prediction of the outcome for A = 1"
+			lab var Q0W "Initial prediction of the outcome for A = 0"
+			lab var Q1star "Update of the initial prediction for A = 1"
+			lab var Qa1star "Update of the initial prediction for A = 1"
+			lab var Q0star "Update of the initial prediction for A = 0"
+			lab var Qa0star "Update of the initial prediction for A = 0"
+			lab var A "Exposure/Treatment"
+			lab var Y "Outcome"
+			lab var ATE "Average Treatment Effect"
+			lab var IC "Influence Curve"
+			lab var Q1star "Update of initial plug-in estimate for A=1"
+			lab var Q0star "Update of initial plug-in estimate for A=0"
+			lab var POM1 "Potential Outcome Y(1)"
+			lab var POM0 "Potential Otucome Y(0)"
+			lab var ps "Propensity Score"
+			lab var cin "Range of Y"
+		* Rename the elements variables
+			foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps cin {
+				rename `var' _`var'
+			}
+	}
 
 // Clean up
 quietly: rm SLS.R
@@ -1034,6 +1066,9 @@ quietly: rm fulldata.csv
 quietly: rm .RData
 quietly: memory clean
 end
+
+
+
 
 program tmlebgambal, rclass
 // Write R Code dependencies: foreign Surperlearner
@@ -1255,12 +1290,44 @@ label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ps "Propensity Score"
 
-drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin ps d0A d1A POM0 POM1 x0pointsa x1pointsa
+// Drop the variables if the elements option is not specified
+	if $keepvars == 0 {
+		drop d1 d0
+		drop QAW Q1W Q0W
+		drop Q1star Qa1star Q0star Qa0star
+		drop ATE IC
+		drop Y A
+		drop POM1 POM0 ps
+		drop cin
+	}
 
-capture confirm variable cin
-if (_rc == 0) {
-   drop cin
-}
+// Rename and label the variables if the elements option *is* specified
+	if $keepvars == 1 {
+		* Label the variables
+			lab var d1 "Parameter for the influence curve"
+			lab var d0 "Parameter for the influence curve"
+			lab var QAW "Initial prediction of the outcome"
+			lab var Q1W "Initial prediction of the outcome for A = 1"
+			lab var Q0W "Initial prediction of the outcome for A = 0"
+			lab var Q1star "Update of the initial prediction for A = 1"
+			lab var Qa1star "Update of the initial prediction for A = 1"
+			lab var Q0star "Update of the initial prediction for A = 0"
+			lab var Qa0star "Update of the initial prediction for A = 0"
+			lab var A "Exposure/Treatment"
+			lab var Y "Outcome"
+			lab var ATE "Average Treatment Effect"
+			lab var IC "Influence Curve"
+			lab var Q1star "Update of initial plug-in estimate for A=1"
+			lab var Q0star "Update of initial plug-in estimate for A=0"
+			lab var POM1 "Potential Outcome Y(1)"
+			lab var POM0 "Potential Otucome Y(0)"
+			lab var ps "Propensity Score"
+			lab var cin "Range of Y"
+		* Rename the elements variables
+			foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps cin {
+				rename `var' _`var'
+			}
+	}
 
 // Clean up
 quietly: rm SLS.R
@@ -1271,6 +1338,10 @@ quietly: rm fulldata.csv
 quietly: rm .RData
 quietly: memory clean
 end
+
+
+
+
 
 program tmleglsrf, rclass
 // Write R Code dependencies: foreign Surperlearner
@@ -1483,12 +1554,44 @@ label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ps "Propensity Score"
 
-drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin ps POM0 POM1
+// Drop the variables if the elements option is not specified
+	if $keepvars == 0 {
+		drop d1 d0
+		drop QAW Q1W Q0W
+		drop Q1star Qa1star Q0star Qa0star
+		drop ATE IC
+		drop Y A
+		drop POM1 POM0 ps
+		drop cin
+	}
 
-capture confirm variable cin
-if (_rc == 0) {
-   drop cin
-}
+// Rename and label the variables if the elements option *is* specified
+	if $keepvars == 1 {
+		* Label the variables
+			lab var d1 "Parameter for the influence curve"
+			lab var d0 "Parameter for the influence curve"
+			lab var QAW "Initial prediction of the outcome"
+			lab var Q1W "Initial prediction of the outcome for A = 1"
+			lab var Q0W "Initial prediction of the outcome for A = 0"
+			lab var Q1star "Update of the initial prediction for A = 1"
+			lab var Qa1star "Update of the initial prediction for A = 1"
+			lab var Q0star "Update of the initial prediction for A = 0"
+			lab var Qa0star "Update of the initial prediction for A = 0"
+			lab var A "Exposure/Treatment"
+			lab var Y "Outcome"
+			lab var ATE "Average Treatment Effect"
+			lab var IC "Influence Curve"
+			lab var Q1star "Update of initial plug-in estimate for A=1"
+			lab var Q0star "Update of initial plug-in estimate for A=0"
+			lab var POM1 "Potential Outcome Y(1)"
+			lab var POM0 "Potential Otucome Y(0)"
+			lab var ps "Propensity Score"
+			lab var cin "Range of Y"
+		* Rename the elements variables
+			foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps cin {
+				rename `var' _`var'
+			}
+	}
 
 // Clean up
 quietly: rm SLS.R
@@ -1499,6 +1602,9 @@ quietly: rm fulldata.csv
 quietly: rm .RData
 quietly: memory clean
 end
+
+
+
 
 program tmleglsrfbal, rclass
 // Write R Code dependencies: foreign Surperlearner
@@ -1719,11 +1825,44 @@ label var POM1 "Potential Outcome Y(1)"
 label var POM0 "Potential Otucome Y(0)"
 label var ps "Propensity Score"
 
-drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin ps d0A d1A POM0 POM1 x0pointsa x1pointsa
-capture confirm variable cin
-if (_rc == 0) {
-   drop cin
-}
+// Drop the variables if the elements option is not specified
+	if $keepvars == 0 {
+		drop d1 d0
+		drop QAW Q1W Q0W
+		drop Q1star Qa1star Q0star Qa0star
+		drop ATE IC
+		drop Y A
+		drop POM1 POM0 ps
+		drop cin
+	}
+
+// Rename and label the variables if the elements option *is* specified
+	if $keepvars == 1 {
+		* Label the variables
+			lab var d1 "Parameter for the influence curve"
+			lab var d0 "Parameter for the influence curve"
+			lab var QAW "Initial prediction of the outcome"
+			lab var Q1W "Initial prediction of the outcome for A = 1"
+			lab var Q0W "Initial prediction of the outcome for A = 0"
+			lab var Q1star "Update of the initial prediction for A = 1"
+			lab var Qa1star "Update of the initial prediction for A = 1"
+			lab var Q0star "Update of the initial prediction for A = 0"
+			lab var Qa0star "Update of the initial prediction for A = 0"
+			lab var A "Exposure/Treatment"
+			lab var Y "Outcome"
+			lab var ATE "Average Treatment Effect"
+			lab var IC "Influence Curve"
+			lab var Q1star "Update of initial plug-in estimate for A=1"
+			lab var Q0star "Update of initial plug-in estimate for A=0"
+			lab var POM1 "Potential Outcome Y(1)"
+			lab var POM0 "Potential Otucome Y(0)"
+			lab var ps "Propensity Score"
+			lab var cin "Range of Y"
+		* Rename the elements variables
+			foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps cin {
+				rename `var' _`var'
+			}
+	}
 
 // Clean up
 quietly: rm SLS.R
