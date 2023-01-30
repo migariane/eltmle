@@ -338,7 +338,7 @@ qui: file close rcode
 	disp as text "{hline 63}"
 	di "         {c |}" "    ATE         SE     P-value           95% CI"
 	disp as text "{hline 63}"
-	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "TMLE:    {c |}" %7.1f as result return(ATEtmle) "    " %7.1f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa) as text " )"
 	disp as text "{hline 63}"
 	disp as text " "
 	}
@@ -601,7 +601,7 @@ qui: file close rcode
 		disp as text "{hline 63}"
 		di "         {c |}" "    ATE         SE     P-value           95% CI"
 		disp as text "{hline 63}"
-		disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+		disp as text "TMLE:    {c |}" %7.1f as result return(ATEtmle) "    " %7.1f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa) as text " )"
 		disp as text "{hline 63}"
 		disp as text " "
 		}
@@ -915,7 +915,7 @@ local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 	disp as text "{hline 63}"
 	di "         {c |}" "    ATE         SE     P-value           95% CI"
 	disp as text "{hline 63}"
-	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "TMLE:    {c |}" %7.1f as result return(ATEtmle) "    " %7.1f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa) as text " )"
 	disp as text "{hline 63}"
 	disp as text " "
 	}
@@ -1180,7 +1180,7 @@ local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 	disp as text "{hline 63}"
 	di "         {c |}" "    ATE         SE     P-value           95% CI"
 	disp as text "{hline 63}"
-	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "TMLE:    {c |}" %7.1f as result return(ATEtmle) "    " %7.1f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa) as text " )"
 	disp as text "{hline 63}"
 	disp as text " "
 	}
@@ -1512,7 +1512,7 @@ local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 	disp as text "{hline 63}"
 	di "         {c |}" "    ATE         SE     P-value           95% CI"
 	disp as text "{hline 63}"
-	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "TMLE:    {c |}" %7.1f as result return(ATEtmle) "    " %7.1f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa) as text " )"
 	disp as text "{hline 63}"
 	disp as text " "
 	}
@@ -1772,7 +1772,7 @@ local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 	disp as text "{hline 63}"
 	di "         {c |}" "    ATE         SE     P-value           95% CI"
 	disp as text "{hline 63}"
-	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "TMLE:    {c |}" %7.1f as result return(ATEtmle) "    " %7.1f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa) as text " )"
 	disp as text "{hline 63}"
 	disp as text " "
 	}
