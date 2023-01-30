@@ -127,6 +127,10 @@ program define eltmle
       if "`tmlebgam'" == "" & "`tmleglsrf'" == "" & "`bal'" == ""{
                 tmle `varlist'
                 }
+				else if "`tmle'" != "" & "`tmlebgam'" != "" {
+                di as text "Both tmle and tmlebgam are specified. Running tmle... (tmlebgam is ignored)"
+								tmle `varlist'
+                }
 		 		else if "`tmle'" == "tmle" & "`bal'" == "bal" {
                 tmlebal `varlist'
                 }
