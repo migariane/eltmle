@@ -346,42 +346,13 @@ qui: file close rcode
 	local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
 	local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
 
-// Display the results of CRR and MOR
+	* Display the results of CRR and MOR
 	disp as text "{hline 51}"
 	di "                           Estimate          95% CI"
 	disp as text "{hline 51}"
 	disp as text "Causal Risk Ratio:      " "{c |}      "  %4.2f as result `RRtmle' "     (" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 	disp as text "Marginal Odds Ratio:    " "{c |}      "  %4.2f as result `ORtmle' "     (" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
 	disp as text "{hline 51}"
-
-	/*
-		disp as text "{hline 29}"
-		di "TMLE: Causal Risk Ratio (CRR)"
-		disp as text "{hline 29}"
-		disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle'
-		disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-		disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-		disp as text "{hline 29}"
-
-		disp as text "{hline 31}"
-		di "TMLE: Marginal Odds Ratio (MOR)"
-		disp as text "{hline 31}"
-		disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
-		disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-		disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-		disp as text "{hline 31}"
-
-		label var POM1 "Potential Outcome Y(1)"
-		label var POM0 "Potential Otucome Y(0)"
-		label var ps "Propensity Score"
-
-		drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin POM1 POM0 ps
-
-		capture confirm variable cin
-		if (_rc == 0) {
-		   drop cin
-		}
-	*/
 
 // Drop the variables if the elements option is not specified
 		if $keepvars == 0 {
@@ -612,73 +583,41 @@ qui: file close rcode
 	local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
 	local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
-// Display Results
-	return scalar CRR = `RRtmle'
-	return scalar SE_log_CRR  = sqrt(`varICrr')
-	return scalar MOR = `ORtmle'
-	return scalar SE_log_MOR  = sqrt(`varICor')
+	// Display Results of ATE
+		return scalar CRR = `RRtmle'
+		return scalar SE_log_CRR  = sqrt(`varICrr')
+		return scalar MOR = `ORtmle'
+		return scalar SE_log_MOR  = sqrt(`varICor')
 
-	if $flag==1 {
-	disp as text "{hline 63}"
-	di "         {c |}" "    ATE         SE     P-value           95% CI"
-	disp as text "{hline 63}"
-	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
-	disp as text "{hline 63}"
-	disp as text " "
-	}
-	else if $flag!=1{
-	disp as text "{hline 63}"
-	di "         {c |}" "    ATE         SE     P-value           95% CI"
-	disp as text "{hline 63}"
-	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
-	disp as text "{hline 63}"
-	disp as text " "
-	}
+		if $flag==1 {
+		disp as text "{hline 63}"
+		di "         {c |}" "    ATE         SE     P-value           95% CI"
+		disp as text "{hline 63}"
+		disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+		disp as text "{hline 63}"
+		disp as text " "
+		}
+		else if $flag!=1{
+		disp as text "{hline 63}"
+		di "         {c |}" "    ATE         SE     P-value           95% CI"
+		disp as text "{hline 63}"
+		disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+		disp as text "{hline 63}"
+		disp as text " "
+		}
 
-	local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
-	local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
+		local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
+		local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
 
-	/*
-	disp as text "{hline 29}"
-	di "TMLE: Causal Risk Ratio (CRR)"
-	disp as text "{hline 29}"
-	di as result `rrbin'
-	disp as text "{hline 29}"
+		* Display the results of CRR and MOR
+		disp as text "{hline 51}"
+		di "                           Estimate          95% CI"
+		disp as text "{hline 51}"
+		disp as text "Causal Risk Ratio:      " "{c |}      "  %4.2f as result `RRtmle' "     (" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
+		disp as text "Marginal Odds Ratio:    " "{c |}      "  %4.2f as result `ORtmle' "     (" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
+		disp as text "{hline 51}"
 
-	disp as text "{hline 31}"
-	di "TMLE: Marginal Odds Ratio (MOR)"
-	disp as text "{hline 31}"
-	di as result `orbin'
-	disp as text "{hline 31}"
-	*/
-
-	/*
-	disp as text "{hline 29}"
-	di "TMLE: Causal Risk Ratio (CRR)"
-	disp as text "{hline 29}"
-	disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle'
-	disp as text "95% CI: " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-	disp as text "{hline 29}"
-
-
-	disp as text "{hline 31}"
-	di "TMLE: Marginal Odds Ratio (MOR)"
-	disp as text "{hline 31}"
-	disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
-	disp as text "95% CI: " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-	disp as text "{hline 31}"
-	*/
-
-
-	* Display the results
-	disp as text "{hline 51}"
-	di "                           Estimate          95% CI"
-	disp as text "{hline 51}"
-	disp as text "Causal Risk Ratio:      " "{c |}      "  %4.2f as result `RRtmle' "     (" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-	disp as text "Marginal Odds Ratio:    " "{c |}      "  %4.2f as result `ORtmle' "     (" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-	disp as text "{hline 51}"
-
-	* Display covariate balance table
+// Display covariate balance table
 		* Create macros from the varlist
 			tokenize $variablelist
 			local outcome `1'
@@ -698,23 +637,6 @@ qui: file close rcode
 			di as text "                 Standardised Differences            Variance ratio"
 			di as text "                          Raw    Weighted           Raw    Weighted"
 			di as text "{hline 67}"
-
-			/*
-			disp as text "{hline 29}"
-			di "TMLE: Causal Risk Ratio (CRR)"
-			disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle'
-			disp as text "95% CI: " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-			disp as text "{hline 29}"
-
-
-			disp as text "{hline 31}"
-			di "TMLE: Marginal Odds Ratio (MOR)"
-			disp as text "{hline 31}"
-			disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
-			disp as text "95% CI: " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-			disp as text "{hline 31}"
-			*/
-
 
 		* Calculate the covariate balance
 			foreach var in `varlist' {
@@ -975,56 +897,39 @@ local varICor = r(Var)/r(N)
 local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
 local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
-// Display Results
+// Display Results of ATE
+	return scalar CRR = `RRtmle'
+	return scalar SE_log_CRR  = sqrt(`varICrr')
+	return scalar MOR = `ORtmle'
+	return scalar SE_log_MOR  = sqrt(`varICor')
 
-return scalar CRR = `RRtmle'
-return scalar SE_log_CRR  = sqrt(`varICrr')
-return scalar MOR = `ORtmle'
-return scalar SE_log_MOR  = sqrt(`varICor')
+	if $flag==1 {
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
+	}
+	else if $flag!=1{
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
+	}
 
-if $flag==1 {
-disp as text "{hline 32}"
-di "TMLE: Average Treatment Effect"
-disp as text "{hline 32}"
-disp as text "ATE:      " "{c |}" %7.4f as result return(ATEtmle)
-disp as text "SE:       " "{c |}" %7.4f as result return(ATE_SE_tmle)
-disp as text "P-value:  " "{c |}" %7.4f as result return(ATE_pvalue)
-disp as text "95%CI:    " "{c |}" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa)
-disp as text "{hline 32}"
-}
-else if $flag!=1{
-disp as text "{hline 32}"
-di "TMLE: Average Treatment Effect"
-disp as text "{hline 32}"
-disp as text "ATE:      " "{c |}" %7.1f as result return(ATEtmle)
-disp as text "SE:       " "{c |}" %7.1f as result return(ATE_SE_tmle)
-disp as text "P-value:  " "{c |}" %7.4f as result return(ATE_pvalue)
-disp as text "95%CI:    " "{c |}" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa)
-disp as text "{hline 32}"
-}
+	local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
+	local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
 
-local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
-local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
-
-disp as text "{hline 29}"
-di "TMLE: Causal Risk Ratio (CRR)"
-disp as text "{hline 29}"
-disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle'
-disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-disp as text "{hline 29}"
-
-disp as text "{hline 31}"
-di "TMLE: Marginal Odds Ratio (MOR)"
-disp as text "{hline 31}"
-disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
-disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-disp as text "{hline 31}"
-
-label var POM1 "Potential Outcome Y(1)"
-label var POM0 "Potential Otucome Y(0)"
-label var ps "Propensity Score"
+	* Display the results of CRR and MOR
+	disp as text "{hline 51}"
+	di "                           Estimate          95% CI"
+	disp as text "{hline 51}"
+	disp as text "Causal Risk Ratio:      " "{c |}      "  %4.2f as result `RRtmle' "     (" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
+	disp as text "Marginal Odds Ratio:    " "{c |}      "  %4.2f as result `ORtmle' "     (" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
+	disp as text "{hline 51}"
 
 // Drop the variables if the elements option is not specified
 	if $keepvars == 0 {
@@ -1257,56 +1162,39 @@ local varICor = r(Var)/r(N)
 local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
 local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
-// Display Results
-
+// Display Results of ATE
 	return scalar CRR = `RRtmle'
 	return scalar SE_log_CRR  = sqrt(`varICrr')
 	return scalar MOR = `ORtmle'
 	return scalar SE_log_MOR  = sqrt(`varICor')
 
 	if $flag==1 {
-	disp as text "{hline 32}"
-	di "TMLE: Average Treatment Effect"
-	disp as text "{hline 32}"
-	disp as text "ATE:      " "{c |}" %7.4f as result return(ATEtmle)
-	disp as text "SE:       " "{c |}" %7.4f as result return(ATE_SE_tmle)
-	disp as text "P-value:  " "{c |}" %7.4f as result return(ATE_pvalue)
-	disp as text "95%CI:    " "{c |}" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa)
-	disp as text "{hline 32}"
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
 	}
 	else if $flag!=1{
-	disp as text "{hline 32}"
-	di "TMLE: Average Treatment Effect"
-	disp as text "{hline 32}"
-	disp as text "ATE:      " "{c |}" %7.1f as result return(ATEtmle)
-	disp as text "SE:       " "{c |}" %7.1f as result return(ATE_SE_tmle)
-	disp as text "P-value:  " "{c |}" %7.4f as result return(ATE_pvalue)
-	disp as text "95%CI:    " "{c |}" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa)
-	disp as text "{hline 32}"
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
 	}
 
 	local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
 	local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
 
-	disp as text "{hline 29}"
-	di "TMLE: Causal Risk Ratio (CRR)"
-	disp as text "{hline 29}"
-	disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle'
-	disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-	disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-	disp as text "{hline 29}"
-
-	disp as text "{hline 31}"
-	di "TMLE: Marginal Odds Ratio (MOR)"
-	disp as text "{hline 31}"
-	disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
-	disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-	disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-	disp as text "{hline 31}"
-
-	label var POM1 "Potential Outcome Y(1)"
-	label var POM0 "Potential Otucome Y(0)"
-	label var ps "Propensity Score"
+	* Display the results of CRR and MOR
+	disp as text "{hline 51}"
+	di "                           Estimate          95% CI"
+	disp as text "{hline 51}"
+	disp as text "Causal Risk Ratio:      " "{c |}      "  %4.2f as result `RRtmle' "     (" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
+	disp as text "Marginal Odds Ratio:    " "{c |}      "  %4.2f as result `ORtmle' "     (" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
+	disp as text "{hline 51}"
 
 
 	* Display covariate balance table
@@ -1606,56 +1494,39 @@ local varICor = r(Var)/r(N)
 local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
 local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
-// Display Results
+// Display Results of ATE
+	return scalar CRR = `RRtmle'
+	return scalar SE_log_CRR  = sqrt(`varICrr')
+	return scalar MOR = `ORtmle'
+	return scalar SE_log_MOR  = sqrt(`varICor')
 
-return scalar CRR = `RRtmle'
-return scalar SE_log_CRR  = sqrt(`varICrr')
-return scalar MOR = `ORtmle'
-return scalar SE_log_MOR  = sqrt(`varICor')
+	if $flag==1 {
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
+	}
+	else if $flag!=1{
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
+	}
 
-if $flag==1 {
-disp as text "{hline 32}"
-di "TMLE: Average Treatment Effect"
-disp as text "{hline 32}"
-disp as text "ATE:      " "{c |}" %7.4f as result return(ATEtmle)
-disp as text "SE:       " "{c |}" %7.4f as result return(ATE_SE_tmle)
-disp as text "P-value:  " "{c |}" %7.4f as result return(ATE_pvalue)
-disp as text "95%CI:    " "{c |}" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa)
-disp as text "{hline 32}"
-}
-else if $flag!=1{
-disp as text "{hline 32}"
-di "TMLE: Average Treatment Effect"
-disp as text "{hline 32}"
-disp as text "ATE:      " "{c |}" %7.1f as result return(ATEtmle)
-disp as text "SE:       " "{c |}" %7.1f as result return(ATE_SE_tmle)
-disp as text "P-value:  " "{c |}" %7.4f as result return(ATE_pvalue)
-disp as text "95%CI:    " "{c |}" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa)
-disp as text "{hline 32}"
-}
+	local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
+	local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
 
-local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
-local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
-
-disp as text "{hline 29}"
-di "TMLE: Causal Risk Ratio (CRR)"
-disp as text "{hline 29}"
-disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle'
-disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-disp as text "{hline 29}"
-
-disp as text "{hline 31}"
-di "TMLE: Marginal Odds Ratio (MOR)"
-disp as text "{hline 31}"
-disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
-disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-disp as text "{hline 31}"
-
-label var POM1 "Potential Outcome Y(1)"
-label var POM0 "Potential Otucome Y(0)"
-label var ps "Propensity Score"
+	* Display the results of CRR and MOR
+	disp as text "{hline 51}"
+	di "                           Estimate          95% CI"
+	disp as text "{hline 51}"
+	disp as text "Causal Risk Ratio:      " "{c |}      "  %4.2f as result `RRtmle' "     (" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
+	disp as text "Marginal Odds Ratio:    " "{c |}      "  %4.2f as result `ORtmle' "     (" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
+	disp as text "{hline 51}"
 
 // Drop the variables if the elements option is not specified
 	if $keepvars == 0 {
@@ -1883,59 +1754,42 @@ local varICor = r(Var)/r(N)
 local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
 local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
-// Display Results
-
+// Display Results of ATE
 	return scalar CRR = `RRtmle'
 	return scalar SE_log_CRR  = sqrt(`varICrr')
 	return scalar MOR = `ORtmle'
 	return scalar SE_log_MOR  = sqrt(`varICor')
 
 	if $flag==1 {
-	disp as text "{hline 32}"
-	di "TMLE: Average Treatment Effect"
-	disp as text "{hline 32}"
-	disp as text "ATE:      " "{c |}" %7.4f as result return(ATEtmle)
-	disp as text "SE:       " "{c |}" %7.4f as result return(ATE_SE_tmle)
-	disp as text "P-value:  " "{c |}" %7.4f as result return(ATE_pvalue)
-	disp as text "95%CI:    " "{c |}" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa)
-	disp as text "{hline 32}"
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
 	}
 	else if $flag!=1{
-	disp as text "{hline 32}"
-	di "TMLE: Average Treatment Effect"
-	disp as text "{hline 32}"
-	disp as text "ATE:      " "{c |}" %7.1f as result return(ATEtmle)
-	disp as text "SE:       " "{c |}" %7.1f as result return(ATE_SE_tmle)
-	disp as text "P-value:  " "{c |}" %7.4f as result return(ATE_pvalue)
-	disp as text "95%CI:    " "{c |}" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa)
-	disp as text "{hline 32}"
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
 	}
 
 	local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
 	local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
 
-	disp as text "{hline 29}"
-	di "TMLE: Causal Risk Ratio (CRR)"
-	disp as text "{hline 29}"
-	disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle'
-	disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-	disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-	disp as text "{hline 29}"
-
-	disp as text "{hline 31}"
-	di "TMLE: Marginal Odds Ratio (MOR)"
-	disp as text "{hline 31}"
-	disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
-	disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-	disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-	disp as text "{hline 31}"
-
-	label var POM1 "Potential Outcome Y(1)"
-	label var POM0 "Potential Otucome Y(0)"
-	label var ps "Propensity Score"
+	* Display the results of CRR and MOR
+	disp as text "{hline 51}"
+	di "                           Estimate          95% CI"
+	disp as text "{hline 51}"
+	disp as text "Causal Risk Ratio:      " "{c |}      "  %4.2f as result `RRtmle' "     (" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
+	disp as text "Marginal Odds Ratio:    " "{c |}      "  %4.2f as result `ORtmle' "     (" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
+	disp as text "{hline 51}"
 
 
-	* Display covariate balance table
+// Display covariate balance table
 		* Create macros from the varlist
 			tokenize $variablelist
 			local outcome `1'
@@ -1955,23 +1809,6 @@ local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 			di as text "                 Standardised Differences            Variance ratio"
 			di as text "                          Raw    Weighted           Raw    Weighted"
 			di as text "{hline 67}"
-
-			/*
-			disp as text "{hline 29}"
-			di "TMLE: Causal Risk Ratio (CRR)"
-			disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle'
-			disp as text "95% CI: " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-			disp as text "{hline 29}"
-
-
-			disp as text "{hline 31}"
-			di "TMLE: Marginal Odds Ratio (MOR)"
-			disp as text "{hline 31}"
-			disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
-			disp as text "95% CI: " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-			disp as text "{hline 31}"
-			*/
-
 
 		* Calculate the covariate balance
 			foreach var in `varlist' {
