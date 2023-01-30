@@ -129,6 +129,7 @@ program define eltmle
                 }
 				else if "`tmle'" != "" & "`tmlebgam'" != "" {
                 di as error "Both tmle and tmlebgam are specified. Please specify only tmle or tmlebgam, but not both."
+								di as error "Test test test test test"
                 }
 		 		else if "`tmle'" == "tmle" & "`bal'" == "bal" {
                 tmlebal `varlist'
