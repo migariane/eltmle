@@ -275,6 +275,7 @@ qui: file close rcode
 	gen double POM0 = cond($flag == 1, Qa0star, Qa0star * cin, .)
 
 	sum POM1 POM0 ps
+	di as text " "
 
 // Estimating the updated targeted ATE binary outcome
 	gen double ATE = cond($flag == 1, (Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
@@ -538,6 +539,7 @@ qui: file close rcode
 	gen double POM0 = cond($flag == 1, Qa0star, Qa0star * cin, .)
 
 	sum POM1 POM0 ps
+	di as text " "
 
 // Estimating the updated targeted ATE binary outcome
 	gen double ATE = cond($flag == 1, (Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
@@ -852,6 +854,7 @@ gen double POM1 = cond($flag == 1, Qa1star, Qa1star * cin, .)
 gen double POM0 = cond($flag == 1, Qa0star, Qa0star * cin, .)
 
 summ POM1 POM0 ps
+di as text " "
 
 // Estimating the updated targeted ATE binary outcome
 gen double ATE = cond($flag == 1, (Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
@@ -1117,6 +1120,7 @@ gen double POM1 = cond($flag == 1, Qa1star, Qa1star * cin, .)
 gen double POM0 = cond($flag == 1, Qa0star, Qa0star * cin, .)
 
 summ POM1 POM0 ps
+di as text " "
 
 // Estimating the updated targeted ATE binary outcome
 gen double ATE = cond($flag == 1, (Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
@@ -1449,6 +1453,7 @@ gen double POM1 = cond($flag == 1, Qa1star, Qa1star * cin, .)
 gen double POM0 = cond($flag == 1, Qa0star, Qa0star * cin, .)
 
 summ POM1 POM0 ps
+di as text " "
 
 // Estimating the updated targeted ATE binary outcome
 gen double ATE = cond($flag == 1, (Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
@@ -1709,6 +1714,7 @@ gen double POM1 = cond($flag == 1, Qa1star, Qa1star * cin, .)
 gen double POM0 = cond($flag == 1, Qa0star, Qa0star * cin, .)
 
 summ POM1 POM0 ps
+di as text " "
 
 // Estimating the updated targeted ATE binary outcome
 gen double ATE = cond($flag == 1, (Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
