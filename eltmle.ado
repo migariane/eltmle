@@ -128,8 +128,7 @@ program define eltmle
                 tmle `varlist'
                 }
 				else if "`tmle'" != "" & "`tmlebgam'" != "" {
-                di as text "Both tmle and tmlebgam are specified. Running tmle... (tmlebgam is ignored)"
-								tmle `varlist'
+                di as error "Both tmle and tmlebgam are specified. Please specify only tmle or tmlebgam, but not both."
                 }
 		 		else if "`tmle'" == "tmle" & "`bal'" == "bal" {
                 tmlebal `varlist'
