@@ -2,9 +2,11 @@
 *! ELTMLE: Stata module for Ensemble Learning Targeted Maximum Likelihood Estimation
 *! by Miguel Angel Luque-Fernandez [cre,aut]
 *! and Camille Maringe [aut]
+*! and Matthew J. Smith [aut]
 *! Bug reports:
 *! miguel-angel.luque at lshtm.ac.uk
 *! camille.maringe at lshtm.ac.uk
+*! matt.smith at lshtm.ac.uk
 
 /*
 Copyright (c) 2021  <Miguel Angel Luque-Fernandez> & <Camille Maringe>
@@ -48,29 +50,54 @@ THE SOFTWARE.
 * Included additive effect for continuous outcomes
 * Fixed ATE 95%CI for additive risk difference (Updated: 15.10.2018)
 * Included HAW as a sampling weight in MLE for targeted step (gain in efficiency) for the ATE (Updated: 05.02.2019)
-* Updated as a rclass programm: returning scalars for ATE, ATE 95%CI, ATE SE, CRR, MOR, CRR SEs, and MOR SEs (Updated: 01.07.2019)
+* Updated as a rclass program: returning scalars for ATE, ATE 95%CI, ATE SE, CRR, MOR, CRR SEs, and MOR SEs (Updated: 01.07.2019)
 * Improved the output display (Updated: 01.07.2019)
 * Keep initial dataset (Updated: 20.11.2020)
-* Added bal option to visually display postivity violations (Updated: 09.01.2021)
+* Added bal option to visually display positivity violations (Updated: 09.01.2021)
 * Fixed ATE 95%CI for additive risk difference 15.10.2018
 * Included HAW as a sampling weight in MLE for targeted step (gain in efficiency) for the ATE (Updated: 05.02.2019)
-* Updated as a rclass programm: returning scalars for ATE, ATE 95%CI, ATE SE, CRR, MOR and CRR, MOR SEs (Updated: 01.07.2019)
+* Updated as a rclass program: returning scalars for ATE, ATE 95%CI, ATE SE, CRR, MOR and CRR, MOR SEs (Updated: 01.07.2019)
 * Improved the output display (Updated: 01.07.2019
 * Keep initial dataset (Updated: 20.11.2020)
 * Complete case (Listwise) analysis (Updated: 28.06.2021)
-* Added bal option to visually display postivity violations (Updated: 09.01.2021)
+* Added bal option to visually display positivity violations (Updated: 09.01.2021)
 * Improved display of the results Stata like format (updated: 13.7.2022)
+* Improved display of the CRR and MOR results to Stata like format (updated: 30.1.2023)
 
 capture program drop eltmle
 program define eltmle
-		 syntax varlist(min=3) [if] [pw] [, tmle tmlebgam tmleglsrf bal]
+		 syntax varlist(min=3) [if] [pw] [, tmle tmlebgam tmleglsrf bal elements]
          version 13.2
 		 foreach v of var * {
 		 qui drop if missing(`v')
           }
 
-		 
 
+     // Drop the elements if they have been defined already
+				capture drop _d1
+				capture drop _d0
+				capture drop _QAW
+				capture drop _Q1W
+				capture drop _Q0W
+				capture drop _Q1star
+				capture drop _Qa1star
+				capture drop _Q0star
+				capture drop _Qa0star
+				capture drop _ATE
+				capture drop _IC
+				capture drop _Y
+				capture drop _A
+				capture drop _POM1
+				capture drop _POM0
+				capture drop _ps
+				capture drop _cin
+				capture drop _ipw
+				capture drop d1A
+				capture drop x1pointsa
+				capture drop d0A
+				capture drop x0pointsa
+
+		// Export the data to be used in the eltmle programs
 		 qui export delimited using "fulldata.csv", nolabel replace
          marksample touse
          local var `varlist' if `touse'
@@ -87,25 +114,35 @@ program define eltmle
 		 qui save "`data'.dta", replace
          qui export delimited `var' using "data.csv", nolabel replace
 
-         if "`tmlebgam'" == "" & "`tmleglsrf'" == "" & "`bal'" == ""{
+
+		// Create global macro to keep the elements of the TMLE
+	 		if "`elements'" != "" {
+	 			global keepvars = 1
+	 		}
+	 		else if "`elements'" == "" {
+	 			global keepvars = 0
+	 		}
+
+    // Select the program based on the defined options
+      if "`tmlebgam'" == "" & "`tmleglsrf'" == "" & "`bal'" == ""{
                 tmle `varlist'
                 }
-		 else if "`tmle'" == "tmle" & "`bal'" == "bal" {
+		 		else if "`tmle'" == "tmle" & "`bal'" == "bal" {
                 tmlebal `varlist'
                 }
-		 else if "`tmlebgam'" == "tmlebgam" & "`bal'" == "bal" {
+				else if "`tmlebgam'" == "tmlebgam" & "`bal'" == "bal" {
                 tmlebgambal `varlist'
                 }
-		 else if "`tmleglsrf'" == "tmleglsrf" & "`bal'" == "bal" {
+		 		else if "`tmleglsrf'" == "tmleglsrf" & "`bal'" == "bal" {
                 tmleglsrfbal `varlist'
                 }
-		 else if "`tmlebgam'" == "tmlebgam" {
+		 		else if "`tmlebgam'" == "tmlebgam" {
                 tmlebgam `varlist'
                 }
-         else if "`tmleglsrf'" == "tmleglsrf" {
+        else if "`tmleglsrf'" == "tmleglsrf" {
                 tmleglsrf `varlist'
                 }
-		  else if "`bal'" == "bal" {
+		  	else if "`bal'" == "bal" {
                 tmlebal `varlist'
                 }
 end
@@ -185,147 +222,194 @@ qui: file close rcode
 	}
 
 // Read Revised Data Back to Stata
-clear
-quietly: use "data2.dta", clear
-qui cap drop X__000000
-tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
+	clear
+	quietly: use "data2.dta", clear
+	qui cap drop X__000000
+	tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 
 // Q to logit scale
-gen `logQAW' = log(QAW / (1 - QAW))
-gen `logQ1W' = log(Q1W / (1 - Q1W))
-gen `logQ0W' = log(Q0W / (1 - Q0W))
+	gen `logQAW' = log(QAW / (1 - QAW))
+	gen `logQ1W' = log(Q1W / (1 - Q1W))
+	gen `logQ0W' = log(Q0W / (1 - Q0W))
 
 // Clever covariate HAW
-gen  `HAW' = (A / ps) - ((1 - A) / (1 - ps))
-gen  `H1W' = A / ps
-gen  `H0W' = (1 - A) / (1 - ps)
+	gen  `HAW' = (A / ps) - ((1 - A) / (1 - ps))
+	gen  `H1W' = A / ps
+	gen  `H0W' = (1 - A) / (1 - ps)
 
 // Estimation of the substitution parameter (Epsilon)
-qui glm Y `H1W' `H0W', fam(binomial) offset(`logQAW') robust noconstant
-mat a= e(b)
-gen `eps1' = a[1,1]
-gen `eps2' = a[1,2]
+	qui glm Y `H1W' `H0W', fam(binomial) offset(`logQAW') robust noconstant
+	mat a= e(b)
+	gen `eps1' = a[1,1]
+	gen `eps2' = a[1,2]
 
-qui glm Y `HAW', fam(binomial) offset(`logQAW') robust noconstant
-mat a= e(b)
-gen `eps' = a[1,1]
+	qui glm Y `HAW', fam(binomial) offset(`logQAW') robust noconstant
+	mat a= e(b)
+	gen `eps' = a[1,1]
 
 
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
-gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
-gen double Qa1star = exp(`H1W'*`eps' + `logQ1W')/(1 + exp(`H1W'*`eps' + `logQ1W'))
+	gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
+	gen double Qa1star = exp(`H1W'*`eps' + `logQ1W')/(1 + exp(`H1W'*`eps' + `logQ1W'))
 
-gen double Q0star = exp(`H0W'*`eps2' + `logQ0W')/(1 + exp(`H0W'*`eps2' + `logQ0W'))
-gen double Q1star = exp(`H1W'*`eps1' + `logQ1W')/(1 + exp(`H1W'*`eps1' + `logQ1W'))
+	gen double Q0star = exp(`H0W'*`eps2' + `logQ0W')/(1 + exp(`H0W'*`eps2' + `logQ0W'))
+	gen double Q1star = exp(`H1W'*`eps1' + `logQ1W')/(1 + exp(`H1W'*`eps1' + `logQ1W'))
 
-gen double cin = ($b - $a)
+	gen double cin = ($b - $a)
 
-gen double POM1 = cond($flag == 1, Qa1star, Qa1star * cin, .)
-gen double POM0 = cond($flag == 1, Qa0star, Qa0star * cin, .)
+	gen double POM1 = cond($flag == 1, Qa1star, Qa1star * cin, .)
+	gen double POM0 = cond($flag == 1, Qa0star, Qa0star * cin, .)
 
-sum POM1 POM0 ps
+	sum POM1 POM0 ps
 
 // Estimating the updated targeted ATE binary outcome
-gen double ATE = cond($flag == 1, (Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
-qui sum ATE
-return scalar ATEtmle = r(mean)
+	gen double ATE = cond($flag == 1, (Qa1star - Qa0star), (Qa1star - Qa0star) * cin, .)
+	qui sum ATE
+	return scalar ATEtmle = r(mean)
 
 // Relative risk
-qui sum Q1star
-local Q1 = r(mean)
-qui sum Q0star
-local Q0 = r(mean)
+	qui sum Q1star
+	local Q1 = r(mean)
+	qui sum Q0star
+	local Q0 = r(mean)
 
 // Relative risk and Odds ratio
-local RRtmle = `Q1'/`Q0'
-local logRRtmle = log(`Q1') - log(`Q0')
-local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	local RRtmle = `Q1'/`Q0'
+	local logRRtmle = log(`Q1') - log(`Q0')
+	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
 
 // Statistical inference (Efficient Influence Curve)
-gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
-gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
-gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
-qui sum IC
-return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
+	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+	gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+	gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
+	qui sum IC
+	return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
 
 // Statistical inference ATE
-return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
-return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
-return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
+	return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
 
 // Statistical inference RR
-gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
-qui sum `ICrr'
-local varICrr = r(Var)/r(N)
+	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
+	qui sum `ICrr'
+	local varICrr = r(Var)/r(N)
 
-local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
-local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
+	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
 // Statistical inference OR
-gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0
-qui sum `ICor'
-local varICor = r(Var)/r(N)
+	gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0
+	qui sum `ICor'
+	local varICor = r(Var)/r(N)
 
-local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
-local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
+	local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
+	local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
-// Display Results
+// Display Results of ATE
+	return scalar CRR = `RRtmle'
+	return scalar SE_log_CRR  = sqrt(`varICrr')
+	return scalar MOR = `ORtmle'
+	return scalar SE_log_MOR  = sqrt(`varICor')
 
-return scalar CRR = `RRtmle'
-return scalar SE_log_CRR  = sqrt(`varICrr')
-return scalar MOR = `ORtmle'
-return scalar SE_log_MOR  = sqrt(`varICor')
+	if $flag==1 {
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
+	}
+	else if $flag!=1{
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
+	}
 
-if $flag==1 {
-disp as text "{hline 32}"
-di "TMLE: Average Treatment Effect"
-disp as text "{hline 32}"
-disp as text "ATE:      " "{c |}" %7.4f as result return(ATEtmle)
-disp as text "SE:       " "{c |}" %7.4f as result return(ATE_SE_tmle)
-disp as text "P-value:  " "{c |}" %7.4f as result return(ATE_pvalue)
-disp as text "95%CI:    " "{c |}" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa)
-disp as text "{hline 32}"
-}
-else if $flag!=1{
-disp as text "{hline 32}"
-di "TMLE: Average Treatment Effect"
-disp as text "{hline 32}"
-disp as text "ATE:      " "{c |}" %7.1f as result return(ATEtmle)
-disp as text "SE:       " "{c |}" %7.1f as result return(ATE_SE_tmle)
-disp as text "P-value:  " "{c |}" %7.4f as result return(ATE_pvalue)
-disp as text "95%CI:    " "{c |}" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa)
-disp as text "{hline 32}"
-}
+	local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
+	local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
 
-local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
-local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
+// Display the results of CRR and MOR
+	disp as text "{hline 51}"
+	di "                           Estimate          95% CI"
+	disp as text "{hline 51}"
+	disp as text "Causal Risk Ratio:      " "{c |}      "  %4.2f as result `RRtmle' "     (" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
+	disp as text "Marginal Odds Ratio:    " "{c |}      "  %4.2f as result `ORtmle' "     (" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
+	disp as text "{hline 51}"
 
-disp as text "{hline 29}"
-di "TMLE: Causal Risk Ratio (CRR)"
-disp as text "{hline 29}"
-disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle'
-disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-disp as text "{hline 29}"
+	/*
+		disp as text "{hline 29}"
+		di "TMLE: Causal Risk Ratio (CRR)"
+		disp as text "{hline 29}"
+		disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle'
+		disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
+		disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
+		disp as text "{hline 29}"
 
-disp as text "{hline 31}"
-di "TMLE: Marginal Odds Ratio (MOR)"
-disp as text "{hline 31}"
-disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
-disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-disp as text "{hline 31}"
+		disp as text "{hline 31}"
+		di "TMLE: Marginal Odds Ratio (MOR)"
+		disp as text "{hline 31}"
+		disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
+		disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
+		disp as text "95%CI:  " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
+		disp as text "{hline 31}"
 
-label var POM1 "Potential Outcome Y(1)"
-label var POM0 "Potential Otucome Y(0)"
-label var ps "Propensity Score"
+		label var POM1 "Potential Outcome Y(1)"
+		label var POM0 "Potential Otucome Y(0)"
+		label var ps "Propensity Score"
 
-drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin POM1 POM0 ps
+		drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A cin POM1 POM0 ps
 
-capture confirm variable cin
-if (_rc == 0) {
-   drop cin
-}
+		capture confirm variable cin
+		if (_rc == 0) {
+		   drop cin
+		}
+	*/
+
+
+// Drop the variables if the elements option is not specified
+		if $keepvars == 0 {
+			drop d1 d0
+			drop QAW Q1W Q0W
+			drop Q1star Qa1star Q0star Qa0star
+			drop ATE IC
+			drop Y A
+			drop POM1 POM0 ps
+			drop cin
+		}
+
+
+// Rename and label the variables if the elements option *is* specified
+		if $keepvars == 1 {
+			* Label the variables
+				lab var d1 "Parameter for the influence curve"
+				lab var d0 "Parameter for the influence curve"
+				lab var QAW "Initial prediction of the outcome"
+				lab var Q1W "Initial prediction of the outcome for A = 1"
+				lab var Q0W "Initial prediction of the outcome for A = 0"
+				lab var Q1star "Update of the initial prediction for A = 1"
+				lab var Qa1star "Update of the initial prediction for A = 1"
+				lab var Q0star "Update of the initial prediction for A = 0"
+				lab var Qa0star "Update of the initial prediction for A = 0"
+				lab var A "Exposure/Treatment"
+				lab var Y "Outcome"
+				lab var ATE "Average Treatment Effect"
+				lab var IC "Influence Curve"
+				lab var Q1star "Update of initial plug-in estimate for A=1"
+				lab var Q0star "Update of initial plug-in estimate for A=0"
+				lab var POM1 "Potential Outcome Y(1)"
+				lab var POM0 "Potential Otucome Y(0)"
+				lab var ps "Propensity Score"
+				lab var cin "Range of Y"
+			* Rename the elements variables
+				foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps cin {
+					rename `var' _`var'
+				}
+		}
+
 
 // Clean up
 quietly: rm SLS.R
@@ -336,6 +420,10 @@ quietly: rm fulldata.csv
 quietly: rm .RData
 quietly: memory clean
 end
+
+
+
+
 
 program tmlebal, rclass
 // Write R Code dependencies: foreign Surperlearner
