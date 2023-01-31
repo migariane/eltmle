@@ -100,6 +100,7 @@ program define eltmle
 		// Export the data to be used in the eltmle programs
 		 qui export delimited using "fulldata.csv", nolabel replace
          marksample touse
+	 global variablelist `varlist'
          local var `varlist' if `touse'
          tokenize `var'
          local yvar = "`1'"
