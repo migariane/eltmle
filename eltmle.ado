@@ -63,8 +63,11 @@ THE SOFTWARE.
 * Added bal option to visually display positivity violations (Updated: 09.01.2021)
 * Improved display of the results Stata like format (updated: 13.7.2022)
 * Improved display of the CRR and MOR results to Stata like format (updated: 30.1.2023)
+<<<<<<< HEAD
 * Added tblance option (updated: February 2023)
 * Added elements option (updated: February 2023)
+=======
+>>>>>>> 3c45a6dd89f449250fec2ce7292cacfc551c7529
 
 capture program drop eltmle
 program define eltmle
@@ -129,6 +132,7 @@ program define eltmle
     // Select the program based on the defined options
       if "`tmlebgam'" == "" & "`tmleglsrf'" == "" & "`bal'" == ""{
                 tmle `varlist'
+<<<<<<< HEAD
                 }
 				else if "`tmle'" != "" & "`tmlebgam'" != "" {
                 di as error "Both tmle and tmlebgam are specified. Please specify only tmle or tmlebgam, but not both."
@@ -148,6 +152,27 @@ program define eltmle
 		 		else if "`tmleglsrf'" == "tmleglsrf" & "`bal'" == "bal" {
                 tmleglsrfbal `varlist'
                 }
+=======
+                }
+				else if "`tmle'" != "" & "`tmlebgam'" != "" {
+                di as error "Both tmle and tmlebgam are specified. Please specify only tmle or tmlebgam, but not both."
+                }
+				else if "`tmle'" != "" & "`tmleglsrf'" != "" {
+                di as error "Both tmle and tmleglsrf are specified. Please specify only tmle or tmleglsrf, but not both."
+                }
+				else if "`tmlebgam'" != "" & "`tmleglsrf'" != "" {
+                di as error "Both tmlebgam and tmleglsrf are specified. Please specify only tmlebgam or tmleglsrf, but not both."
+                }
+		 		else if "`tmle'" == "tmle" & "`bal'" == "bal" {
+                tmlebal `varlist'
+                }
+				else if "`tmlebgam'" == "tmlebgam" & "`bal'" == "bal" {
+                tmlebgambal `varlist'
+                }
+		 		else if "`tmleglsrf'" == "tmleglsrf" & "`bal'" == "bal" {
+                tmleglsrfbal `varlist'
+                }
+>>>>>>> 3c45a6dd89f449250fec2ce7292cacfc551c7529
 		 		else if "`tmlebgam'" == "tmlebgam" {
                 tmlebgam `varlist'
                 }
@@ -159,6 +184,14 @@ program define eltmle
                 }
 end
 
+<<<<<<< HEAD
+=======
+
+
+
+
+
+>>>>>>> 3c45a6dd89f449250fec2ce7292cacfc551c7529
 program tmle, rclass
 // Write R Code dependencies: foreign Surperlearner
 set more off
@@ -1581,6 +1614,11 @@ quietly: memory clean
 end
 
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 3c45a6dd89f449250fec2ce7292cacfc551c7529
 program tmleglsrfbal, rclass
 // Write R Code dependencies: foreign Surperlearner
 set more off

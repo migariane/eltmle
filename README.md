@@ -20,37 +20,41 @@ To install eltmle directly from github you need to use a Stata module for instal
     then, you can install eltmle simply using the following code in Stata:
 
     1) Please, read carefully the help file before using eltmle in Stata):  
-    
+
     github install migariane/eltmle  
-   
+
         .which eltmle   
 
         .help eltmle   
-   
+
     For both, MAC and Windows users, in case you want to uninstall the package type:    
-	
+
         .ado uninstall eltmle   
-     
- 
+
+
 # Authors  
 [Author and Developer]
 Miguel Angel Luque-Fernandez, LSHTM, NCDE, ICON Group, London, UK    
-Email: miguel-angel.luque@lshtm.ac.uk 
+Email: miguel-angel.luque@lshtm.ac.uk
 
 [Developer]
 Camille Maringe, LSHTM, NCDE, ICON Group, London, UK    
-Email: camille.maringe@lshtm.ac.uk 
+Email: camille.maringe@lshtm.ac.uk
+
+[Developer]
+Matthew J. Smith, LSHTM, NCDE, ICON Group, London, UK    
+Email: matt.smith@lshtm.ac.uk
 
 # Contributors  
 [Intellectual advice and suggestions for improvement]
 
 Michael Schomaker, CIDER, UCT, Cape Town, South Africa      
-Email: michael.schomaker at uct.ac.za 
+Email: michael.schomaker at uct.ac.za
 
 Mireille E. Schnitzer, Faculté de pharmacie,     
 Université de Montréal, Montréal, Canada  
 Email: mireille.schnitzer at umontreal.ca   
- 
+
 # Updates
 In case you have updates or changes that you would like to make, please send me a pull request.  
 Alternatively, if you have any questions, please e-mail me:   

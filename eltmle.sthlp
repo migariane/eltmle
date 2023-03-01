@@ -148,6 +148,7 @@ TMLE: Marginal Odds Ratio (MOR)
 MOR: 2.10; 95%CI:(1.49, 2.71)
 -------------------------------
 
+
 **********************
 * Continuous outcome
 **********************
@@ -323,6 +324,7 @@ in genetics and molecular biology 6.
 {phang}Miguel Angel Luque-Fernandez [Author and developer] {p_end}
 {phang}Department of Statistics and Operations Research (Biostatistics group) University of Granada,
 Granada, Spain.{p_end}
+<<<<<<< HEAD
 {phang}Department of Epidemiology and Population Health, ICON group, London School of Hygiene and Tropical Medicine. London, UK.{p_end}
 {phang}E-mail: {browse "mailto:miguel-angel.luque@lshtm.ac.uk":miguel-angel.luque@lshtm.ac.uk}{p_end}
 
@@ -333,6 +335,11 @@ Granada, Spain.{p_end}
 {phang}Matthew J. Smith [Developer] {p_end}
 {phang}Department of Epidemiology and Population Health, ICON group, London School of Hygiene and Tropical Medicine. London, UK.{p_end}
 {phang}E-mail: {browse "mailto:matthew1.smith@lshtm.ac.uk":matthew1.smith@lshtm.ac.uk}{p_end}
+=======
+{phang}Department of Epidemiology and Population Health, London School of Hygiene and Tropical Medicine.
+London, UK.{p_end}
+{phang}E-mail: {browse "mailto:miguel-angel.luque@lshtm.ac.uk":miguel-angel.luque@lshtm.ac.uk}{p_end}
+>>>>>>> 3c45a6dd89f449250fec2ce7292cacfc551c7529
 
 {title:Also see}
 
