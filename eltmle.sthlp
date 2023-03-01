@@ -1,5 +1,5 @@
 {smcl}
-{right: version 2.2.7  13.07.2022}
+{right: version 2.2.8  01.03.2023}
 {...}
 
 {title:Title}
@@ -319,14 +319,27 @@ Van der Laan MJ, Polley EC, Hubbard AE. (2007). Super learner. Statistical appli
 in genetics and molecular biology 6.
 {p_end}
 
-{title:Author and developer}
+{title:Author and developers}
 
-{phang}Miguel Angel Luque-Fernandez{p_end}
-{phang}Biomedical Research Institute of Granada, Noncommunicable Disease and Cancer Epidemiolgy Group. University of Granada,
+{phang}Miguel Angel Luque-Fernandez [Author and developer] {p_end}
+{phang}Department of Statistics and Operations Research (Biostatistics group) University of Granada,
 Granada, Spain.{p_end}
+<<<<<<< HEAD
+{phang}Department of Epidemiology and Population Health, ICON group, London School of Hygiene and Tropical Medicine. London, UK.{p_end}
+{phang}E-mail: {browse "mailto:miguel-angel.luque@lshtm.ac.uk":miguel-angel.luque@lshtm.ac.uk}{p_end}
+
+{phang}Camille Maringe [Developer] {p_end}
+{phang}Department of Epidemiology and Population Health, ICON group, London School of Hygiene and Tropical Medicine. London, UK.{p_end}
+{phang}E-mail: {browse "mailto:camille.maringe@lshtm.ac.uk":camille.maringe@lshtm.ac.uk}{p_end}
+
+{phang}Matthew J. Smith [Developer] {p_end}
+{phang}Department of Epidemiology and Population Health, ICON group, London School of Hygiene and Tropical Medicine. London, UK.{p_end}
+{phang}E-mail: {browse "mailto:matthew1.smith@lshtm.ac.uk":matthew1.smith@lshtm.ac.uk}{p_end}
+=======
 {phang}Department of Epidemiology and Population Health, London School of Hygiene and Tropical Medicine.
 London, UK.{p_end}
 {phang}E-mail: {browse "mailto:miguel-angel.luque@lshtm.ac.uk":miguel-angel.luque@lshtm.ac.uk}{p_end}
+>>>>>>> 3c45a6dd89f449250fec2ce7292cacfc551c7529
 
 {title:Also see}
 
