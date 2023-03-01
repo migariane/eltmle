@@ -1,4 +1,4 @@
-*! version 2.2.7  13.July.2022
+*! version 2.2.8  01.March.2023
 *! ELTMLE: Stata module for Ensemble Learning Targeted Maximum Likelihood Estimation
 *! by Miguel Angel Luque-Fernandez [cre,aut]
 *! and Camille Maringe [aut]
@@ -9,7 +9,7 @@
 *! matt.smith at lshtm.ac.uk
 
 /*
-Copyright (c) 2021  <Miguel Angel Luque-Fernandez> & <Camille Maringe>
+Copyright (c) 2023  <Miguel Angel Luque-Fernandez> & <Camille Maringe>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,11 +32,11 @@ THE SOFTWARE.
 
 ***************************************************************************
 ** MIGUEL ANGEL LUQUE FERNANDEZ
-** mluquefe at hsph.havard.edu // miguel-angel.luque at lshtm.ac.uk
+** miguel-angel.luque at lshtm.ac.uk mluquefe at ugr.es
 ** TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OR CONTINUOUS
 ** OUTCOME AND BINARY TREATMENT FOR MAC and WINDOWS USERS
 ** This program requires R to be installed in your computer
-** June 2021
+** June 2023
 ****************************************************************************
 
 * Improved the output including potential outcomes and propensity score
@@ -63,6 +63,8 @@ THE SOFTWARE.
 * Added bal option to visually display positivity violations (Updated: 09.01.2021)
 * Improved display of the results Stata like format (updated: 13.7.2022)
 * Improved display of the CRR and MOR results to Stata like format (updated: 30.1.2023)
+* Added tblance option (updated: February 2023)
+* Added elements option (updated: February 2023)
 
 capture program drop eltmle
 program define eltmle
@@ -156,11 +158,6 @@ program define eltmle
                 tmlebal `varlist'
                 }
 end
-
-
-
-
-
 
 program tmle, rclass
 // Write R Code dependencies: foreign Surperlearner
@@ -1582,8 +1579,6 @@ quietly: rm fulldata.csv
 quietly: rm .RData
 quietly: memory clean
 end
-
-
 
 
 program tmleglsrfbal, rclass
