@@ -79,10 +79,10 @@ This option might be suitable for heterogeneous treatment effects.
 
 {p 4 4 2 120}
 {hi:bal}: this option may be specified or unspecified. When specified, it provides two additional features. Firstly, a visual diagnostic check of the positivity assumption
-based on the estimation of kernel density plots for the propensity score by levels of the treatment. Secondly, a covariate balance table over treatment groups after estimation
-of the propensity score (by SuperLearner). Both standardised means and variance ratios are reported, along with the raw and weighted estimates.
-Note that covariate balance between the treatment groups is indicated by Standardised Mean Differences approaching "0" and variance ratios approaching "1". Both are calculated
-using formulas from Austin (2009) {it: Balance Diagnostics for Comparing the Distribution of Baseline Covariates Between Treatment Groups in Propensity-Score Matched Samples.}
+based on the estimation of kernel density plots for the propensity score by levels of the treatment. Secondly, a table displaying the differences in distributions of each of 
+the covariates Z between treatment groups: Standardised mean differences and variance ratios are reported, for both the raw and weighted covariate values. Note that perfect 
+covariate balance between treatment groups is indicated by Standardised Mean Differences of 0 and variance ratios of 1. Both are calculated using formulas from Austin (2009) 
+{it: Balance Diagnostics for Comparing the Distribution of Baseline Covariates Between Treatment Groups in Propensity-Score Matched Samples}.
 {p_end}
 
 {p 4 4 2 120}
@@ -299,8 +299,8 @@ Remember 2: You must change your working directory to the location of the Stata.
 {p_end}
 
 {p 4 4 2 120}
-Remember 3: eltmle automatically implements a complete case analysis (i.e., listwise delection for missing data). However, you would like to impute your missing values before running eltmle.
-See the example here below using the sys auto data:
+Remember 3: eltmle automatically implements a complete case analysis (i.e., listwise delection for missing data). However, if you would like to impute your missing values 
+before running eltmle, see the example here below using the sys auto data:
 {p_end}
 
 		{title:Example of imputation using predictive mean matching}
