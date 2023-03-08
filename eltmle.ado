@@ -63,7 +63,7 @@ THE SOFTWARE.
 * Added bal option to visually display positivity violations (Updated: 09.01.2021)
 * Improved display of the results Stata like format (updated: 13.7.2022)
 * Improved display of the CRR and MOR results to Stata like format (updated: 30.1.2023)
-* Added tblance option (updated: February 2023)
+* Added bal option (updated: February 2023)
 * Added elements option (updated: February 2023)
 
 capture program drop eltmle

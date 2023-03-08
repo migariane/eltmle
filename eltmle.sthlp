@@ -79,10 +79,10 @@ This option might be suitable for heterogeneous treatment effects.
 
 {p 4 4 2 120}
 {hi:bal}: this option may be specified or unspecified. When specified, it provides two additional features. Firstly, a visual diagnostic check of the positivity assumption
-based on the estimation of kernel density plots for the propensity score by levels of the treatment. Secondly, a covariate balance table over treatment groups after estimation
-of the propensity score (by SuperLearner). Both standardised means and variance ratios are reported, along with the raw and weighted estimates.
-Note that covariate balance between the treatment groups is indicated by Standardised Mean Differences approaching "0" and variance ratios approaching "1". Both are calculated
-using formulas from Austin (2009) {it: Balance Diagnostics for Comparing the Distribution of Baseline Covariates Between Treatment Groups in Propensity-Score Matched Samples.}
+based on the estimation of kernel density plots for the propensity score by levels of the treatment. Secondly, a table displaying the differences in distributions of each of 
+the covariates Z between treatment groups: Standardised mean differences and variance ratios are reported, for both the raw and weighted covariate values. Note that perfect 
+covariate balance between treatment groups is indicated by Standardised Mean Differences of 0 and variance ratios of 1. Both are calculated using formulas from Austin (2009) 
+{it: Balance Diagnostics for Comparing the Distribution of Baseline Covariates Between Treatment Groups in Propensity-Score Matched Samples}.
 {p_end}
 
 {p 4 4 2 120}
@@ -103,6 +103,16 @@ and the propensity score (ps):
 
 {title:Example}
 
+We provide the following examples:
+1) TMLE for:
+  a) Binary outcome
+  b) Continuous outcome
+2) Advanced machine-learning techniques:
+  a) tmleglsrf
+  b) tmlebgam
+3) Retaining potential outcomes using the {hi:elements} option
+4) Covariate balance tables
+
 ***********************************************************
 * eltmle Y X Z [if] [,tmle tmlebgam tmleglsrf bal elements]
 ***********************************************************
@@ -116,101 +126,164 @@ and the propensity score (ps):
 .cd "your path"
 
 
-******************
-* Binary outcome
-******************
+**********************************
+* 1) a) TMLE with a binary outcome
+**********************************
 
-******************************************************
 .eltmle lbw mbsmoke mage medu prenatal mmarried, tmle
-******************************************************
 
-    Variable |        Obs        Mean    Std. Dev.       Min        Max
--------------+---------------------------------------------------------
-        POM1 |      4,642    .1019894    .0398481    .020446   .3696461
-        POM0 |      4,642    .0515974    .0251596   .0207218   .1756801
-          ps |      4,642    .1861267    .1113925   .0347833   .8567001
---------------------------------
-TMLE: Average Treatment Effect
---------------------------------
-ATE:      | 0.0504
-SE:       | 0.0123
-P-value:  | 0.0002
-95%CI:    | 0.0264, 0.0744
---------------------------------
------------------------------
-TMLE: Causal Risk Ratio (CRR)
------------------------------
-CRR: 1.99; 95%CI:(1.52, 2.59)
------------------------------
--------------------------------
-TMLE: Marginal Odds Ratio (MOR)
--------------------------------
-MOR: 2.10; 95%CI:(1.49, 2.71)
--------------------------------
 
-**********************
-* Continuous outcome
-**********************
+ Variable |        Obs        Mean    Std. dev.       Min        Max
+----------+---------------------------------------------------------
+     POM1 |      4,642    .1025904    .0404756   .0197383   .3806479
+     POM0 |      4,642    .0515831    .0253505   .0212925   .1713066
+       ps |      4,642    .1861267    .1111685   .0356226     .85422
 
-***********************************************************
+---------------------------------------------------------------
+         |    ATE         SE     P-value           95% CI
+---------------------------------------------------------------
+TMLE:    | 0.0510     0.0122      0.0001     ( 0.0270, 0.0750 )
+---------------------------------------------------------------
+
+---------------------------------------------------
+                           Estimate          95% CI
+---------------------------------------------------
+Causal Risk Ratio:      |      2.00     (1.53,2.60)
+Marginal Odds Ratio:    |      2.11     (1.50,2.72)
+---------------------------------------------------
+
+
+
+**************************************
+* 1) b) TMLE with a continuous outcome
+**************************************
+
 .eltmle bweight mbsmoke mage medu prenatal mmarried, tmle
-***********************************************************
 
-    Variable |        Obs        Mean    Std. Dev.       Min        Max
--------------+---------------------------------------------------------
-        POM1 |      4,642     2832.69     74.9141   2550.819   2968.504
-        POM0 |      4,642    3062.695    91.22898   2844.977   3177.975
-          ps |      4,642    .1861267    .1106222   .0377472   .8479414
---------------------------------
-TMLE: Average Treatment Effect
---------------------------------
-ATE:      | -230.0
-SE:       |   24.5
-P-value:  | 0.0000
-95%CI:    | -277.9, -182.1
---------------------------------
------------------------------
-TMLE: Causal Risk Ratio (CRR)
------------------------------
-CRR: 0.93; 95%CI:(0.91, 0.94)
------------------------------
--------------------------------
-TMLE: Marginal Odds Ratio (MOR)
--------------------------------
-MOR: 0.83; 95%CI:(0.80, 0.87)
--------------------------------
 
-***************************************************************
-// Using more advance machine learning techniques
-***************************************************************
+ Variable |        Obs        Mean    Std. dev.       Min        Max
+----------+---------------------------------------------------------
+     POM1 |      4,642    2832.914    74.79904   2574.164    2961.55
+     POM0 |      4,642     3062.81    89.92703   2863.544   3169.349
+       ps |      4,642    .1861267    .1111685   .0356226     .85422
 
-***************************************************************
+---------------------------------------------------------------
+         |    ATE         SE     P-value           95% CI
+---------------------------------------------------------------
+TMLE:    | -229.9       24.6      0.0000     ( -278.2, -181.6 )
+---------------------------------------------------------------
+
+---------------------------------------------------
+                           Estimate          95% CI
+---------------------------------------------------
+Causal Risk Ratio:      |      0.93     (0.91,0.94)
+Marginal Odds Ratio:    |      0.83     (0.80,0.87)
+---------------------------------------------------
+
+
+
+*****************
+* 2) a) tmleglsrf
+*****************
+
 .eltmle lbw mbsmoke mage medu prenatal mmarried, tmleglsrf
-***************************************************************
 
-    Variable |        Obs        Mean    Std. Dev.       Min        Max
--------------+---------------------------------------------------------
-        POM1 |      4,642    .0869585    .0395922   .0204686   .4106772
-        POM0 |      4,642    .0432076    .0226041   .0180801   .2208142
-          ps |      4,642    .1571824    .1109491       .025   .6221823
---------------------------------
-TMLE: Average Treatment Effect
---------------------------------
-ATE:      | 0.0438
-SE:       | 0.0142
-P-value:  | 0.0070
-95%CI:    | 0.0159, 0.0716
---------------------------------
------------------------------
-TMLE: Causal Risk Ratio (CRR)
------------------------------
-CRR: 1.77; 95%CI:(1.27, 2.49)
------------------------------
--------------------------------
-TMLE: Marginal Odds Ratio (MOR)
--------------------------------
-MOR: 1.85; 95%CI:(1.17, 2.53)
--------------------------------
+
+ Variable |        Obs        Mean    Std. dev.       Min        Max
+----------+---------------------------------------------------------
+     POM1 |      4,642    .0804235    .0392915   .0201732   .4046224
+     POM0 |      4,642    .0399219    .0217449   .0150639   .2473742
+       ps |      4,642    .1536965    .1122575       .025    .635824
+
+---------------------------------------------------------------
+         |    ATE         SE     P-value           95% CI
+---------------------------------------------------------------
+TMLE:    | 0.0405     0.0146      0.0171     ( 0.0119, 0.0691 )
+---------------------------------------------------------------
+
+---------------------------------------------------
+                           Estimate          95% CI
+---------------------------------------------------
+Causal Risk Ratio:      |      1.68     (1.16,2.44)
+Marginal Odds Ratio:    |      1.74     (1.05,2.44)
+---------------------------------------------------
+
+
+*****************
+* 2) b) tmlebgam
+*****************
+
+.eltmle lbw mbsmoke mage medu prenatal mmarried, tmlebgam
+
+
+ Variable |        Obs        Mean    Std. dev.       Min        Max
+----------+---------------------------------------------------------
+     POM1 |      4,642    .1024584     .040525   .0200955   .3841472
+     POM0 |      4,642     .051588    .0253702    .020537   .1600263
+       ps |      4,642    .1861267    .1105893   .0313728   .5872202
+
+---------------------------------------------------------------
+         |    ATE         SE     P-value           95% CI
+---------------------------------------------------------------
+TMLE:    | 0.0509     0.0125      0.0002     ( 0.0263, 0.0754 )
+---------------------------------------------------------------
+
+---------------------------------------------------
+                           Estimate          95% CI
+---------------------------------------------------
+Causal Risk Ratio:      |      2.00     (1.53,2.62)
+Marginal Odds Ratio:    |      2.11     (1.49,2.74)
+---------------------------------------------------
+
+
+*************
+* 3) Elements
+*************
+
+.eltmle lbw mbsmoke mage medu prenatal mmarried, elements
+
+
+*****************************
+* 4) Covariates balance table
+*****************************
+
+.eltmle lbw mbsmoke mage medu prenatal mmarried, bal
+
+
+ Variable |        Obs        Mean    Std. dev.       Min        Max
+----------+---------------------------------------------------------
+     POM1 |      4,642    .1025904    .0404756   .0197383   .3806479
+     POM0 |      4,642    .0515831    .0253505   .0212925   .1713066
+       ps |      4,642    .1861267    .1111685   .0356226     .85422
+
+---------------------------------------------------------------
+         |    ATE         SE     P-value           95% CI
+---------------------------------------------------------------
+TMLE:    | 0.0510     0.0122      0.0001     ( 0.0270, 0.0750 )
+---------------------------------------------------------------
+
+---------------------------------------------------
+                           Estimate          95% CI
+---------------------------------------------------
+Causal Risk Ratio:      |      2.00     (1.53,2.60)
+Marginal Odds Ratio:    |      2.11     (1.50,2.72)
+---------------------------------------------------
+
+-------------------------------------------------------------------
+             Standardised Differences            Variance ratio
+                      Raw    Weighted           Raw    Weighted
+-------------------------------------------------------------------
+mage
+                 -.300179   -.0211604      .8818025    .8687959
+medu
+                -.5474357   -.0947559      .7315846    .5692243
+prenatal
+                 .2339922     .010213      1.774373    1.108046
+mmarried
+                -.5953009   -.0172262      1.335944    1.014663
+-------------------------------------------------------------------
+
+
 
 **********************************************************************************************
 
@@ -226,8 +299,8 @@ Remember 2: You must change your working directory to the location of the Stata.
 {p_end}
 
 {p 4 4 2 120}
-Remember 3: eltmle automatically implements a complete case analysis (i.e., listwise delection for missing data). However, you would like to impute your missing values before running eltmle.
-See the example here below using the sys auto data:
+Remember 3: eltmle automatically implements a complete case analysis (i.e., listwise delection for missing data). However, if you would like to impute your missing values 
+before running eltmle, see the example here below using the sys auto data:
 {p_end}
 
 		{title:Example of imputation using predictive mean matching}
