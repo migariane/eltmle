@@ -354,40 +354,39 @@ qui: file close rcode
 	disp as text "{hline 51}"
 
 // Drop the variables if the elements option is not specified
+		drop d1 d0
+		drop Q1star Qa1star Q0star Qa0star
+		drop Y A
+		drop IC
+		drop cin
 		if $keepvars == 0 {
-			drop d1 d0
 			drop QAW Q1W Q0W
-			drop Q1star Qa1star Q0star Qa0star
-			drop ATE IC
-			drop Y A
+			drop ATE
 			drop POM1 POM0 ps
-			drop cin
 		}
 
 // Rename and label the variables if the elements option *is* specified
 		if $keepvars == 1 {
 			* Label the variables
-				lab var d1 "Parameter for the influence curve"
-				lab var d0 "Parameter for the influence curve"
+				* lab var d1 "Parameter for the influence curve"
+				* lab var d0 "Parameter for the influence curve"
+				* lab var Q1star "Update of the initial prediction for A = 1"
+				* lab var Qa1star "Update of the initial prediction for A = 1"
+				* lab var Q0star "Update of the initial prediction for A = 0"
+				* lab var Qa0star "Update of the initial prediction for A = 0"
+				* lab var A "Exposure/Treatment"
+				* lab var Y "Outcome"
+				* lab var IC "Influence Curve"
+				* lab var cin "Range of Y"
 				lab var QAW "Initial prediction of the outcome"
 				lab var Q1W "Initial prediction of the outcome for A = 1"
 				lab var Q0W "Initial prediction of the outcome for A = 0"
-				lab var Q1star "Update of the initial prediction for A = 1"
-				lab var Qa1star "Update of the initial prediction for A = 1"
-				lab var Q0star "Update of the initial prediction for A = 0"
-				lab var Qa0star "Update of the initial prediction for A = 0"
-				lab var A "Exposure/Treatment"
-				lab var Y "Outcome"
 				lab var ATE "Average Treatment Effect"
-				lab var IC "Influence Curve"
-				lab var Q1star "Update of initial plug-in estimate for A=1"
-				lab var Q0star "Update of initial plug-in estimate for A=0"
 				lab var POM1 "Potential Outcome Y(1)"
 				lab var POM0 "Potential Otucome Y(0)"
 				lab var ps "Propensity Score"
-				lab var cin "Range of Y"
 			* Rename the elements variables
-				foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps cin {
+				foreach var of varlist QAW Q1W Q0W ATE POM1 POM0 ps {
 					rename `var' _`var'
 				}
 		}
@@ -683,44 +682,43 @@ qui: file close rcode
 			}
 			di as text "{hline 67}"
 
-	* Drop the variables if the elements option is not specified
-		if $keepvars == 0 {
-			drop d1 d0
-			drop QAW Q1W Q0W
-			drop Q1star Qa1star Q0star Qa0star
-			drop ATE IC
-			drop Y A
-			drop POM1 POM0 ps
-			drop cin
-		}
+	// Drop the variables if the elements option is not specified
+				drop d1 d0
+				drop Q1star Qa1star Q0star Qa0star
+				drop Y A
+				drop IC
+				drop cin
+			if $keepvars == 0 {
+				drop QAW Q1W Q0W
+				drop ATE
+				drop POM1 POM0 ps
+			}
 
-	* Rename and label the variables if the elements option *is* specified
-		if $keepvars == 1 {
-			* Label the variables
-				lab var d1 "Parameter for the influence curve"
-				lab var d0 "Parameter for the influence curve"
-				lab var QAW "Initial prediction of the outcome"
-				lab var Q1W "Initial prediction of the outcome for A = 1"
-				lab var Q0W "Initial prediction of the outcome for A = 0"
-				lab var Q1star "Update of the initial prediction for A = 1"
-				lab var Qa1star "Update of the initial prediction for A = 1"
-				lab var Q0star "Update of the initial prediction for A = 0"
-				lab var Qa0star "Update of the initial prediction for A = 0"
-				lab var A "Exposure/Treatment"
-				lab var Y "Outcome"
-				lab var ATE "Average Treatment Effect"
-				lab var IC "Influence Curve"
-				lab var Q1star "Update of initial plug-in estimate for A=1"
-				lab var Q0star "Update of initial plug-in estimate for A=0"
-				lab var POM1 "Potential Outcome Y(1)"
-				lab var POM0 "Potential Otucome Y(0)"
-				lab var ps "Propensity Score"
-				lab var cin "Range of Y"
-			* Rename the elements variables
-				foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps cin {
-					rename `var' _`var'
-				}
-		}
+	// Rename and label the variables if the elements option *is* specified
+			if $keepvars == 1 {
+				* Label the variables
+					* lab var d1 "Parameter for the influence curve"
+					* lab var d0 "Parameter for the influence curve"
+					* lab var Q1star "Update of the initial prediction for A = 1"
+					* lab var Qa1star "Update of the initial prediction for A = 1"
+					* lab var Q0star "Update of the initial prediction for A = 0"
+					* lab var Qa0star "Update of the initial prediction for A = 0"
+					* lab var A "Exposure/Treatment"
+					* lab var Y "Outcome"
+					* lab var IC "Influence Curve"
+					* lab var cin "Range of Y"
+					lab var QAW "Initial prediction of the outcome"
+					lab var Q1W "Initial prediction of the outcome for A = 1"
+					lab var Q0W "Initial prediction of the outcome for A = 0"
+					lab var ATE "Average Treatment Effect"
+					lab var POM1 "Potential Outcome Y(1)"
+					lab var POM0 "Potential Otucome Y(0)"
+					lab var ps "Propensity Score"
+				* Rename the elements variables
+					foreach var of varlist QAW Q1W Q0W ATE POM1 POM0 ps {
+						rename `var' _`var'
+					}
+			}
 
 
 	// Clean up
@@ -933,43 +931,42 @@ local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 	disp as text "{hline 51}"
 
 // Drop the variables if the elements option is not specified
-	if $keepvars == 0 {
-		drop d1 d0
-		drop QAW Q1W Q0W
-		drop Q1star Qa1star Q0star Qa0star
-		drop ATE IC
-		drop Y A
-		drop POM1 POM0 ps
-		drop cin
-	}
+			drop d1 d0
+			drop Q1star Qa1star Q0star Qa0star
+			drop Y A
+			drop IC
+			drop cin
+		if $keepvars == 0 {
+			drop QAW Q1W Q0W
+			drop ATE
+			drop POM1 POM0 ps
+		}
 
 // Rename and label the variables if the elements option *is* specified
-	if $keepvars == 1 {
-		* Label the variables
-			lab var d1 "Parameter for the influence curve"
-			lab var d0 "Parameter for the influence curve"
-			lab var QAW "Initial prediction of the outcome"
-			lab var Q1W "Initial prediction of the outcome for A = 1"
-			lab var Q0W "Initial prediction of the outcome for A = 0"
-			lab var Q1star "Update of the initial prediction for A = 1"
-			lab var Qa1star "Update of the initial prediction for A = 1"
-			lab var Q0star "Update of the initial prediction for A = 0"
-			lab var Qa0star "Update of the initial prediction for A = 0"
-			lab var A "Exposure/Treatment"
-			lab var Y "Outcome"
-			lab var ATE "Average Treatment Effect"
-			lab var IC "Influence Curve"
-			lab var Q1star "Update of initial plug-in estimate for A=1"
-			lab var Q0star "Update of initial plug-in estimate for A=0"
-			lab var POM1 "Potential Outcome Y(1)"
-			lab var POM0 "Potential Otucome Y(0)"
-			lab var ps "Propensity Score"
-			lab var cin "Range of Y"
-		* Rename the elements variables
-			foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps cin {
-				rename `var' _`var'
-			}
-	}
+		if $keepvars == 1 {
+			* Label the variables
+				* lab var d1 "Parameter for the influence curve"
+				* lab var d0 "Parameter for the influence curve"
+				* lab var Q1star "Update of the initial prediction for A = 1"
+				* lab var Qa1star "Update of the initial prediction for A = 1"
+				* lab var Q0star "Update of the initial prediction for A = 0"
+				* lab var Qa0star "Update of the initial prediction for A = 0"
+				* lab var A "Exposure/Treatment"
+				* lab var Y "Outcome"
+				* lab var IC "Influence Curve"
+				* lab var cin "Range of Y"
+				lab var QAW "Initial prediction of the outcome"
+				lab var Q1W "Initial prediction of the outcome for A = 1"
+				lab var Q0W "Initial prediction of the outcome for A = 0"
+				lab var ATE "Average Treatment Effect"
+				lab var POM1 "Potential Outcome Y(1)"
+				lab var POM0 "Potential Otucome Y(0)"
+				lab var ps "Propensity Score"
+			* Rename the elements variables
+				foreach var of varlist QAW Q1W Q0W ATE POM1 POM0 ps {
+					rename `var' _`var'
+				}
+		}
 
 // Clean up
 quietly: rm SLS.R
@@ -1284,43 +1281,42 @@ local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
 
 // Drop the variables if the elements option is not specified
-	if $keepvars == 0 {
-		drop d1 d0
-		drop QAW Q1W Q0W
-		drop Q1star Qa1star Q0star Qa0star
-		drop ATE IC
-		drop Y A
-		drop POM1 POM0 ps
-		drop cin
-	}
+			drop d1 d0
+			drop Q1star Qa1star Q0star Qa0star
+			drop Y A
+			drop IC
+			drop cin
+		if $keepvars == 0 {
+			drop QAW Q1W Q0W
+			drop ATE
+			drop POM1 POM0 ps
+		}
 
 // Rename and label the variables if the elements option *is* specified
-	if $keepvars == 1 {
-		* Label the variables
-			lab var d1 "Parameter for the influence curve"
-			lab var d0 "Parameter for the influence curve"
-			lab var QAW "Initial prediction of the outcome"
-			lab var Q1W "Initial prediction of the outcome for A = 1"
-			lab var Q0W "Initial prediction of the outcome for A = 0"
-			lab var Q1star "Update of the initial prediction for A = 1"
-			lab var Qa1star "Update of the initial prediction for A = 1"
-			lab var Q0star "Update of the initial prediction for A = 0"
-			lab var Qa0star "Update of the initial prediction for A = 0"
-			lab var A "Exposure/Treatment"
-			lab var Y "Outcome"
-			lab var ATE "Average Treatment Effect"
-			lab var IC "Influence Curve"
-			lab var Q1star "Update of initial plug-in estimate for A=1"
-			lab var Q0star "Update of initial plug-in estimate for A=0"
-			lab var POM1 "Potential Outcome Y(1)"
-			lab var POM0 "Potential Otucome Y(0)"
-			lab var ps "Propensity Score"
-			lab var cin "Range of Y"
-		* Rename the elements variables
-			foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps cin {
-				rename `var' _`var'
-			}
-	}
+		if $keepvars == 1 {
+			* Label the variables
+				* lab var d1 "Parameter for the influence curve"
+				* lab var d0 "Parameter for the influence curve"
+				* lab var Q1star "Update of the initial prediction for A = 1"
+				* lab var Qa1star "Update of the initial prediction for A = 1"
+				* lab var Q0star "Update of the initial prediction for A = 0"
+				* lab var Qa0star "Update of the initial prediction for A = 0"
+				* lab var A "Exposure/Treatment"
+				* lab var Y "Outcome"
+				* lab var IC "Influence Curve"
+				* lab var cin "Range of Y"
+				lab var QAW "Initial prediction of the outcome"
+				lab var Q1W "Initial prediction of the outcome for A = 1"
+				lab var Q0W "Initial prediction of the outcome for A = 0"
+				lab var ATE "Average Treatment Effect"
+				lab var POM1 "Potential Outcome Y(1)"
+				lab var POM0 "Potential Otucome Y(0)"
+				lab var ps "Propensity Score"
+			* Rename the elements variables
+				foreach var of varlist QAW Q1W Q0W ATE POM1 POM0 ps {
+					rename `var' _`var'
+				}
+		}
 
 // Clean up
 quietly: rm SLS.R
@@ -1532,43 +1528,42 @@ local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 	disp as text "{hline 51}"
 
 // Drop the variables if the elements option is not specified
-	if $keepvars == 0 {
-		drop d1 d0
-		drop QAW Q1W Q0W
-		drop Q1star Qa1star Q0star Qa0star
-		drop ATE IC
-		drop Y A
-		drop POM1 POM0 ps
-		drop cin
-	}
+			drop d1 d0
+			drop Q1star Qa1star Q0star Qa0star
+			drop Y A
+			drop IC
+			drop cin
+		if $keepvars == 0 {
+			drop QAW Q1W Q0W
+			drop ATE
+			drop POM1 POM0 ps
+		}
 
 // Rename and label the variables if the elements option *is* specified
-	if $keepvars == 1 {
-		* Label the variables
-			lab var d1 "Parameter for the influence curve"
-			lab var d0 "Parameter for the influence curve"
-			lab var QAW "Initial prediction of the outcome"
-			lab var Q1W "Initial prediction of the outcome for A = 1"
-			lab var Q0W "Initial prediction of the outcome for A = 0"
-			lab var Q1star "Update of the initial prediction for A = 1"
-			lab var Qa1star "Update of the initial prediction for A = 1"
-			lab var Q0star "Update of the initial prediction for A = 0"
-			lab var Qa0star "Update of the initial prediction for A = 0"
-			lab var A "Exposure/Treatment"
-			lab var Y "Outcome"
-			lab var ATE "Average Treatment Effect"
-			lab var IC "Influence Curve"
-			lab var Q1star "Update of initial plug-in estimate for A=1"
-			lab var Q0star "Update of initial plug-in estimate for A=0"
-			lab var POM1 "Potential Outcome Y(1)"
-			lab var POM0 "Potential Otucome Y(0)"
-			lab var ps "Propensity Score"
-			lab var cin "Range of Y"
-		* Rename the elements variables
-			foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps cin {
-				rename `var' _`var'
-			}
-	}
+		if $keepvars == 1 {
+			* Label the variables
+				* lab var d1 "Parameter for the influence curve"
+				* lab var d0 "Parameter for the influence curve"
+				* lab var Q1star "Update of the initial prediction for A = 1"
+				* lab var Qa1star "Update of the initial prediction for A = 1"
+				* lab var Q0star "Update of the initial prediction for A = 0"
+				* lab var Qa0star "Update of the initial prediction for A = 0"
+				* lab var A "Exposure/Treatment"
+				* lab var Y "Outcome"
+				* lab var IC "Influence Curve"
+				* lab var cin "Range of Y"
+				lab var QAW "Initial prediction of the outcome"
+				lab var Q1W "Initial prediction of the outcome for A = 1"
+				lab var Q0W "Initial prediction of the outcome for A = 0"
+				lab var ATE "Average Treatment Effect"
+				lab var POM1 "Potential Outcome Y(1)"
+				lab var POM0 "Potential Otucome Y(0)"
+				lab var ps "Propensity Score"
+			* Rename the elements variables
+				foreach var of varlist QAW Q1W Q0W ATE POM1 POM0 ps {
+					rename `var' _`var'
+				}
+		}
 
 // Clean up
 quietly: rm SLS.R
@@ -1860,44 +1855,42 @@ local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
 
 // Drop the variables if the elements option is not specified
-	if $keepvars == 0 {
-		drop d1 d0
-		drop QAW Q1W Q0W
-		drop Q1star Qa1star Q0star Qa0star
-		drop ATE IC
-		drop Y A
-		drop POM1 POM0 ps
-		drop cin
-	}
-
+			drop d1 d0
+			drop Q1star Qa1star Q0star Qa0star
+			drop Y A
+			drop IC
+			drop cin
+		if $keepvars == 0 {
+			drop QAW Q1W Q0W
+			drop ATE
+			drop POM1 POM0 ps
+		}
 
 // Rename and label the variables if the elements option *is* specified
-	if $keepvars == 1 {
-		* Label the variables
-			lab var d1 "Parameter for the influence curve"
-			lab var d0 "Parameter for the influence curve"
-			lab var QAW "Initial prediction of the outcome"
-			lab var Q1W "Initial prediction of the outcome for A = 1"
-			lab var Q0W "Initial prediction of the outcome for A = 0"
-			lab var Q1star "Update of the initial prediction for A = 1"
-			lab var Qa1star "Update of the initial prediction for A = 1"
-			lab var Q0star "Update of the initial prediction for A = 0"
-			lab var Qa0star "Update of the initial prediction for A = 0"
-			lab var A "Exposure/Treatment"
-			lab var Y "Outcome"
-			lab var ATE "Average Treatment Effect"
-			lab var IC "Influence Curve"
-			lab var Q1star "Update of initial plug-in estimate for A=1"
-			lab var Q0star "Update of initial plug-in estimate for A=0"
-			lab var POM1 "Potential Outcome Y(1)"
-			lab var POM0 "Potential Otucome Y(0)"
-			lab var ps "Propensity Score"
-			lab var cin "Range of Y"
-		* Rename the elements variables
-			foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps cin {
-				rename `var' _`var'
-			}
-	}
+		if $keepvars == 1 {
+			* Label the variables
+				* lab var d1 "Parameter for the influence curve"
+				* lab var d0 "Parameter for the influence curve"
+				* lab var Q1star "Update of the initial prediction for A = 1"
+				* lab var Qa1star "Update of the initial prediction for A = 1"
+				* lab var Q0star "Update of the initial prediction for A = 0"
+				* lab var Qa0star "Update of the initial prediction for A = 0"
+				* lab var A "Exposure/Treatment"
+				* lab var Y "Outcome"
+				* lab var IC "Influence Curve"
+				* lab var cin "Range of Y"
+				lab var QAW "Initial prediction of the outcome"
+				lab var Q1W "Initial prediction of the outcome for A = 1"
+				lab var Q0W "Initial prediction of the outcome for A = 0"
+				lab var ATE "Average Treatment Effect"
+				lab var POM1 "Potential Outcome Y(1)"
+				lab var POM0 "Potential Otucome Y(0)"
+				lab var ps "Propensity Score"
+			* Rename the elements variables
+				foreach var of varlist QAW Q1W Q0W ATE POM1 POM0 ps {
+					rename `var' _`var'
+				}
+		}
 
 // Clean up
 quietly: rm SLS.R
