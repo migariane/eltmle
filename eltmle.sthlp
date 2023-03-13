@@ -66,13 +66,13 @@ TMLE algorithm plus the super-Learner ensemble learning for the main three machi
 {p_end}
 
 {p 4 4 2 120}
-{hi:tmlebgam}: this option may be specified or unspecified. When specified, it does include in addition to the above default
+{hi:tmlebgam}: this option may be specified or unspecified. When specified, it includes, in addition to the above default
 implementation, the Bayes Generalized Linear Models and Generalized Additive Models as Super-Learner algorithms for the tmle estimator.
 This option might be suitable for non-linear treatment effects.
 {p_end}
 
 {p 4 4 2 120}
-{hi:tmleglsrf}: this option may be specified or unspecified. When specified, it does include in addition to the three main learning algorithms
+{hi:tmleglsrf}: this option may be specified or unspecified. When specified, it includes, in addition to the three main learning algorithms
 described above, the Lasso (glmnet R package), Random Forest (randomForest R package) and the Generalized Additive Models as Super-Learner algorithms for the tmle estimator.
 This option might be suitable for heterogeneous treatment effects.
 {p_end}
@@ -81,12 +81,13 @@ This option might be suitable for heterogeneous treatment effects.
 {hi:bal}: this option may be specified or unspecified. When specified, it provides two additional features. Firstly, a visual diagnostic check of the positivity assumption
 based on the estimation of kernel density plots for the propensity score by levels of the treatment. Secondly, a table displaying the differences in distributions of each of 
 the covariates Z between treatment groups: Standardised mean differences and variance ratios are reported, for both the raw and weighted covariate values. Note that perfect 
-covariate balance between treatment groups is indicated by Standardised Mean Differences of 0 and variance ratios of 1. Both are calculated using formulas from Austin (2009) 
+covariate balance between treatment groups is indicated by Standardised Mean Differences of 0 and Variance Ratios of 1. Both are calculated using formulas from Austin (2009) 
 {it: Balance Diagnostics for Comparing the Distribution of Baseline Covariates Between Treatment Groups in Propensity-Score Matched Samples}.
 {p_end}
 
 {p 4 4 2 120}
-{hi:elements}: this option may be specified or unspecified. When specified, the data set will retain the variables used for each step in TMLE such as the initial predictions, propensity score, updated predictions, etc.
+{hi:elements}: this option may be specified or unspecified. When specified, the data set will retain the variables used for each step in TMLE such as the initial predictions 
+of the outcome (i.e., QAW, Q1W, and Q0W), average treatment effect (ATE), potential outcomes (i.e., POM1 for Y(1) and POM0 for Y(0)), and the propensity score (i.e., ps).
 {p_end}
 
 
@@ -107,11 +108,10 @@ We provide the following examples:
 1) TMLE for:
   a) Binary outcome
   b) Continuous outcome
-2) Advanced machine-learning techniques:
-  a) tmleglsrf
-  b) tmlebgam
-3) Retaining potential outcomes using the {hi:elements} option
-4) Covariate balance tables
+2) Advanced machine-learning techniques (both can be used with binary or continuous outcomes):
+  a) Lasso (glmnet R package), Random Forest (randomForest R package) and the Generalized Additive Models as Super-Learner algorithms for the tmle estimator
+  b) Bayes Generalized Linear Models and Generalized Additive Models as Super-Learner algorithms for the tmle estimator
+3) Covariate balance tables to assess the performance of the SuperLearner in reducing standardised mean differences and variance ratios
 
 ***********************************************************
 * eltmle Y X Z [if] [,tmle tmlebgam tmleglsrf bal elements]
@@ -236,15 +236,9 @@ Marginal Odds Ratio:    |      2.11     (1.49,2.74)
 ---------------------------------------------------
 
 
-*************
-* 3) Elements
-*************
-
-.eltmle lbw mbsmoke mage medu prenatal mmarried, elements
-
 
 *****************************
-* 4) Covariates balance table
+* 3) Covariate balance table
 *****************************
 
 .eltmle lbw mbsmoke mage medu prenatal mmarried, bal
