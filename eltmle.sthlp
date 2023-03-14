@@ -109,8 +109,8 @@ We provide the following examples:
   a) Binary outcome
   b) Continuous outcome
 2) Advanced machine-learning techniques (both can be used with binary or continuous outcomes):
-  a) Lasso (glmnet R package), Random Forest (randomForest R package) and the Generalized Additive Models as Super-Learner algorithms for the tmle estimator
-  b) Bayes Generalized Linear Models and Generalized Additive Models as Super-Learner algorithms for the tmle estimator
+  a) {hi: tmleglsrf}: Lasso (glmnet R package), Random Forest (randomForest R package) and the Generalized Additive Models as Super-Learner algorithms for the tmle estimator
+  b) {hi: tmlebgam}: Bayes Generalized Linear Models and Generalized Additive Models as Super-Learner algorithms for the tmle estimator
 3) Covariate balance tables to assess the performance of the SuperLearner in reducing standardised mean differences and variance ratios
 
 ***********************************************************
