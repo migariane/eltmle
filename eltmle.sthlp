@@ -399,7 +399,7 @@ Granada, Spain.{p_end}
 
 {phang}Matthew J. Smith [Developer] {p_end}
 {phang}Department of Epidemiology and Population Health, ICON group, London School of Hygiene and Tropical Medicine. London, UK.{p_end}
-{phang}E-mail: {browse "mailto:matthew1.smith@lshtm.ac.uk":matthew1.smith@lshtm.ac.uk}{p_end}
+{phang}E-mail: {browse "mailto:matt.smith@lshtm.ac.uk":matt.smith@lshtm.ac.uk}{p_end}
 
 {title:Also see}
 
