@@ -404,5 +404,5 @@ Granada, Spain.{p_end}
 {title:Also see}
 
 {psee}
-Online:  {help teffects}
+Online:  {help teffects} {help cvauroc}
 {p_end}
