@@ -1,0 +1,18 @@
+
+d 'ELTMLE': Ensemble Learning Targeted Maximum Likelihood Estimation 
+d
+d KW: Version control
+d KW: GitHub
+d KW: Git
+d KW: net
+d
+d Requires: Stata version 14 
+d
+d Distribution-Date: 08.03.2017
+d
+d Author: Miguel Angel Luque-Fernandez LSHTM
+d Support: email miguel-angel.luque@lshtm.ac.uk
+d
+F eltmle.sthlp
+F eltmle.ado
+
