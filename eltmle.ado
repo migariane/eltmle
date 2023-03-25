@@ -1,4 +1,4 @@
-*! version 2.2.8  01.March.2023
+*! version 2.2.9  27.March.2023
 *! ELTMLE: Stata module for Ensemble Learning Targeted Maximum Likelihood Estimation
 *! by Miguel Angel Luque-Fernandez [cre,aut]
 *! and Camille Maringe [aut]
@@ -36,7 +36,7 @@ THE SOFTWARE.
 ** TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OR CONTINUOUS
 ** OUTCOME AND BINARY TREATMENT FOR MAC and WINDOWS USERS
 ** This program requires R to be installed in your computer
-** June 2023
+** March 2023
 ****************************************************************************
 
 * Improved the output including potential outcomes and propensity score
@@ -63,8 +63,9 @@ THE SOFTWARE.
 * Added bal option to visually display positivity violations (Updated: 09.01.2021)
 * Improved display of the results Stata like format (updated: 13.7.2022)
 * Improved display of the CRR and MOR results to Stata like format (updated: 30.1.2023)
-* Added bal option (updated: 30th January 2023)
-* Added elements option (updated: 30th January 2023)
+* Added bal option (updated: February 2023)
+* Added elements option (updated: February 2023)
+* Updated 95%CI for LogOR to match R-TMLE implementation (Updated: March 2023)
 
 capture program drop eltmle
 program define eltmle
@@ -312,13 +313,19 @@ qui: file close rcode
 	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
 // Statistical inference OR
-	gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0
-	qui sum `ICor'
-	local varICor = r(Var)/r(N)
-
-	local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
-	local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
-
+	//gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0
+	//qui sum `ICor'
+	//local varICor = r(Var)/r(N)
+	//local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
+	//local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
+	
+// Statistical inference OR (We do not use the log of the OR
+    gen `ICor' = 1/ (`Q1' *(1 - `Q1')) * d1 - 1/ (`Q0' *(1 - `Q0')) * d0 // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
+    qui sum `ICor'
+    local varICor = r(Var)/r(N)
+    local LCIOr = exp(log(`ORtmle')) - 1.96 * sqrt(`varICor')
+	local UCIOr = exp(log(`ORtmle')) +1.96 * sqrt(`varICor')
+	   
 // Display Results of ATE
 	return scalar CRR = `RRtmle'
 	return scalar SE_log_CRR  = sqrt(`varICrr')
@@ -354,39 +361,40 @@ qui: file close rcode
 	disp as text "{hline 51}"
 
 // Drop the variables if the elements option is not specified
-		drop d1 d0
-		drop Q1star Qa1star Q0star Qa0star
-		drop Y A
-		drop IC
-		drop cin
 		if $keepvars == 0 {
+			drop d1 d0
 			drop QAW Q1W Q0W
-			drop ATE
+			drop Q1star Qa1star Q0star Qa0star
+			drop ATE IC
+			drop Y A
 			drop POM1 POM0 ps
+			drop cin
 		}
 
 // Rename and label the variables if the elements option *is* specified
 		if $keepvars == 1 {
 			* Label the variables
-				* lab var d1 "Parameter for the influence curve"
-				* lab var d0 "Parameter for the influence curve"
-				* lab var Q1star "Update of the initial prediction for A = 1"
-				* lab var Qa1star "Update of the initial prediction for A = 1"
-				* lab var Q0star "Update of the initial prediction for A = 0"
-				* lab var Qa0star "Update of the initial prediction for A = 0"
-				* lab var A "Exposure/Treatment"
-				* lab var Y "Outcome"
-				* lab var IC "Influence Curve"
-				* lab var cin "Range of Y"
+				lab var d1 "Parameter for the influence curve"
+				lab var d0 "Parameter for the influence curve"
 				lab var QAW "Initial prediction of the outcome"
 				lab var Q1W "Initial prediction of the outcome for A = 1"
 				lab var Q0W "Initial prediction of the outcome for A = 0"
+				lab var Q1star "Update of the initial prediction for A = 1"
+				lab var Qa1star "Update of the initial prediction for A = 1"
+				lab var Q0star "Update of the initial prediction for A = 0"
+				lab var Qa0star "Update of the initial prediction for A = 0"
+				lab var A "Exposure/Treatment"
+				lab var Y "Outcome"
 				lab var ATE "Average Treatment Effect"
+				lab var IC "Influence Curve"
+				lab var Q1star "Update of initial plug-in estimate for A=1"
+				lab var Q0star "Update of initial plug-in estimate for A=0"
 				lab var POM1 "Potential Outcome Y(1)"
 				lab var POM0 "Potential Otucome Y(0)"
 				lab var ps "Propensity Score"
+				lab var cin "Range of Y"
 			* Rename the elements variables
-				foreach var of varlist QAW Q1W Q0W ATE POM1 POM0 ps {
+				foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps cin {
 					rename `var' _`var'
 				}
 		}
@@ -570,19 +578,17 @@ qui: file close rcode
 	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
 	qui sum `ICrr'
 	local varICrr = r(Var)/r(N)
-
-	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+    local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
 	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
-// Statistical inference OR
-	gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0
-	qui sum `ICor'
-	local varICor = r(Var)/r(N)
+// Statistical inference OR (We do not use the log of the OR
+    gen `ICor' = 1/ (`Q1' *(1 - `Q1')) * d1 - 1/ (`Q0' *(1 - `Q0')) * d0 // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
+    qui sum `ICor'
+    local varICor = r(Var)/r(N)
+    local LCIOr = exp(log(`ORtmle')) - 1.96 * sqrt(`varICor')
+	local UCIOr = exp(log(`ORtmle')) +1.96 * sqrt(`varICor')
 
-	local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
-	local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
-
-	// Display Results of ATE
+// Display Results of ATE
 		return scalar CRR = `RRtmle'
 		return scalar SE_log_CRR  = sqrt(`varICrr')
 		return scalar MOR = `ORtmle'
@@ -682,43 +688,44 @@ qui: file close rcode
 			}
 			di as text "{hline 67}"
 
-	// Drop the variables if the elements option is not specified
-				drop d1 d0
-				drop Q1star Qa1star Q0star Qa0star
-				drop Y A
-				drop IC
-				drop cin
-			if $keepvars == 0 {
-				drop QAW Q1W Q0W
-				drop ATE
-				drop POM1 POM0 ps
-			}
+	* Drop the variables if the elements option is not specified
+		if $keepvars == 0 {
+			drop d1 d0
+			drop QAW Q1W Q0W
+			drop Q1star Qa1star Q0star Qa0star
+			drop ATE IC
+			drop Y A
+			drop POM1 POM0 ps
+			drop cin
+		}
 
-	// Rename and label the variables if the elements option *is* specified
-			if $keepvars == 1 {
-				* Label the variables
-					* lab var d1 "Parameter for the influence curve"
-					* lab var d0 "Parameter for the influence curve"
-					* lab var Q1star "Update of the initial prediction for A = 1"
-					* lab var Qa1star "Update of the initial prediction for A = 1"
-					* lab var Q0star "Update of the initial prediction for A = 0"
-					* lab var Qa0star "Update of the initial prediction for A = 0"
-					* lab var A "Exposure/Treatment"
-					* lab var Y "Outcome"
-					* lab var IC "Influence Curve"
-					* lab var cin "Range of Y"
-					lab var QAW "Initial prediction of the outcome"
-					lab var Q1W "Initial prediction of the outcome for A = 1"
-					lab var Q0W "Initial prediction of the outcome for A = 0"
-					lab var ATE "Average Treatment Effect"
-					lab var POM1 "Potential Outcome Y(1)"
-					lab var POM0 "Potential Otucome Y(0)"
-					lab var ps "Propensity Score"
-				* Rename the elements variables
-					foreach var of varlist QAW Q1W Q0W ATE POM1 POM0 ps {
-						rename `var' _`var'
-					}
-			}
+	* Rename and label the variables if the elements option *is* specified
+		if $keepvars == 1 {
+			* Label the variables
+				lab var d1 "Parameter for the influence curve"
+				lab var d0 "Parameter for the influence curve"
+				lab var QAW "Initial prediction of the outcome"
+				lab var Q1W "Initial prediction of the outcome for A = 1"
+				lab var Q0W "Initial prediction of the outcome for A = 0"
+				lab var Q1star "Update of the initial prediction for A = 1"
+				lab var Qa1star "Update of the initial prediction for A = 1"
+				lab var Q0star "Update of the initial prediction for A = 0"
+				lab var Qa0star "Update of the initial prediction for A = 0"
+				lab var A "Exposure/Treatment"
+				lab var Y "Outcome"
+				lab var ATE "Average Treatment Effect"
+				lab var IC "Influence Curve"
+				lab var Q1star "Update of initial plug-in estimate for A=1"
+				lab var Q0star "Update of initial plug-in estimate for A=0"
+				lab var POM1 "Potential Outcome Y(1)"
+				lab var POM0 "Potential Otucome Y(0)"
+				lab var ps "Propensity Score"
+				lab var cin "Range of Y"
+			* Rename the elements variables
+				foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps cin {
+					rename `var' _`var'
+				}
+		}
 
 
 	// Clean up
@@ -729,11 +736,6 @@ qui: file close rcode
 		quietly: rm fulldata.csv
 		quietly: rm .RData
 end
-
-
-
-
-
 
 program tmlebgam, rclass
 // Write R Code dependencies: foreign Surperlearner
@@ -888,13 +890,12 @@ local varICrr = r(Var)/r(N)
 local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
 local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
-// Statistical inference OR
-gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0
-qui sum `ICor'
-local varICor = r(Var)/r(N)
-
-local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
-local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
+// Statistical inference OR (We do not use the log of the OR
+    gen `ICor' = 1/ (`Q1' *(1 - `Q1')) * d1 - 1/ (`Q0' *(1 - `Q0')) * d0 // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
+    qui sum `ICor'
+    local varICor = r(Var)/r(N)
+    local LCIOr = exp(log(`ORtmle')) - 1.96 * sqrt(`varICor')
+	local UCIOr = exp(log(`ORtmle')) +1.96 * sqrt(`varICor')
 
 // Display Results of ATE
 	return scalar CRR = `RRtmle'
@@ -931,42 +932,43 @@ local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 	disp as text "{hline 51}"
 
 // Drop the variables if the elements option is not specified
-			drop d1 d0
-			drop Q1star Qa1star Q0star Qa0star
-			drop Y A
-			drop IC
-			drop cin
-		if $keepvars == 0 {
-			drop QAW Q1W Q0W
-			drop ATE
-			drop POM1 POM0 ps
-		}
+	if $keepvars == 0 {
+		drop d1 d0
+		drop QAW Q1W Q0W
+		drop Q1star Qa1star Q0star Qa0star
+		drop ATE IC
+		drop Y A
+		drop POM1 POM0 ps
+		drop cin
+	}
 
 // Rename and label the variables if the elements option *is* specified
-		if $keepvars == 1 {
-			* Label the variables
-				* lab var d1 "Parameter for the influence curve"
-				* lab var d0 "Parameter for the influence curve"
-				* lab var Q1star "Update of the initial prediction for A = 1"
-				* lab var Qa1star "Update of the initial prediction for A = 1"
-				* lab var Q0star "Update of the initial prediction for A = 0"
-				* lab var Qa0star "Update of the initial prediction for A = 0"
-				* lab var A "Exposure/Treatment"
-				* lab var Y "Outcome"
-				* lab var IC "Influence Curve"
-				* lab var cin "Range of Y"
-				lab var QAW "Initial prediction of the outcome"
-				lab var Q1W "Initial prediction of the outcome for A = 1"
-				lab var Q0W "Initial prediction of the outcome for A = 0"
-				lab var ATE "Average Treatment Effect"
-				lab var POM1 "Potential Outcome Y(1)"
-				lab var POM0 "Potential Otucome Y(0)"
-				lab var ps "Propensity Score"
-			* Rename the elements variables
-				foreach var of varlist QAW Q1W Q0W ATE POM1 POM0 ps {
-					rename `var' _`var'
-				}
-		}
+	if $keepvars == 1 {
+		* Label the variables
+			lab var d1 "Parameter for the influence curve"
+			lab var d0 "Parameter for the influence curve"
+			lab var QAW "Initial prediction of the outcome"
+			lab var Q1W "Initial prediction of the outcome for A = 1"
+			lab var Q0W "Initial prediction of the outcome for A = 0"
+			lab var Q1star "Update of the initial prediction for A = 1"
+			lab var Qa1star "Update of the initial prediction for A = 1"
+			lab var Q0star "Update of the initial prediction for A = 0"
+			lab var Qa0star "Update of the initial prediction for A = 0"
+			lab var A "Exposure/Treatment"
+			lab var Y "Outcome"
+			lab var ATE "Average Treatment Effect"
+			lab var IC "Influence Curve"
+			lab var Q1star "Update of initial plug-in estimate for A=1"
+			lab var Q0star "Update of initial plug-in estimate for A=0"
+			lab var POM1 "Potential Outcome Y(1)"
+			lab var POM0 "Potential Otucome Y(0)"
+			lab var ps "Propensity Score"
+			lab var cin "Range of Y"
+		* Rename the elements variables
+			foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps cin {
+				rename `var' _`var'
+			}
+	}
 
 // Clean up
 quietly: rm SLS.R
@@ -977,12 +979,6 @@ quietly: rm fulldata.csv
 quietly: rm .RData
 quietly: memory clean
 end
-
-
-
-
-
-
 
 
 program tmlebgambal, rclass
@@ -1149,17 +1145,15 @@ return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
 gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
 qui sum `ICrr'
 local varICrr = r(Var)/r(N)
-
 local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
 local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
-// Statistical inference OR
-gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0
-qui sum `ICor'
-local varICor = r(Var)/r(N)
-
-local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
-local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
+// Statistical inference OR (We do not use the log of the OR
+    gen `ICor' = 1/ (`Q1' *(1 - `Q1')) * d1 - 1/ (`Q0' *(1 - `Q0')) * d0 // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
+    qui sum `ICor'
+    local varICor = r(Var)/r(N)
+    local LCIOr = exp(log(`ORtmle')) - 1.96 * sqrt(`varICor')
+	local UCIOr = exp(log(`ORtmle')) + 1.96 * sqrt(`varICor')
 
 // Display Results of ATE
 	return scalar CRR = `RRtmle'
@@ -1281,42 +1275,43 @@ local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 
 
 // Drop the variables if the elements option is not specified
-			drop d1 d0
-			drop Q1star Qa1star Q0star Qa0star
-			drop Y A
-			drop IC
-			drop cin
-		if $keepvars == 0 {
-			drop QAW Q1W Q0W
-			drop ATE
-			drop POM1 POM0 ps
-		}
+	if $keepvars == 0 {
+		drop d1 d0
+		drop QAW Q1W Q0W
+		drop Q1star Qa1star Q0star Qa0star
+		drop ATE IC
+		drop Y A
+		drop POM1 POM0 ps
+		drop cin
+	}
 
 // Rename and label the variables if the elements option *is* specified
-		if $keepvars == 1 {
-			* Label the variables
-				* lab var d1 "Parameter for the influence curve"
-				* lab var d0 "Parameter for the influence curve"
-				* lab var Q1star "Update of the initial prediction for A = 1"
-				* lab var Qa1star "Update of the initial prediction for A = 1"
-				* lab var Q0star "Update of the initial prediction for A = 0"
-				* lab var Qa0star "Update of the initial prediction for A = 0"
-				* lab var A "Exposure/Treatment"
-				* lab var Y "Outcome"
-				* lab var IC "Influence Curve"
-				* lab var cin "Range of Y"
-				lab var QAW "Initial prediction of the outcome"
-				lab var Q1W "Initial prediction of the outcome for A = 1"
-				lab var Q0W "Initial prediction of the outcome for A = 0"
-				lab var ATE "Average Treatment Effect"
-				lab var POM1 "Potential Outcome Y(1)"
-				lab var POM0 "Potential Otucome Y(0)"
-				lab var ps "Propensity Score"
-			* Rename the elements variables
-				foreach var of varlist QAW Q1W Q0W ATE POM1 POM0 ps {
-					rename `var' _`var'
-				}
-		}
+	if $keepvars == 1 {
+		* Label the variables
+			lab var d1 "Parameter for the influence curve"
+			lab var d0 "Parameter for the influence curve"
+			lab var QAW "Initial prediction of the outcome"
+			lab var Q1W "Initial prediction of the outcome for A = 1"
+			lab var Q0W "Initial prediction of the outcome for A = 0"
+			lab var Q1star "Update of the initial prediction for A = 1"
+			lab var Qa1star "Update of the initial prediction for A = 1"
+			lab var Q0star "Update of the initial prediction for A = 0"
+			lab var Qa0star "Update of the initial prediction for A = 0"
+			lab var A "Exposure/Treatment"
+			lab var Y "Outcome"
+			lab var ATE "Average Treatment Effect"
+			lab var IC "Influence Curve"
+			lab var Q1star "Update of initial plug-in estimate for A=1"
+			lab var Q0star "Update of initial plug-in estimate for A=0"
+			lab var POM1 "Potential Outcome Y(1)"
+			lab var POM0 "Potential Otucome Y(0)"
+			lab var ps "Propensity Score"
+			lab var cin "Range of Y"
+		* Rename the elements variables
+			foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps cin {
+				rename `var' _`var'
+			}
+	}
 
 // Clean up
 quietly: rm SLS.R
@@ -1327,9 +1322,6 @@ quietly: rm fulldata.csv
 quietly: rm .RData
 quietly: memory clean
 end
-
-
-
 
 
 program tmleglsrf, rclass
@@ -1433,7 +1425,6 @@ qui glm Y `HAW', fam(binomial) offset(`logQAW') robust noconstant
 mat a= e(b)
 gen `eps' = a[1,1]
 
-
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
 gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
 gen double Qa1star = exp(`H1W'*`eps' + `logQ1W')/(1 + exp(`H1W'*`eps' + `logQ1W'))
@@ -1481,17 +1472,15 @@ return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
 gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
 qui sum `ICrr'
 local varICrr = r(Var)/r(N)
-
 local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
 local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
-// Statistical inference OR
-gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0
-qui sum `ICor'
-local varICor = r(Var)/r(N)
-
-local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
-local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
+// Statistical inference OR (We do not use the log of the OR
+    gen `ICor' = 1/ (`Q1' *(1 - `Q1')) * d1 - 1/ (`Q0' *(1 - `Q0')) * d0 // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
+    qui sum `ICor'
+    local varICor = r(Var)/r(N)
+    local LCIOr = exp(log(`ORtmle')) - 1.96 * sqrt(`varICor')
+	local UCIOr = exp(log(`ORtmle')) + 1.96 * sqrt(`varICor')
 
 // Display Results of ATE
 	return scalar CRR = `RRtmle'
@@ -1528,42 +1517,43 @@ local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 	disp as text "{hline 51}"
 
 // Drop the variables if the elements option is not specified
-			drop d1 d0
-			drop Q1star Qa1star Q0star Qa0star
-			drop Y A
-			drop IC
-			drop cin
-		if $keepvars == 0 {
-			drop QAW Q1W Q0W
-			drop ATE
-			drop POM1 POM0 ps
-		}
+	if $keepvars == 0 {
+		drop d1 d0
+		drop QAW Q1W Q0W
+		drop Q1star Qa1star Q0star Qa0star
+		drop ATE IC
+		drop Y A
+		drop POM1 POM0 ps
+		drop cin
+	}
 
 // Rename and label the variables if the elements option *is* specified
-		if $keepvars == 1 {
-			* Label the variables
-				* lab var d1 "Parameter for the influence curve"
-				* lab var d0 "Parameter for the influence curve"
-				* lab var Q1star "Update of the initial prediction for A = 1"
-				* lab var Qa1star "Update of the initial prediction for A = 1"
-				* lab var Q0star "Update of the initial prediction for A = 0"
-				* lab var Qa0star "Update of the initial prediction for A = 0"
-				* lab var A "Exposure/Treatment"
-				* lab var Y "Outcome"
-				* lab var IC "Influence Curve"
-				* lab var cin "Range of Y"
-				lab var QAW "Initial prediction of the outcome"
-				lab var Q1W "Initial prediction of the outcome for A = 1"
-				lab var Q0W "Initial prediction of the outcome for A = 0"
-				lab var ATE "Average Treatment Effect"
-				lab var POM1 "Potential Outcome Y(1)"
-				lab var POM0 "Potential Otucome Y(0)"
-				lab var ps "Propensity Score"
-			* Rename the elements variables
-				foreach var of varlist QAW Q1W Q0W ATE POM1 POM0 ps {
-					rename `var' _`var'
-				}
-		}
+	if $keepvars == 1 {
+		* Label the variables
+			lab var d1 "Parameter for the influence curve"
+			lab var d0 "Parameter for the influence curve"
+			lab var QAW "Initial prediction of the outcome"
+			lab var Q1W "Initial prediction of the outcome for A = 1"
+			lab var Q0W "Initial prediction of the outcome for A = 0"
+			lab var Q1star "Update of the initial prediction for A = 1"
+			lab var Qa1star "Update of the initial prediction for A = 1"
+			lab var Q0star "Update of the initial prediction for A = 0"
+			lab var Qa0star "Update of the initial prediction for A = 0"
+			lab var A "Exposure/Treatment"
+			lab var Y "Outcome"
+			lab var ATE "Average Treatment Effect"
+			lab var IC "Influence Curve"
+			lab var Q1star "Update of initial plug-in estimate for A=1"
+			lab var Q0star "Update of initial plug-in estimate for A=0"
+			lab var POM1 "Potential Outcome Y(1)"
+			lab var POM0 "Potential Otucome Y(0)"
+			lab var ps "Propensity Score"
+			lab var cin "Range of Y"
+		* Rename the elements variables
+			foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps cin {
+				rename `var' _`var'
+			}
+	}
 
 // Clean up
 quietly: rm SLS.R
@@ -1739,18 +1729,16 @@ return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
 gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
 qui sum `ICrr'
 local varICrr = r(Var)/r(N)
-
 local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
 local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
-// Statistical inference OR
-gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0
-qui sum `ICor'
-local varICor = r(Var)/r(N)
-
-local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
-local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
-
+// Statistical inference OR (We do not use the log of the OR
+    gen `ICor' = 1/ (`Q1' *(1 - `Q1')) * d1 - 1/ (`Q0' *(1 - `Q0')) * d0 // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
+    qui sum `ICor'
+    local varICor = r(Var)/r(N)
+    local LCIOr = exp(log(`ORtmle')) - 1.96 * sqrt(`varICor')
+	local UCIOr = exp(log(`ORtmle')) + 1.96 * sqrt(`varICor')
+	
 // Display Results of ATE
 	return scalar CRR = `RRtmle'
 	return scalar SE_log_CRR  = sqrt(`varICrr')
@@ -1852,45 +1840,45 @@ local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 			}
 			di as text "{hline 67}"
 
-
-
 // Drop the variables if the elements option is not specified
-			drop d1 d0
-			drop Q1star Qa1star Q0star Qa0star
-			drop Y A
-			drop IC
-			drop cin
-		if $keepvars == 0 {
-			drop QAW Q1W Q0W
-			drop ATE
-			drop POM1 POM0 ps
-		}
+	if $keepvars == 0 {
+		drop d1 d0
+		drop QAW Q1W Q0W
+		drop Q1star Qa1star Q0star Qa0star
+		drop ATE IC
+		drop Y A
+		drop POM1 POM0 ps
+		drop cin
+	}
+
 
 // Rename and label the variables if the elements option *is* specified
-		if $keepvars == 1 {
-			* Label the variables
-				* lab var d1 "Parameter for the influence curve"
-				* lab var d0 "Parameter for the influence curve"
-				* lab var Q1star "Update of the initial prediction for A = 1"
-				* lab var Qa1star "Update of the initial prediction for A = 1"
-				* lab var Q0star "Update of the initial prediction for A = 0"
-				* lab var Qa0star "Update of the initial prediction for A = 0"
-				* lab var A "Exposure/Treatment"
-				* lab var Y "Outcome"
-				* lab var IC "Influence Curve"
-				* lab var cin "Range of Y"
-				lab var QAW "Initial prediction of the outcome"
-				lab var Q1W "Initial prediction of the outcome for A = 1"
-				lab var Q0W "Initial prediction of the outcome for A = 0"
-				lab var ATE "Average Treatment Effect"
-				lab var POM1 "Potential Outcome Y(1)"
-				lab var POM0 "Potential Otucome Y(0)"
-				lab var ps "Propensity Score"
-			* Rename the elements variables
-				foreach var of varlist QAW Q1W Q0W ATE POM1 POM0 ps {
-					rename `var' _`var'
-				}
-		}
+	if $keepvars == 1 {
+		* Label the variables
+			lab var d1 "Parameter for the influence curve"
+			lab var d0 "Parameter for the influence curve"
+			lab var QAW "Initial prediction of the outcome"
+			lab var Q1W "Initial prediction of the outcome for A = 1"
+			lab var Q0W "Initial prediction of the outcome for A = 0"
+			lab var Q1star "Update of the initial prediction for A = 1"
+			lab var Qa1star "Update of the initial prediction for A = 1"
+			lab var Q0star "Update of the initial prediction for A = 0"
+			lab var Qa0star "Update of the initial prediction for A = 0"
+			lab var A "Exposure/Treatment"
+			lab var Y "Outcome"
+			lab var ATE "Average Treatment Effect"
+			lab var IC "Influence Curve"
+			lab var Q1star "Update of initial plug-in estimate for A=1"
+			lab var Q0star "Update of initial plug-in estimate for A=0"
+			lab var POM1 "Potential Outcome Y(1)"
+			lab var POM0 "Potential Otucome Y(0)"
+			lab var ps "Propensity Score"
+			lab var cin "Range of Y"
+		* Rename the elements variables
+			foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps cin {
+				rename `var' _`var'
+			}
+	}
 
 // Clean up
 quietly: rm SLS.R
