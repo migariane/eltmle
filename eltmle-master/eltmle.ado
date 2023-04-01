@@ -260,7 +260,6 @@ qui: file close rcode
 	mat a= e(b)
 	gen `eps' = a[1,1]
 
-
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
 	gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
 	gen double Qa1star = exp(`H1W'*`eps' + `logQ1W')/(1 + exp(`H1W'*`eps' + `logQ1W'))
@@ -291,6 +290,7 @@ qui: file close rcode
 	local RRtmle = `Q1'/`Q0'
 	local logRRtmle = log(`Q1') - log(`Q0')
 	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	local logORtmle = log((`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0'))
 
 // Statistical inference (Efficient Influence Curve)
 	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
@@ -308,23 +308,15 @@ qui: file close rcode
 	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
 	qui sum `ICrr'
 	local varICrr = r(Var)/r(N)
-
 	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
 	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
-
-// Statistical inference OR
-	//gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0
-	//qui sum `ICor'
-	//local varICor = r(Var)/r(N)
-	//local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
-	//local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
 	
 // Statistical inference OR (We do not use the log of the OR
     gen `ICor' = 1/ (`Q1' *(1 - `Q1')) * d1 - 1/ (`Q0' *(1 - `Q0')) * d0 // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
     qui sum `ICor'
     local varICor = r(Var)/r(N)
-    local LCIOr = exp(log(`ORtmle')) - 1.96 * sqrt(`varICor')
-	local UCIOr = exp(log(`ORtmle')) +1.96 * sqrt(`varICor')
+    local LCIOr = exp(`logORtmle') - 1.96 * sqrt(`varICor')
+	local UCIOr = exp(`logORtmle') + 1.96 * sqrt(`varICor')
 	   
 // Display Results of ATE
 	return scalar CRR = `RRtmle'
@@ -551,7 +543,7 @@ qui: file close rcode
 	qui sum ATE
 	return scalar ATEtmle = r(mean)
 
-// Relative risk
+// Relative risk and Odss ratio
 	qui sum Q1star
 	local Q1 = r(mean)
 	qui sum Q0star
@@ -561,6 +553,7 @@ qui: file close rcode
 	local RRtmle = `Q1'/`Q0'
 	local logRRtmle = log(`Q1') - log(`Q0')
 	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	local logORtmle = log((`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0'))
 
 // Statistical inference (Efficient Influence Curve)
 	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
@@ -578,15 +571,15 @@ qui: file close rcode
 	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
 	qui sum `ICrr'
 	local varICrr = r(Var)/r(N)
-    local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
 	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
-
+	
 // Statistical inference OR (We do not use the log of the OR
     gen `ICor' = 1/ (`Q1' *(1 - `Q1')) * d1 - 1/ (`Q0' *(1 - `Q0')) * d0 // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
     qui sum `ICor'
     local varICor = r(Var)/r(N)
-    local LCIOr = exp(log(`ORtmle')) - 1.96 * sqrt(`varICor')
-	local UCIOr = exp(log(`ORtmle')) +1.96 * sqrt(`varICor')
+    local LCIOr = exp(`logORtmle') - 1.96 * sqrt(`varICor')
+	local UCIOr = exp(`logORtmle') + 1.96 * sqrt(`varICor')
 
 // Display Results of ATE
 		return scalar CRR = `RRtmle'
@@ -859,44 +852,44 @@ gen double ATE = cond($flag == 1, (Qa1star - Qa0star), (Qa1star - Qa0star) * cin
 qui sum ATE
 return scalar ATEtmle = r(mean)
 
-// Relative risk
+// Relative risk and Odds ratio
 qui sum Q1star
 local Q1 = r(mean)
 qui sum Q0star
 local Q0 = r(mean)
 
 // Relative risk and Odds ratio
-local RRtmle = `Q1'/`Q0'
-local logRRtmle = log(`Q1') - log(`Q0')
-local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	local RRtmle = `Q1'/`Q0'
+	local logRRtmle = log(`Q1') - log(`Q0')
+	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	local logORtmle = log((`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0'))
 
 // Statistical inference (Efficient Influence Curve)
-gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
-gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
-gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
-qui sum IC
-return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
+	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+	gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+	gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
+	qui sum IC
+	return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
 
 // Statistical inference ATE
-return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
-return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
-return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
+	return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
 
 // Statistical inference RR
-gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
-qui sum `ICrr'
-local varICrr = r(Var)/r(N)
-
-local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
-local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
-
+	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
+	qui sum `ICrr'
+	local varICrr = r(Var)/r(N)
+	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
+	
 // Statistical inference OR (We do not use the log of the OR
     gen `ICor' = 1/ (`Q1' *(1 - `Q1')) * d1 - 1/ (`Q0' *(1 - `Q0')) * d0 // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
     qui sum `ICor'
     local varICor = r(Var)/r(N)
-    local LCIOr = exp(log(`ORtmle')) - 1.96 * sqrt(`varICor')
-	local UCIOr = exp(log(`ORtmle')) +1.96 * sqrt(`varICor')
-
+    local LCIOr = exp(`logORtmle') - 1.96 * sqrt(`varICor')
+	local UCIOr = exp(`logORtmle') + 1.96 * sqrt(`varICor')
+	
 // Display Results of ATE
 	return scalar CRR = `RRtmle'
 	return scalar SE_log_CRR  = sqrt(`varICrr')
@@ -1118,42 +1111,43 @@ gen double ATE = cond($flag == 1, (Qa1star - Qa0star), (Qa1star - Qa0star) * cin
 qui sum ATE
 return scalar ATEtmle = r(mean)
 
-// Relative risk
+// Relative risk and Odss ratio
 qui sum Q1star
 local Q1 = r(mean)
 qui sum Q0star
 local Q0 = r(mean)
 
 // Relative risk and Odds ratio
-local RRtmle = `Q1'/`Q0'
-local logRRtmle = log(`Q1') - log(`Q0')
-local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	local RRtmle = `Q1'/`Q0'
+	local logRRtmle = log(`Q1') - log(`Q0')
+	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	local logORtmle = log((`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0'))
 
 // Statistical inference (Efficient Influence Curve)
-gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
-gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
-gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
-qui sum IC
-return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
+	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+	gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+	gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
+	qui sum IC
+	return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
 
 // Statistical inference ATE
-return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
-return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
-return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
+	return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
 
 // Statistical inference RR
-gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
-qui sum `ICrr'
-local varICrr = r(Var)/r(N)
-local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
-local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
-
+	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
+	qui sum `ICrr'
+	local varICrr = r(Var)/r(N)
+	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
+	
 // Statistical inference OR (We do not use the log of the OR
     gen `ICor' = 1/ (`Q1' *(1 - `Q1')) * d1 - 1/ (`Q0' *(1 - `Q0')) * d0 // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
     qui sum `ICor'
     local varICor = r(Var)/r(N)
-    local LCIOr = exp(log(`ORtmle')) - 1.96 * sqrt(`varICor')
-	local UCIOr = exp(log(`ORtmle')) + 1.96 * sqrt(`varICor')
+    local LCIOr = exp(`logORtmle') - 1.96 * sqrt(`varICor')
+	local UCIOr = exp(`logORtmle') + 1.96 * sqrt(`varICor')
 
 // Display Results of ATE
 	return scalar CRR = `RRtmle'
@@ -1445,42 +1439,43 @@ gen double ATE = cond($flag == 1, (Qa1star - Qa0star), (Qa1star - Qa0star) * cin
 qui sum ATE
 return scalar ATEtmle = r(mean)
 
-// Relative risk
+// Relative risk and Odss ratio
 qui sum Q1star
 local Q1 = r(mean)
 qui sum Q0star
 local Q0 = r(mean)
 
 // Relative risk and Odds ratio
-local RRtmle = `Q1'/`Q0'
-local logRRtmle = log(`Q1') - log(`Q0')
-local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	local RRtmle = `Q1'/`Q0'
+	local logRRtmle = log(`Q1') - log(`Q0')
+	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	local logORtmle = log((`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0'))
 
 // Statistical inference (Efficient Influence Curve)
-gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
-gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
-gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
-qui sum IC
-return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
+	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+	gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+	gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
+	qui sum IC
+	return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
 
 // Statistical inference ATE
-return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
-return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
-return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
+	return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
 
 // Statistical inference RR
-gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
-qui sum `ICrr'
-local varICrr = r(Var)/r(N)
-local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
-local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
-
+	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
+	qui sum `ICrr'
+	local varICrr = r(Var)/r(N)
+	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
+	
 // Statistical inference OR (We do not use the log of the OR
     gen `ICor' = 1/ (`Q1' *(1 - `Q1')) * d1 - 1/ (`Q0' *(1 - `Q0')) * d0 // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
     qui sum `ICor'
     local varICor = r(Var)/r(N)
-    local LCIOr = exp(log(`ORtmle')) - 1.96 * sqrt(`varICor')
-	local UCIOr = exp(log(`ORtmle')) + 1.96 * sqrt(`varICor')
+    local LCIOr = exp(`logORtmle') - 1.96 * sqrt(`varICor')
+	local UCIOr = exp(`logORtmle') + 1.96 * sqrt(`varICor')
 
 // Display Results of ATE
 	return scalar CRR = `RRtmle'
@@ -1702,42 +1697,43 @@ gen double ATE = cond($flag == 1, (Qa1star - Qa0star), (Qa1star - Qa0star) * cin
 qui sum ATE
 return scalar ATEtmle = r(mean)
 
-// Relative risk
+// Relative risk and Odds ratio
 qui sum Q1star
 local Q1 = r(mean)
 qui sum Q0star
 local Q0 = r(mean)
 
 // Relative risk and Odds ratio
-local RRtmle = `Q1'/`Q0'
-local logRRtmle = log(`Q1') - log(`Q0')
-local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	local RRtmle = `Q1'/`Q0'
+	local logRRtmle = log(`Q1') - log(`Q0')
+	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	local logORtmle = log((`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0'))
 
 // Statistical inference (Efficient Influence Curve)
-gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
-gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
-gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
-qui sum IC
-return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
+	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+	gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+	gen IC = cond($flag == 1,(d1 - d0),(d1 - d0) * cin, .)
+	qui sum IC
+	return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
 
 // Statistical inference ATE
-return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
-return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
-return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
+	return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
 
 // Statistical inference RR
-gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
-qui sum `ICrr'
-local varICrr = r(Var)/r(N)
-local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
-local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
-
+	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
+	qui sum `ICrr'
+	local varICrr = r(Var)/r(N)
+	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
+	
 // Statistical inference OR (We do not use the log of the OR
     gen `ICor' = 1/ (`Q1' *(1 - `Q1')) * d1 - 1/ (`Q0' *(1 - `Q0')) * d0 // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
     qui sum `ICor'
     local varICor = r(Var)/r(N)
-    local LCIOr = exp(log(`ORtmle')) - 1.96 * sqrt(`varICor')
-	local UCIOr = exp(log(`ORtmle')) + 1.96 * sqrt(`varICor')
+    local LCIOr = exp(`logORtmle') - 1.96 * sqrt(`varICor')
+	local UCIOr = exp(`logORtmle') + 1.96 * sqrt(`varICor')
 	
 // Display Results of ATE
 	return scalar CRR = `RRtmle'
@@ -1772,7 +1768,6 @@ local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 	disp as text "Causal Risk Ratio:      " "{c |}      "  %4.2f as result `RRtmle' "     (" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
 	disp as text "Marginal Odds Ratio:    " "{c |}      "  %4.2f as result `ORtmle' "     (" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
 	disp as text "{hline 51}"
-
 
 // Display covariate balance table
 		* Create macros from the varlist
