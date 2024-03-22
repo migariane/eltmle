@@ -690,6 +690,11 @@ qui: file close rcode
 			drop Y A
 			drop POM1 POM0 ps
 			drop cin
+			drop _ipw
+			drop d1A
+			drop x1pointsa
+			drop d0A
+			drop x0pointsa
 		}
 
 	* Rename and label the variables if the elements option *is* specified
