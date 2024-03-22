@@ -489,6 +489,7 @@ qui: file close rcode
 	tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 
 // Create density plot to check positivity assumption
+	preserve
 	sort A
 	qui by A: summarize ps
 	qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
@@ -501,6 +502,7 @@ qui: file close rcode
 			ytitle("Density") ///
 			graphregion(color(white)) bgcolor(white) plotregion(fcolor(white)) ///
 			legend(region(style(none)))
+	restore
 
 // Q to logit scale
 	gen `logQAW' = log(QAW / (1 - QAW))
@@ -691,10 +693,10 @@ qui: file close rcode
 			drop POM1 POM0 ps
 			drop cin
 			drop _ipw
-			drop d1A
-			drop x1pointsa
-			drop d0A
-			drop x0pointsa
+			capture drop d1A
+			capture drop x1pointsa
+			capture drop d0A
+			capture drop x0pointsa
 		}
 
 	* Rename and label the variables if the elements option *is* specified
