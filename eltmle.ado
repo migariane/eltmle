@@ -728,7 +728,10 @@ qui: file close rcode
 		quietly: rm data.csv
 		quietly: rm fulldata.csv
 		quietly: rm .RData
+		quietly: memory clean
 end
+
+
 
 program tmlebgam, rclass
 // Write R Code dependencies: foreign Surperlearner
