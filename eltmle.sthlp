@@ -10,7 +10,7 @@
 {title:Syntax}
 
 {p 4 4 2}
-{cmd:eltmle} {hi: Y} {hi: X} {hi: Z} [{cmd:,} {it:tmle} {it:tmlebgam} {it:tmleglsrf} {it:bal} {it:elements}]
+{cmd:eltmle} {hi: Y} {hi: X} {hi: Z} [{cmd:,} {it:tmle} {it:tmlebgam} {it:tmleglsrf} {it:bal} {it:elements} {it:cvtmle} {it:cvtmleglsrf} {it:cvtmlebgam} {it:cvfolds(#)} {it:seed(#)}]
 
 {p 4 4 2}
 where:
@@ -25,6 +25,7 @@ where:
 {p 4 4 2}
 {hi:Z}: Covariates: vector of continuous and categorical variables
 {p_end}
+
 
 {title:Description}
 
@@ -50,12 +51,12 @@ The following link provides access to a TMLE tutorial: {browse "http://migariane
 {p_end}
 
 {p 4 4 2 120}
-{hi:eltmle} is a Stata program implementing the targeted maximum likelihood estimation for the ATE for a binary or continuous outcome and binary treatment. {hi:eltmle} includes the use of a super-learner called from the {hi:SuperLearner}
+{hi:eltmle} is a Stata program implementing the targeted maximum likelihood estimation (TMLE) for the ATE for a binary or continuous outcome and binary treatment. {hi:eltmle} includes the use of a super-learner called from the {hi:SuperLearner}
 package v.2.0-21 (Polley E., et al. 2011). The Super-Learner uses V-fold cross-validation (10-fold by default) to assess the performance of prediction regarding the potential outcomes and the propensity score as weighted
 averages of a set of machine learning algorithms. We used the default SuperLearner algorithms implemented in the base installation of the {hi:tmle-R} package v.1.2.0-5 (Susan G. and Van der Laan M., 2017),
 which included the following: i) stepwise selection, ii) generalized linear modeling (GLM), iii) a GLM variant that includes second order polynomials and two-by-two interactions of the main terms
-included in the model. Additionally, {hi:eltmle} users will have the option to include Bayes Generalized Linear Models and Generalized Additive Models as additional Super-Learner algorithms. Future implementations will offer
-more advanced machine learning algorithms.
+included in the model. Users have the option to include Bayes Generalized Linear Models, Generalized Additive Models, and tree-based algorithms (such as random forests) as additional Super-Learner algorithms. 
+Additionally, {hi:eltmle} supports cross-validation of TMLE and incorporates the aforementioned machine learning algorithms.
 {p_end}
 
 {title:Options}
@@ -90,6 +91,42 @@ covariate balance between treatment groups is indicated by Standardised Mean Dif
 of the outcome (i.e., QAW, Q1W, and Q0W), average treatment effect (ATE), potential outcomes (i.e., POM1 for Y(1) and POM0 for Y(0)), and the propensity score (i.e., ps).
 {p_end}
 
+{p 4 4 2 120}
+{hi:cvtmle}: this option may be specified or unspecified. When specified, it implements the cross-validated TMLE algo-
+rithm, where only the outcome model is cross-validated. One can also specify the number of folds using the "cvfolds()"
+option, the default number of folds is 10. One can also specify the seed using the "seed()" option for reproducibility
+the default for the seed is 1. The same algorithms are used for both the outcome and exposure models.
+{p_end}
+
+{p 4 4 2 120}
+{hi:cvtmleglsrf}: this option may be specified or unspecified. When specified, it implements the cross-validated TMLE
+algorithm, where only the outcome model is cross-validated, and additionally implements the Lasso (glmnet R pack-
+age), Random Forest (randomForest R package), and the Generalized Additive Models as Super-Learner algorithms in
+the Super-Learner. One can also specify the number of folds using the "cvfolds()" option, the default number of folds
+is 10. One can also specify the seed using the "seed()" option for reproducibility, the default for the seed is 1. The
+same algorithms are used for both the outcome and exposure models.
+{p_end}
+
+{p 4 4 2 120}
+{hi:cvtmlebgam}: this option may be specified or unspecified. When specified, it implements the cross-validated TMLE
+algorithm, where only the outcome model is cross-validated, and additionally implements the Bayes Generalized Linear Models 
+and Generalized Additive Models as Super-Learner algorithms in the Super-Learner. One can also specify the number of folds 
+using the "cvfolds()" option, the default number of folds is 10. One can also specify the seed using the "seed()" option 
+for reproducibility, the default for the seed is 1. The same algorithms are used for both the outcome and exposure models.
+{p_end}
+
+{p 4 4 2 120}
+{hi:cvfolds(#)}: this option may be specified or unspecified. This option is used to select the number of folds (sample
+splits) to be created when performing any of the cross-validated estimators. The default number of folds is 10. This
+option can be used in conjunction with the "seed()" option for reproducibility. Replace "#" with an integer for the number of folds.
+{p_end}
+
+{p 4 4 2 120}
+{hi:seed(#)}: this option may be specified or unspecified. This option is used to specify the seed when splitting the
+data during cross-validation. The default for the seed is 1 (given by "#"). When cross-validation is used, the data is split randomly,
+however, when the "seed()" option is specified, the random split is performed so that the results can be reproduced.
+{p_end}
+
 
 {title:Results}
 
@@ -112,6 +149,11 @@ We provide the following examples:
   a) {hi: tmleglsrf}: Lasso (glmnet R package), Random Forest (randomForest R package) and the Generalized Additive Models as Super-Learner algorithms for the tmle estimator
   b) {hi: tmlebgam}: Bayes Generalized Linear Models and Generalized Additive Models as Super-Learner algorithms for the tmle estimator
 3) Covariate balance tables to assess the performance of the SuperLearner in reducing standardised mean differences and variance ratios
+4) Cross-validated TMLE
+  a) {hi: cvtmle}: standard machine learning algorithms.
+  b) {hi: cvtmleglsrf}: Lasso (glmnet R package), Random Forest (randomForest R package) and the Generalized Additive Models as Super-Learner algorithms for the tmle estimator
+  c) {hi: cvtmlebgam}: Bayes Generalized Linear Models and Generalized Additive Models as Super-Learner algorithms for the tmle estimator
+
 
 ***********************************************************
 * eltmle Y X Z [if] [,tmle tmlebgam tmleglsrf bal elements]
@@ -279,6 +321,89 @@ mmarried
 
 
 
+*****************
+* 4) a) cvtmle
+*****************
+
+.eltmle lbw mbsmoke mage medu prenatal mmarried, tmle
+
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+        POM1 |      4,642    .1023622    .0418371   .0151805   .4445776
+        POM0 |      4,642    .0516419    .0255925   .0177429   .1983493
+          ps |      4,642    .1861267    .1115566   .0341791   .8584857
+ 
+---------------------------------------------------------------
+         |    ATE         SE     P-value           95% CI
+---------------------------------------------------------------
+TMLE:    | 0.0507     0.0124      0.0002     ( 0.0263, 0.0751 )
+---------------------------------------------------------------
+ 
+---------------------------------------------------
+                           Estimate          95% CI
+---------------------------------------------------
+Causal Risk Ratio:      |      1.99     (1.52,2.61)
+Marginal Odds Ratio:    |      2.11     (1.57,2.83)
+---------------------------------------------------
+
+
+*****************
+* 4) b) cvtmleglsrf
+*****************
+
+.eltmle lbw mbsmoke mage medu prenatal mmarried, cvtmleglsrf cvfolds(5)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+        POM1 |      4,642    .0841518    .0426664    .017541   .4363271
+        POM0 |      4,642    .0418715    .0228329   .0090831   .2683886
+          ps |      4,642    .1542144    .1115133       .025   .6293375
+ 
+---------------------------------------------------------------
+         |    ATE         SE     P-value           95% CI
+---------------------------------------------------------------
+TMLE:    | 0.0423     0.0153      0.0171     ( 0.0124, 0.0722 )
+---------------------------------------------------------------
+ 
+---------------------------------------------------
+                           Estimate          95% CI
+---------------------------------------------------
+Causal Risk Ratio:      |      1.74     (1.20,2.52)
+Marginal Odds Ratio:    |      1.81     (1.21,2.70)
+---------------------------------------------------
+
+
+*****************
+* 4) c) cvtmlebgam
+*****************
+
+.eltmle lbw mbsmoke mage medu prenatal mmarried, cvtmlebgam cvfolds(5) seed(123)
+
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+        POM1 |      4,642    .1011293    .0414017   .0136753    .482765
+        POM0 |      4,642    .0514469    .0252273   .0130513   .2255022
+          ps |      4,642    .1861267    .1105893   .0313728   .5872202
+ 
+---------------------------------------------------------------
+         |    ATE         SE     P-value           95% CI
+---------------------------------------------------------------
+TMLE:    | 0.0497     0.0127      0.0004     ( 0.0248, 0.0745 )
+---------------------------------------------------------------
+ 
+---------------------------------------------------
+                           Estimate          95% CI
+---------------------------------------------------
+Causal Risk Ratio:      |      1.98     (1.50,2.60)
+Marginal Odds Ratio:    |      2.09     (1.54,2.82)
+---------------------------------------------------
+
+
+
+
+
 **********************************************************************************************
 
 {title:Remarks}
@@ -293,7 +418,7 @@ Remember 2: You must change your working directory to the location of the Stata.
 {p_end}
 
 {p 4 4 2 120}
-Remember 3: eltmle automatically implements a complete case analysis (i.e., listwise delection for missing data). However, if you would like to impute your missing values 
+Remember 3: eltmle automatically implements a complete case analysis (i.e., listwise deletion for missing data). However, if you would like to impute your missing values 
 before running eltmle, see the example here below using the sys auto data:
 {p_end}
 
