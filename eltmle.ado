@@ -2635,7 +2635,7 @@ restore
 	forvalues i = 1(1)$folds{
               quietly: rm "folddata`i'.dta"	
            } 	
-	quietly: rm .RData
+	//quietly: rm .RData
 	quietly: memory clean
 
 * Note the completion of the program
@@ -3656,7 +3656,7 @@ restore
 	forvalues i = 1(1)$folds{
 		quietly: rm "folddata`i'.dta"	
            } 	
-	quietly: rm .RData
+	//quietly: rm .RData
 	quietly: memory clean
 
 * Note the completion of the program
