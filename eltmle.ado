@@ -579,7 +579,7 @@ qui: file close rcode
 
 	// Clean up
 	quietly: rm SLS.R
-	quietly: rm SLS.Rout
+	//quietly: rm SLS.Rout
 	quietly: rm data2.dta
 	quietly: rm data.csv
 	quietly: rm fulldata.csv
@@ -940,7 +940,7 @@ qui: file close rcode
 
 	// Clean up
 	quietly: rm SLS.R
-	quietly: rm SLS.Rout
+	//quietly: rm SLS.Rout
 	quietly: rm data2.dta
 	quietly: rm data.csv
 	quietly: rm fulldata.csv
@@ -1205,7 +1205,7 @@ local Q0 = r(mean)
 
 // Clean up
 quietly: rm SLS.R
-quietly: rm SLS.Rout
+//quietly: rm SLS.Rout
 quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm fulldata.csv
@@ -1574,7 +1574,7 @@ local Q0 = r(mean)
 
 // Clean up
 quietly: rm SLS.R
-quietly: rm SLS.Rout
+//quietly: rm SLS.Rout
 quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm fulldata.csv
@@ -1840,7 +1840,7 @@ local Q0 = r(mean)
 
 // Clean up
 quietly: rm SLS.R
-quietly: rm SLS.Rout
+//quietly: rm SLS.Rout
 quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm fulldata.csv
@@ -2191,7 +2191,7 @@ local Q0 = r(mean)
 
 // Clean up
 quietly: rm SLS.R
-quietly: rm SLS.Rout
+//quietly: rm SLS.Rout
 quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm fulldata.csv
@@ -2627,7 +2627,7 @@ restore
 
 	// Clean up
 	quietly: rm SLS.R
-	quietly: rm SLS.Rout
+	//quietly: rm SLS.Rout
 	quietly: rm data2.dta
 	quietly: rm cvdata.csv
 	quietly: rm cvdata.dta
@@ -3088,7 +3088,7 @@ restore
 
 	// Clean up
 	quietly: rm SLS.R
-	quietly: rm SLS.Rout
+	//quietly: rm SLS.Rout
 	quietly: rm data2.dta
 	quietly: rm cvdata.csv
 	quietly: rm cvdata.dta
@@ -3648,7 +3648,7 @@ restore
 
 	// Clean up
 	quietly: rm SLS.R
-	quietly: rm SLS.Rout
+	//quietly: rm SLS.Rout
 	quietly: rm data2.dta
 	quietly: rm cvdata.csv
 	quietly: rm cvdata.dta
