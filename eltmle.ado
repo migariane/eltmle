@@ -583,7 +583,7 @@ qui: file close rcode
 	quietly: rm data2.dta
 	quietly: rm data.csv
 	quietly: rm fulldata.csv
-	quietly: rm .RData
+	//quietly: rm .RData
 	quietly: memory clean
 end
 
@@ -944,7 +944,7 @@ qui: file close rcode
 	quietly: rm data2.dta
 	quietly: rm data.csv
 	quietly: rm fulldata.csv
-	quietly: rm .RData
+    //quietly: rm .RData
 	quietly: memory clean
 
 end
@@ -1209,7 +1209,7 @@ quietly: rm SLS.R
 quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm fulldata.csv
-quietly: rm .RData
+//quietly: rm .RData
 quietly: memory clean
 end
 
@@ -1578,7 +1578,7 @@ quietly: rm SLS.R
 quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm fulldata.csv
-quietly: rm .RData
+//quietly: rm .RData
 quietly: memory clean
 end
 
@@ -1844,7 +1844,7 @@ quietly: rm SLS.R
 quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm fulldata.csv
-quietly: rm .RData
+//quietly: rm .RData
 quietly: memory clean
 end
 
@@ -2195,7 +2195,7 @@ quietly: rm SLS.R
 quietly: rm data2.dta
 quietly: rm data.csv
 quietly: rm fulldata.csv
-quietly: rm .RData
+//quietly: rm .RData
 quietly: memory clean
 end
 
