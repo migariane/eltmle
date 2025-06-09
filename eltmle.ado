@@ -97,12 +97,14 @@ THE SOFTWARE.
 * Removed the bug that was causing the user to manually close the Windows shell. Used 'rscript' to locate where R is stored.
 
 * October 2024:
-* Seed option is no longer necessary but remains in the syntax for reproducibility.
+* The **seed** option is no longer necessary but remains in the syntax for reproducibility.
 * Added a progress bar for cross-validation.
 
 * February 2025
 * Updated estimation of the substitution parameter (Epsilon) as MLE weight 
 
+* June 2025
+* Updated cross-validated procedure for the TMLE estimation
 
 capture program drop eltmle
 program define eltmle
