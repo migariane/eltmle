@@ -72,6 +72,6 @@ Luque-Fernandez MA and Camille Maringe (2021). Ensemble Targeted Maximum Likelih
 This software is distributed under the GPL-2 license.
 
 # Acknowledgments  
-Miguel Angel Luque Fernandez is supported by a Miguel Servet I Investigator Award (grant CP17/00206) from the Carlos III National Institute of Health, Madrid, Spain.   
+This work was supported by Medical Research Council [grant number MR/W021021/1]. Miguel Angel Luque Fernandez was supported by a Miguel Servet I Investigator Award (grant CP17/00206) from the Carlos III National Institute of Health, Madrid, Spain.   
 
 ![Figure Link](https://github.com/migariane/eltmle/blob/master/Acknowledgment.png)   
