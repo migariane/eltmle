@@ -184,7 +184,6 @@ program define eltmle
 		//global flag = cond(`yvar'<=1 & `yvar'>=0,1,0)   // 1 if binary, 0 if continuous.
 		qui tabulate `yvar'
 		global flag = cond(r(r)==2,1,0)
-		*di "Flag = $flag"
 				
 		if $flag == 0 {  
 			*di "Continuous outcome"
