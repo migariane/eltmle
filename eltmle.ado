@@ -172,7 +172,6 @@ program define eltmle
 		global variablelist `varlist'
 		local var  "`varlist'" // if `touse'
 		
-		* Create a row identifier
 		capture drop rowid
 		gen rowid = _n
 		
