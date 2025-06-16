@@ -167,9 +167,7 @@ program define eltmle
 		else if "`seed'" == "" {
 			qui xtile foldid = uniform() , nq(`cvfolds') 
 			}
-		* global setseed = `seed'		// set seed `seed'
-		*set seed $setseed
-		*qui xtile foldid = uniform() , nq(`cvfolds') 
+
 		//marksample touse
 		global variablelist `varlist'
 		local var  "`varlist'" // if `touse'
