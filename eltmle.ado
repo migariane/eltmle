@@ -369,18 +369,6 @@ qui: file close rcode
 		`"pause"'
 		qui: file close bat
 		
-		// 		`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
-		// 				`"echo Found %%r"' _newline ///
-		// 				`"echo ! "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-		// 				`"echo All set!"' _newline ///
-		// 				`"goto:DONE"' _newline ///
-		// 		`")"' _newline ///
-		
-		// 		//Run batch
-		// 		! setup.bat
-		// 		//Run R
-		// 		do runr.do
-		
 		* Check you have 'rscript' command installed.
 		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
 		
@@ -414,31 +402,6 @@ qui: file close rcode
 	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust 
 	mat a= e(b)
 	gen `eps' = a[1,1]
-	
-	
-	/*
-	qui glm Y `H1W' `H0W' , fam(binomial) offset(`logQAW') robust noconstant
-	mat a= e(b)
-	gen `eps1' = a[1,1]
-	gen `eps2' = a[1,2]
-
-	qui glm Y `HAW' , fam(binomial) offset(`logQAW') robust noconstant
-	mat a= e(b)
-	gen `eps' = a[1,1]
-	*/
-	
-	/*
-	qui glm Y `H1W' `H0W' [pweight = `HAW'], fam(binomial) offset(`logQAW') robust noconstant
-	mat a= e(b)
-	gen eps1W = a[1,1]
-	gen eps2W = a[1,2]
-
-	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust 
-	mat a= e(b)
-	capture drop epsW
-	gen epsW = a[1,1]
-	*/
-	
 	
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
 	gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
@@ -553,16 +516,14 @@ qui: file close rcode
 				lab var QAW "Initial prediction of the outcome"
 				lab var Q1W "Initial prediction of the outcome for A = 1"
 				lab var Q0W "Initial prediction of the outcome for A = 0"
-				lab var Q1star "Update of the initial prediction for A = 1"
+				lab var Q1star "Update of initial plug-in estimate for A=1"
 				lab var Qa1star "Update of the initial prediction for A = 1"
-				lab var Q0star "Update of the initial prediction for A = 0"
+				lab var Q0star "Update of initial plug-in estimate for A=0"
 				lab var Qa0star "Update of the initial prediction for A = 0"
 				lab var A "Exposure/Treatment"
 				lab var Y "Outcome"
 				lab var ATE "Average Treatment Effect"
 				lab var IC "Influence Curve"
-				lab var Q1star "Update of initial plug-in estimate for A=1"
-				lab var Q0star "Update of initial plug-in estimate for A=0"
 				lab var POM1 "Potential Outcome Y(1)"
 				lab var POM0 "Potential Otucome Y(0)"
 				lab var ps "Propensity Score"
@@ -573,7 +534,6 @@ qui: file close rcode
 					rename `var' _`var'
 				}
 		}
-
 
 	// Clean up
 	quietly: rm SLS.R
