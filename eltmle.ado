@@ -1140,9 +1140,7 @@ local Q0 = r(mean)
 			lab var QAW "Initial prediction of the outcome"
 			lab var Q1W "Initial prediction of the outcome for A = 1"
 			lab var Q0W "Initial prediction of the outcome for A = 0"
-			lab var Q1star "Update of the initial prediction for A = 1"
 			lab var Qa1star "Update of the initial prediction for A = 1"
-			lab var Q0star "Update of the initial prediction for A = 0"
 			lab var Qa0star "Update of the initial prediction for A = 0"
 			lab var A "Exposure/Treatment"
 			lab var Y "Outcome"
@@ -1235,18 +1233,6 @@ qui: file close rcode
 		`"pause"'
 		qui: file close bat
 		
-		// 		`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
-		// 				`"echo Found %%r"' _newline ///
-		// 				`"echo ! "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-		// 				`"echo All set!"' _newline ///
-		// 				`"goto:DONE"' _newline ///
-		// 		`")"' _newline ///
-		
-		// 		//Run batch
-		// 		! setup.bat
-		// 		//Run R
-		// 		do runr.do
-		
 		* Check you have 'rscript' command installed.
 		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
 		
@@ -1254,7 +1240,6 @@ qui: file close rcode
 		qui: rscript using SLS.R
 	}
 
-	
 	
 // Read Revised Data Back to Stata
 clear
@@ -1299,18 +1284,6 @@ gen  `H0W' = (1 - A) / (1 - ps)
 	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust 
 	mat a= e(b)
 	gen `eps' = a[1,1]
-
-/*
-qui glm Y `H1W' `H0W', fam(binomial) offset(`logQAW') robust noconstant
-mat a= e(b)
-gen `eps1' = a[1,1]
-gen `eps2' = a[1,2]
-
-qui glm Y `HAW', fam(binomial) offset(`logQAW') robust noconstant
-mat a= e(b)
-gen `eps' = a[1,1]
-*/
-
 
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
 gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
@@ -1426,23 +1399,6 @@ local Q0 = r(mean)
 			di as text "                          Raw    Weighted           Raw    Weighted"
 			di as text "{hline 67}"
 
-			/*
-			disp as text "{hline 29}"
-			di "TMLE: Causal Risk Ratio (CRR)"
-			disp as text "CRR:    " "{c |} "  %4.2f as result `RRtmle'
-			disp as text "95% CI: " "{c |} " "(" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
-			disp as text "{hline 29}"
-
-
-			disp as text "{hline 31}"
-			di "TMLE: Marginal Odds Ratio (MOR)"
-			disp as text "{hline 31}"
-			disp as text "MOR:    " "{c |} "  %4.2f as result `ORtmle'
-			disp as text "95% CI: " "{c |} " "(" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
-			disp as text "{hline 31}"
-			*/
-
-
 		* Calculate the covariate balance
 			foreach var in `varlist' {
 					di as text "`var'"
@@ -1509,9 +1465,7 @@ local Q0 = r(mean)
 			lab var QAW "Initial prediction of the outcome"
 			lab var Q1W "Initial prediction of the outcome for A = 1"
 			lab var Q0W "Initial prediction of the outcome for A = 0"
-			lab var Q1star "Update of the initial prediction for A = 1"
 			lab var Qa1star "Update of the initial prediction for A = 1"
-			lab var Q0star "Update of the initial prediction for A = 0"
 			lab var Qa0star "Update of the initial prediction for A = 0"
 			lab var A "Exposure/Treatment"
 			lab var Y "Outcome"
@@ -1579,8 +1533,6 @@ qui: file write rcode ///
         `"write.dta(data, "data2.dta")"'
 qui: file close rcode
 
-
-
 	if "`c(os)'" == "MacOSX" {
 	qui shell "/usr/local/bin/r" CMD BATCH SLS.R
 	}
@@ -1605,18 +1557,6 @@ qui: file close rcode
 		`"pause"'
 		qui: file close bat
 		
-		// 		`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
-		// 				`"echo Found %%r"' _newline ///
-		// 				`"echo ! "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-		// 				`"echo All set!"' _newline ///
-		// 				`"goto:DONE"' _newline ///
-		// 		`")"' _newline ///
-		
-		// 		//Run batch
-		// 		! setup.bat
-		// 		//Run R
-		// 		do runr.do
-		
 		* Check you have 'rscript' command installed.
 		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
 		
@@ -1624,8 +1564,6 @@ qui: file close rcode
 		qui: rscript using SLS.R
 	}
 
-	
-	
 // Read Revised Data Back to Stata
 clear
 quietly: use "data2.dta", clear
@@ -1651,17 +1589,6 @@ gen  `H0W' = (1 - A) / (1 - ps)
 	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust 
 	mat a= e(b)
 	gen `eps' = a[1,1]
-
-/*
-qui glm Y `H1W' `H0W', fam(binomial) offset(`logQAW') robust noconstant
-mat a= e(b)
-gen `eps1' = a[1,1]
-gen `eps2' = a[1,2]
-
-qui glm Y `HAW', fam(binomial) offset(`logQAW') robust noconstant
-mat a= e(b)
-gen `eps' = a[1,1]
-*/
 
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
 gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
@@ -1775,9 +1702,7 @@ local Q0 = r(mean)
 			lab var QAW "Initial prediction of the outcome"
 			lab var Q1W "Initial prediction of the outcome for A = 1"
 			lab var Q0W "Initial prediction of the outcome for A = 0"
-			lab var Q1star "Update of the initial prediction for A = 1"
 			lab var Qa1star "Update of the initial prediction for A = 1"
-			lab var Q0star "Update of the initial prediction for A = 0"
 			lab var Qa0star "Update of the initial prediction for A = 0"
 			lab var A "Exposure/Treatment"
 			lab var Y "Outcome"
@@ -1845,8 +1770,6 @@ qui: file write rcode ///
         `"write.dta(data, "data2.dta")"'
 qui: file close rcode
 
-
-
 	if "`c(os)'" == "MacOSX" {
 	qui shell "/usr/local/bin/r" CMD BATCH SLS.R
 	}
@@ -1871,26 +1794,12 @@ qui: file close rcode
 		`"pause"'
 		qui: file close bat
 		
-		// 		`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
-		// 				`"echo Found %%r"' _newline ///
-		// 				`"echo ! "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-		// 				`"echo All set!"' _newline ///
-		// 				`"goto:DONE"' _newline ///
-		// 		`")"' _newline ///
-		
-		// 		//Run batch
-		// 		! setup.bat
-		// 		//Run R
-		// 		do runr.do
-		
 		* Check you have 'rscript' command installed.
 		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
 		
 		* Run SLS.R in Windows - 'rscript' command will search for common folders to find R.exe
 		qui: rscript using SLS.R
 	}
-
-	
 	
 // Read Revised Data Back to Stata
 clear
@@ -1935,17 +1844,6 @@ gen  `H0W' = (1 - A) / (1 - ps)
 	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust 
 	mat a= e(b)
 	gen `eps' = a[1,1]
-
-	/*
-	qui glm Y `H1W' `H0W', fam(binomial) offset(`logQAW') robust noconstant
-	mat a= e(b)
-	gen `eps1' = a[1,1]
-	gen `eps2' = a[1,2]
-
-	qui glm Y `HAW', fam(binomial) offset(`logQAW') robust noconstant
-	mat a= e(b)
-	gen `eps' = a[1,1]
-	*/
 
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
 gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
@@ -2126,9 +2024,7 @@ local Q0 = r(mean)
 			lab var QAW "Initial prediction of the outcome"
 			lab var Q1W "Initial prediction of the outcome for A = 1"
 			lab var Q0W "Initial prediction of the outcome for A = 0"
-			lab var Q1star "Update of the initial prediction for A = 1"
 			lab var Qa1star "Update of the initial prediction for A = 1"
-			lab var Q0star "Update of the initial prediction for A = 0"
 			lab var Qa0star "Update of the initial prediction for A = 0"
 			lab var A "Exposure/Treatment"
 			lab var Y "Outcome"
@@ -2301,17 +2197,6 @@ preserve
 	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust 
 	mat a= e(b)
 	gen `eps' = a[1,1]
-
-	/*
-	qui glm Y `H1W' `H0W', fam(binomial) offset(`logQAW') robust noconstant
-	mat a= e(b)
-	gen `eps1' = a[1,1]
-	gen `eps2' = a[1,2]
-
-	qui glm Y `HAW', fam(binomial) offset(`logQAW') robust noconstant
-	mat a= e(b)
-	gen `eps' = a[1,1]
-	*/
 	
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
 	gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
@@ -2552,9 +2437,7 @@ preserve
 				lab var QAW "Initial prediction of the outcome"
 				lab var Q1W "Initial prediction of the outcome for A = 1"
 				lab var Q0W "Initial prediction of the outcome for A = 0"
-				lab var Q1star "Update of the initial prediction for A = 1"
 				lab var Qa1star "Update of the initial prediction for A = 1"
-				lab var Q0star "Update of the initial prediction for A = 0"
 				lab var Qa0star "Update of the initial prediction for A = 0"
 				lab var A "Exposure/Treatment"
 				lab var Y "Outcome"
@@ -2700,18 +2583,6 @@ preserve
 		`"pause"'
 		qui: file close bat
 		
-		// 		`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
-		// 				`"echo Found %%r"' _newline ///
-		// 				`"echo ! "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-		// 				`"echo All set!"' _newline ///
-		// 				`"goto:DONE"' _newline ///
-		// 		`")"' _newline ///
-		
-		// 		//Run batch
-		// 		! setup.bat
-		// 		//Run R
-		// 		do runr.do
-		
 		* Check you have 'rscript' command installed.
 		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
 		
@@ -2769,17 +2640,6 @@ preserve
 	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust 
 	mat a= e(b)
 	gen `eps' = a[1,1]
-
-	/*
-	qui glm Y `H1W' `H0W', fam(binomial) offset(`logQAW') robust noconstant
-	mat a= e(b)
-	gen `eps1' = a[1,1]
-	gen `eps2' = a[1,2]
-
-	qui glm Y `HAW', fam(binomial) offset(`logQAW') robust noconstant
-	mat a= e(b)
-	gen `eps' = a[1,1]
-	*/
 	
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
 	gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
@@ -3013,9 +2873,7 @@ preserve
 				lab var QAW "Initial prediction of the outcome"
 				lab var Q1W "Initial prediction of the outcome for A = 1"
 				lab var Q0W "Initial prediction of the outcome for A = 0"
-				lab var Q1star "Update of the initial prediction for A = 1"
 				lab var Qa1star "Update of the initial prediction for A = 1"
-				lab var Q0star "Update of the initial prediction for A = 0"
 				lab var Qa0star "Update of the initial prediction for A = 0"
 				lab var A "Exposure/Treatment"
 				lab var Y "Outcome"
@@ -3164,18 +3022,6 @@ preserve
 		`"pause"'
 		qui: file close bat
 		
-		// 		`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
-		// 				`"echo Found %%r"' _newline ///
-		// 				`"echo ! "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-		// 				`"echo All set!"' _newline ///
-		// 				`"goto:DONE"' _newline ///
-		// 		`")"' _newline ///
-		
-		// 		//Run batch
-		// 		! setup.bat
-		// 		//Run R
-		// 		do runr.do
-		
 		* Check you have 'rscript' command installed.
 		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
 		
@@ -3195,102 +3041,13 @@ preserve
 		
 	}
 	
-	
 	* Combine the predictions into one data set
 		* Append the data sets
 		qui: use "folddata1.dta", clear
 		forval fold = 2/$folds {
 			qui: append using "folddata`fold'"
 		}
-		qui save "data2.dta", replace
-
-/*
-	* SuperLearner for the propensity score
-		* Export to csv file
-		qui export delimited using "cvdata.csv", nolabel replace
-		
-		quietly: rm data2.dta
-		
-	// Write R Code dependencies: foreign Superlearner
-	set more off
-	qui: file close _all
-	qui: file open rcode using SLS.R, write replace
-	qui: file write rcode ///
-			`"set.seed(123)"' _newline ///
-			`"list.of.packages <- c("foreign","SuperLearner")"' _newline ///
-			`"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
-			`"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
-			`"library(SuperLearner)"' _newline ///
-			`"library(foreign)"' _newline ///
-			`"data <- read.csv("cvdata.csv", sep=",")"' _newline ///
-			`"attach(data)"' _newline ///
-			`"SL.library <- c("SL.glm","SL.step","SL.glm.interaction")"' _newline ///
-			`"n <- nrow(data)"' _newline ///
-			`"dt <- data"' _newline ///
-			`"dt\$foldid <- NULL"' _newline ///
-			`"dt\$QAW <- NULL"' _newline ///
-			`"dt\$Q1W <- NULL"' _newline ///
-			`"dt\$Q0W <- NULL"' _newline ///
-			`"dt\$rowid <- NULL"' _newline ///
-			`"nvar <- dim(dt)[[2]]"' _newline ///
-			`"Y <- data[,1]"' _newline ///
-			`"A <- data[,2]"' _newline ///
-			`"X <- data[,2:nvar]"' _newline ///
-			`"W <- as.data.frame(data[,3:nvar])"' _newline ///
-			`"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"))"' _newline ///
-			`"ps <- g[[4]]"' _newline ///
-			`"ps[ps<0.025] <- 0.025"' _newline ///
-			`"ps[ps>0.975] <- 0.975"' _newline ///
-			`"data <- cbind(data,ps,Y,A)"' _newline ///
-			`"write.dta(data, "data2.dta")"'
-	qui: file close rcode
-
-
-	
-	* Specify the operating system
-	if "`c(os)'" == "MacOSX" {
-	qui shell "/usr/local/bin/r" CMD BATCH SLS.R
-	}
-	else{
-	// Write batch file to find R.exe path and R version
-		set more off
-		qui: file close _all
-		qui: file open bat using setup.bat, write replace
-		qui: file write bat ///
-		`"@echo off"' _newline ///
-		`"SET PATHROOT=C:\Program Files\R\"' _newline ///
-		`"echo Locating path of R..."' _newline ///
-		`"echo."' _newline ///
-		`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
-		`":NO_R"' _newline ///
-		`"echo R is not installed in your system."' _newline ///
-		`"echo."' _newline ///
-		`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
-		`"echo Install it and re-run this script"' _newline ///
-		`":DONE"' _newline ///
-		`"echo."' _newline ///
-		`"pause"'
-		qui: file close bat
-		
-		// 		`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
-		// 				`"echo Found %%r"' _newline ///
-		// 				`"echo ! "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-		// 				`"echo All set!"' _newline ///
-		// 				`"goto:DONE"' _newline ///
-		// 		`")"' _newline ///
-		
-		// 		//Run batch
-		// 		! setup.bat
-		// 		//Run R
-		// 		do runr.do
-		
-		* Check you have 'rscript' command installed.
-		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
-		
-		* Run SLS.R in Windows - 'rscript' command will search for common folders to find R.exe
-		qui: rscript using SLS.R
-	}
-*/		
+		qui save "data2.dta", replace	
 		
 // Read Revised Data Back to Stata
 	qui clear
@@ -3322,17 +3079,6 @@ preserve
 	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust 
 	mat a= e(b)
 	gen `eps' = a[1,1]
-
-	/*
-	qui glm Y `H1W' `H0W', fam(binomial) offset(`logQAW') robust noconstant
-	mat a= e(b)
-	gen `eps1' = a[1,1]
-	gen `eps2' = a[1,2]
-
-	qui glm Y `HAW', fam(binomial) offset(`logQAW') robust noconstant
-	mat a= e(b)
-	gen `eps' = a[1,1]
-	*/
 	
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
 	gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
@@ -3365,7 +3111,6 @@ preserve
 	local RRtmle = `Q1'/`Q0'
 	local logRRtmle = log(`Q1') - log(`Q0')
 	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
-
 
 // Statistical inference (Efficient Influence Curve)
 	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
@@ -3619,8 +3364,6 @@ restore
 
 * Note the completion of the program
 	//di "Success"
-
-
 
 	// Merge in the elements
 		if $keepvars == 0 {
