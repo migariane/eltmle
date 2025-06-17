@@ -662,17 +662,6 @@ qui: file close rcode
 	mat a= e(b)
 	gen `eps' = a[1,1]
 
-	/*
-	qui glm Y `H1W' `H0W', fam(binomial) offset(`logQAW') robust noconstant
-	mat a= e(b)
-	gen `eps1' = a[1,1]
-	gen `eps2' = a[1,2]
-
-	qui glm Y `HAW', fam(binomial) offset(`logQAW') robust noconstant
-	mat a= e(b)
-	gen `eps' = a[1,1]
-	*/
-
 // Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
 	gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
 	gen double Qa1star = exp(`H1W'*`eps' + `logQ1W')/(1 + exp(`H1W'*`eps' + `logQ1W'))
