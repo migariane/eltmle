@@ -610,18 +610,6 @@ qui: file close rcode
 		`"pause"'
 		qui: file close bat
 		
-		// 		`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
-		// 				`"echo Found %%r"' _newline ///
-		// 				`"echo ! "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-		// 				`"echo All set!"' _newline ///
-		// 				`"goto:DONE"' _newline ///
-		// 		`")"' _newline ///
-		
-		// 		//Run batch
-		// 		! setup.bat
-		// 		//Run R
-		// 		do runr.do
-		
 		* Check you have 'rscript' command installed.
 		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
 		
