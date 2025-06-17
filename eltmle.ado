@@ -712,21 +712,13 @@ qui: file close rcode
 	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
 	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
-// Statistical inference OR
-	// 	gen `ICor' = ((1 - `Q0') / `Q0' / (1 - `Q1')^2) * d1 - (`Q1' / (1 - `Q1') / `Q0'^2) * d0
-	// 	qui sum `ICor'
-	// 	local varICor = r(Var)/r(N)
-	// 	local LCIOr =  `ORtmle' - 1.96 * sqrt(`varICor')
-	// 	local UCIOr =  `ORtmle' + 1.96 * sqrt(`varICor')
-	
-	// Statistical inference OR (We do not use the log of the OR)
+// Statistical inference OR (We do not use the log of the OR)
 	*local ORtmle = (`Q1'  / (1 - `Q1')) / (`Q0' / ((1 - `Q0')))
 	gen `ICor' = (1/ (`Q1' *(1 - `Q1')) * d1) - (1/ (`Q0' *(1 - `Q0')) * d0) // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
 	qui sum `ICor'
 	local varICor = r(Var)/r(N)
 	local LCIOr = exp(log(`ORtmle') - 1.96 * sqrt(`varICor'))
 	local UCIOr = exp(log(`ORtmle') + 1.96 * sqrt(`varICor'))
-	
 	
 	// Display Results of ATE
 		return scalar CRR = `RRtmle'
@@ -762,8 +754,6 @@ qui: file close rcode
 		disp as text "Marginal Odds Ratio:    " "{c |}      "  %4.2f as result `ORtmle' as text "     (" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
 		disp as text "{hline 51}"
 
-
-		
 // Display covariate balance table
 		* Create macros from the varlist
 			tokenize $variablelist
@@ -785,7 +775,6 @@ qui: file close rcode
 			di as text "                          Raw    Weighted           Raw    Weighted"
 			di as text "{hline 67}"
 
-			
 		* Calculate the covariate balance
 			foreach var in `varlist' {
 					di as text "`var'"
@@ -851,9 +840,7 @@ qui: file close rcode
 				lab var QAW "Initial prediction of the outcome"
 				lab var Q1W "Initial prediction of the outcome for A = 1"
 				lab var Q0W "Initial prediction of the outcome for A = 0"
-				lab var Q1star "Update of the initial prediction for A = 1"
 				lab var Qa1star "Update of the initial prediction for A = 1"
-				lab var Q0star "Update of the initial prediction for A = 0"
 				lab var Qa0star "Update of the initial prediction for A = 0"
 				lab var A "Exposure/Treatment"
 				lab var Y "Outcome"
@@ -871,7 +858,6 @@ qui: file close rcode
 					rename `var' _`var'
 				}
 		}
-
 
 	// Clean up
 	quietly: rm SLS.R
@@ -948,18 +934,6 @@ qui: file close rcode
 		`"pause"'
 		qui: file close bat
 		
-		// 		`"for /f "delims=" %%r in (' dir /b "%PATHROOT%R*" ') do ("' _newline ///
-		// 				`"echo Found %%r"' _newline ///
-		// 				`"echo ! "%PATHROOT%%%r\bin\x64\R.exe" CMD BATCH SLS.R > runr.do"' _newline ///
-		// 				`"echo All set!"' _newline ///
-		// 				`"goto:DONE"' _newline ///
-		// 		`")"' _newline ///
-		
-		// 		//Run batch
-		// 		! setup.bat
-		// 		//Run R
-		// 		do runr.do
-		
 		* Check you have 'rscript' command installed.
 		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
 		
@@ -967,7 +941,6 @@ qui: file close rcode
 		qui: rscript using SLS.R
 	}
 
-	
 // Read Revised Data Back to Stata
 qui clear
 quietly: use "data2.dta", clear
@@ -1217,7 +1190,6 @@ qui: file close rcode
 		qui: rscript using SLS.R
 	}
 
-	
 // Read Revised Data Back to Stata
 clear
 quietly: use "data2.dta", clear
@@ -1992,7 +1964,6 @@ local Q0 = r(mean)
 		capture drop ytempvar
 	}
 
-
 // Rename and label the variables if the elements option *is* specified
 	if $keepvars == 1 {
 		* Label the variables
@@ -2151,19 +2122,16 @@ preserve
 	qui cap drop X__000000
 	tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 
-	
 // Q to logit scale
 	gen `logQAW' = log(QAW / (1 - QAW))
 	gen `logQ1W' = log(Q1W / (1 - Q1W))
 	gen `logQ0W' = log(Q0W / (1 - Q0W))
-
 
 // Clever covariate HAW
 	gen  `HAW' = (A / ps) + ((1 - A) / (1 - ps))
 	gen  `H1W' = A / ps
 	gen  `H0W' = (1 - A) / (1 - ps)
 
-	
 // Estimation of the substitution parameter (Epsilon)
 
 	qui glm Y `H1W' `H0W' [pweight = `HAW'], fam(binomial) offset(`logQAW') robust noconstant
@@ -2206,7 +2174,6 @@ preserve
 	local RRtmle = `Q1'/`Q0'
 	local logRRtmle = log(`Q1') - log(`Q0')
 	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
-
 
 // Statistical inference (Efficient Influence Curve)
 	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
@@ -2271,7 +2238,6 @@ preserve
 	disp as text "Marginal Odds Ratio:    " "{c |}      "  %04.2f as result `ORtmle' as text "     (" %03.2f as result `LCIOr' as text "," %03.2f as result `UCIOr' as text ")"
 	disp as text "{hline 51}"
 
-	
 // Display covariate balance table
 
 	if $covbalancetable == 0 {
@@ -2291,7 +2257,6 @@ preserve
 				qui replace _ipw = (`exposure'==1) / ps if `exposure'==1
 				qui replace _ipw = (`exposure'==0) / (1- ps) if `exposure'==0
 	}
-
 
 	if $covbalancetable == 1 {
 
@@ -2316,7 +2281,6 @@ preserve
 			di as text "                          Raw    Weighted           Raw    Weighted"
 			di as text "{hline 67}"
 
-			
 		* Calculate the covariate balance
 			foreach var in `varlist' {
 					di as text "`var'"
@@ -2363,7 +2327,6 @@ preserve
 			di as text "{hline 67}"
 
 	}
-	
 	
 // Create density plot to check positivity assumption
 	if $covbalancetable == 1 {
@@ -2594,19 +2557,16 @@ preserve
 	qui cap drop X__000000
 	tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 
-	
 // Q to logit scale
 	gen `logQAW' = log(QAW / (1 - QAW))
 	gen `logQ1W' = log(Q1W / (1 - Q1W))
 	gen `logQ0W' = log(Q0W / (1 - Q0W))
-
 
 // Clever covariate HAW
 	gen  `HAW' = (A / ps) + ((1 - A) / (1 - ps))
 	gen  `H1W' = A / ps
 	gen  `H0W' = (1 - A) / (1 - ps)
 
-	
 // Estimation of the substitution parameter (Epsilon)
 
 	qui glm Y `H1W' `H0W' [pweight = `HAW'], fam(binomial) offset(`logQAW') robust noconstant
@@ -2649,7 +2609,6 @@ preserve
 	local RRtmle = `Q1'/`Q0'
 	local logRRtmle = log(`Q1') - log(`Q0')
 	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
-
 
 // Statistical inference (Efficient Influence Curve)
 	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
@@ -2734,7 +2693,6 @@ preserve
 				qui replace _ipw = (`exposure'==1) / ps if `exposure'==1
 				qui replace _ipw = (`exposure'==0) / (1- ps) if `exposure'==0
 	}
-
 
 	if $covbalancetable == 1 {
 
@@ -3033,18 +2991,15 @@ preserve
 	qui cap drop X__000000
 	tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 
-	
 // Q to logit scale
 	gen `logQAW' = log(QAW / (1 - QAW))
 	gen `logQ1W' = log(Q1W / (1 - Q1W))
 	gen `logQ0W' = log(Q0W / (1 - Q0W))
 
-
 // Clever covariate HAW
 	gen  `HAW' = (A / ps) + ((1 - A) / (1 - ps))
 	gen  `H1W' = A / ps
 	gen  `H0W' = (1 - A) / (1 - ps)
-
 	
 // Estimation of the substitution parameter (Epsilon)
 
@@ -3173,7 +3128,6 @@ preserve
 				qui replace _ipw = (`exposure'==0) / (1- ps) if `exposure'==0
 	}
 
-
 	if $covbalancetable == 1 {
 
 		* Create macros from the varlist
@@ -3196,7 +3150,6 @@ preserve
 			di as text "                 Standardised Differences            Variance ratio"
 			di as text "                          Raw    Weighted           Raw    Weighted"
 			di as text "{hline 67}"
-
 			
 		* Calculate the covariate balance
 			foreach var in `varlist' {
@@ -3245,7 +3198,6 @@ preserve
 
 	}
 	
-	
 // Create density plot to check positivity assumption
 	if $covbalancetable == 1 {
 	*preserve
@@ -3264,7 +3216,6 @@ preserve
 				region(style(none)))
 	*restore
 	}
-
 
 // Drop the variables if the elements option is not specified
 		if $keepvars == 0 {
@@ -3319,7 +3270,6 @@ preserve
 				keep rowid _d1 _d0 _QAW _Q1W _Q0W _Q1star _Qa1star _Q0star _Qa0star _ATE _IC _Y _A _POM1 _POM0 _ps _ipw 
 				qui save "elementsdata.dta", replace
 		}
-
 
 restore
 
