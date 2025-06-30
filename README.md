@@ -42,7 +42,7 @@ Camille Maringe, LSHTM, NCDE, ICON Group, London, UK
 Email: camille.maringe@lshtm.ac.uk
 
 [Developer]
-Matthew J. Smith, LSHTM, NCDE, ICON Group, London, UK    
+Matthew J. Smith, LSHTM, MSD, London, UK    
 Email: matt.smith@lshtm.ac.uk
 
 # Contributors  
