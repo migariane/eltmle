@@ -106,6 +106,9 @@ THE SOFTWARE.
 * June 2025
 * Updated cross-validated procedure for the TMLE estimation
 
+* April 2026 
+* Updated density plot to check positivity assumption
+
 capture program drop eltmle
 program define eltmle
 	syntax varlist(min=3) [if] [pw] [, tmle tmlebgam tmleglsrf bal elements cvtmle cvtmlebgam cvtmleglsrf cvfolds(int 10) seed(numlist)]
@@ -632,12 +635,13 @@ qui: file close rcode
 	qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
 	label variable d1A "A = 1"
 	label variable d0A "A = 0"
+	set scheme stsj
 	twoway (line d0A x0pointsa) || ///
 			(line d1A x1pointsa), ///
 			xtitle("Propensity score") ///
 			ytitle("Density") ///
 			graphregion(color(white)) bgcolor(white) plotregion(fcolor(white)) ///
-			legend(order(2 "Treated" 1 "Not treated") position(11) cols(1) ring(0) ///
+			legend(order(2 "Treated" 1 "Not treated") position(1) cols(1) ring(0) ///
 				region(style(none)))
 	restore
 
@@ -1193,12 +1197,13 @@ qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
 qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
 label variable d1A "A = 1"
 label variable d0A "A = 0"
+set scheme stsj
 twoway (line d0A x0pointsa) || ///
 		(line d1A x1pointsa), ///
 		xtitle("Propensity score") ///
 		ytitle("Density") ///
 		graphregion(color(white)) bgcolor(white) plotregion(fcolor(white)) ///
-		legend(order(2 "Treated" 1 "Not treated") position(11) cols(1) ring(0) ///
+		legend(order(2 "Treated" 1 "Not treated") position(1) cols(1) ring(0) ///
 				region(style(none)))
 restore
 
@@ -1753,12 +1758,13 @@ qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
 qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
 label variable d1A "A = 1"
 label variable d0A "A = 0"
+set scheme stsj
 twoway (line d0A x0pointsa) || ///
 		(line d1A x1pointsa), ///
 		xtitle("Propensity score") ///
 		ytitle("Density") ///
 		graphregion(color(white)) bgcolor(white) plotregion(fcolor(white)) ///
-		legend(order(2 "Treated" 1 "Not treated") position(11) cols(1) ring(0) ///
+		legend(order(2 "Treated" 1 "Not treated") position(1) cols(1) ring(0) ///
 				region(style(none)))
 restore
 
@@ -2326,12 +2332,13 @@ preserve
 	qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
 	label variable d1A "A = 1"
 	label variable d0A "A = 0"
+	set scheme stsj
 	twoway (line d0A x0pointsa) || ///
 			(line d1A x1pointsa), ///
 			xtitle("Propensity score") ///
 			ytitle("Density") ///
 			graphregion(color(white)) bgcolor(white) plotregion(fcolor(white)) ///
-			legend(order(2 "Treated" 1 "Not treated") position(11) cols(1) ring(0) ///
+			legend(order(2 "Treated" 1 "Not treated") position(1) cols(1) ring(0) ///
 				region(style(none)))
 	*restore
 	}
@@ -2759,12 +2766,13 @@ preserve
 	qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
 	label variable d1A "A = 1"
 	label variable d0A "A = 0"
+	set scheme stsj
 	twoway (line d0A x0pointsa) || ///
 			(line d1A x1pointsa), ///
 			xtitle("Propensity score") ///
 			ytitle("Density") ///
 			graphregion(color(white)) bgcolor(white) plotregion(fcolor(white)) ///
-			legend(order(2 "Treated" 1 "Not treated") position(11) cols(1) ring(0) ///
+			legend(order(2 "Treated" 1 "Not treated") position(1) cols(1) ring(0) ///
 				region(style(none)))
 	}
 
@@ -3196,12 +3204,13 @@ preserve
 	qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
 	label variable d1A "A = 1"
 	label variable d0A "A = 0"
+	set scheme stsj
 	twoway (line d0A x0pointsa) || ///
 			(line d1A x1pointsa), ///
 			xtitle("Propensity score") ///
 			ytitle("Density") ///
 			graphregion(color(white)) bgcolor(white) plotregion(fcolor(white)) ///
-			legend(order(2 "Treated" 1 "Not treated") position(11) cols(1) ring(0) ///
+			legend(order(2 "Treated" 1 "Not treated") position(1) cols(1) ring(0) ///
 				region(style(none)))
 	*restore
 	}
