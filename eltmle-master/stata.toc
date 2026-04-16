@@ -1,4 +1,4 @@
-v 2.2.6
+v 2.2.9
 d 'ELTMLE' : Ensemble Learning Targeted Maximum Likelihood Estimation  {break}
 d version (release) 
 d {browse "http://www.github.com/migariane/eltmle":GitHub} website
