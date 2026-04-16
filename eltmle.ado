@@ -635,7 +635,7 @@ qui: file close rcode
 	qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
 	label variable d1A "A = 1"
 	label variable d0A "A = 0"
-	set scheme stsj
+	set scheme sj
 	twoway (line d0A x0pointsa) || ///
 			(line d1A x1pointsa), ///
 			xtitle("Propensity score") ///
@@ -1197,7 +1197,7 @@ qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
 qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
 label variable d1A "A = 1"
 label variable d0A "A = 0"
-set scheme stsj
+set scheme sj
 twoway (line d0A x0pointsa) || ///
 		(line d1A x1pointsa), ///
 		xtitle("Propensity score") ///
@@ -1758,7 +1758,7 @@ qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
 qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
 label variable d1A "A = 1"
 label variable d0A "A = 0"
-set scheme stsj
+set scheme sj
 twoway (line d0A x0pointsa) || ///
 		(line d1A x1pointsa), ///
 		xtitle("Propensity score") ///
@@ -2332,7 +2332,7 @@ preserve
 	qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
 	label variable d1A "A = 1"
 	label variable d0A "A = 0"
-	set scheme stsj
+	set scheme sj
 	twoway (line d0A x0pointsa) || ///
 			(line d1A x1pointsa), ///
 			xtitle("Propensity score") ///
@@ -2766,7 +2766,7 @@ preserve
 	qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
 	label variable d1A "A = 1"
 	label variable d0A "A = 0"
-	set scheme stsj
+	set scheme sj
 	twoway (line d0A x0pointsa) || ///
 			(line d1A x1pointsa), ///
 			xtitle("Propensity score") ///
@@ -3204,7 +3204,7 @@ preserve
 	qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
 	label variable d1A "A = 1"
 	label variable d0A "A = 0"
-	set scheme stsj
+	set scheme sj
 	twoway (line d0A x0pointsa) || ///
 			(line d1A x1pointsa), ///
 			xtitle("Propensity score") ///
