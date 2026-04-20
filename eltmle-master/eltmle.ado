@@ -407,7 +407,7 @@ program _eltmle_write_r_noncv
 		qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","gam","arm")"' _newline
 	}
 	else if "`learner'" == "glsrf" {
-		qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","glmnet","randomForest")"' _newline
+		qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","glmnet","ranger")"' _newline
 	}
 	qui: file write rcode `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline
 	qui: file write rcode `"userlib <- Sys.getenv('R_LIBS_USER')"' _newline
@@ -423,7 +423,7 @@ program _eltmle_write_r_noncv
 	}
 	else if "`learner'" == "glsrf" {
 		qui: file write rcode `"library(glmnet)"' _newline
-		qui: file write rcode `"library(randomForest)"' _newline
+		qui: file write rcode `"library(ranger)"' _newline
 	}
 	qui: file write rcode `"data <- read.csv("data.csv", sep=",")"' _newline
 	qui: file write rcode `"fulldata <- read.csv("fulldata.csv", sep=",")"' _newline
@@ -502,7 +502,7 @@ program _eltmle_write_r_cv
 	}
 	else if "`learner'" == "glsrf" {
 		qui: file write rcode `"library(glmnet)"' _newline
-		qui: file write rcode `"library(randomForest)"' _newline
+		qui: file write rcode `"library(ranger)"' _newline
 	}
 	qui: file write rcode `"data <- read.csv("cvdata.csv", sep=",")"' _newline
 	qui: file write rcode `"attach(data)"' _newline
