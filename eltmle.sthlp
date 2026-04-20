@@ -74,7 +74,7 @@ This option might be suitable for non-linear treatment effects.
 
 {p 4 4 2 120}
 {hi:tmleglsrf}: this option may be specified or unspecified. When specified, it includes, in addition to the three main learning algorithms
-described above, the Lasso (glmnet R package), Random Forest (randomForest R package) and the Generalized Additive Models as Super-Learner algorithms for the tmle estimator.
+described above, the Lasso (glmnet R package), Random Forest (ranger R package) and the Generalized Additive Models as Super-Learner algorithms for the tmle estimator.
 This option might be suitable for heterogeneous treatment effects.
 {p_end}
 
@@ -101,7 +101,7 @@ the default for the seed is 1. The same algorithms are used for both the outcome
 {p 4 4 2 120}
 {hi:cvtmleglsrf}: this option may be specified or unspecified. When specified, it implements the cross-validated TMLE
 algorithm, where the outcome and exposure models are cross-validated, and additionally implements the Lasso (glmnet R pack-
-age), Random Forest (randomForest R package), and the Generalized Additive Models as Super-Learner algorithms in
+age), Random Forest (ranger R package), and the Generalized Additive Models as Super-Learner algorithms in
 the Super-Learner. One can also specify the number of folds using the "cvfolds()" option, the default number of folds
 is 10. One can also specify the seed using the "seed()" option for reproducibility, the default for the seed is 1. The
 same algorithms are used for both the outcome and exposure models.
