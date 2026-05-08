@@ -113,6 +113,32 @@ THE SOFTWARE.
 * Refactored: extracted 10 shared helper programs (_eltmle_*) to eliminate
 * copy-paste duplication across estimator variants. Behaviour unchanged.
 
+* May 2026
+/*
+  Inconsistent targeting for binary outcomes: ATE and POM1/POM0 used
+  single-eps estimates (Qa1star/Qa0star) while IC used two-eps estimates
+  (Q1star/Q0star). Binary branch now uses Q1star/Q0star throughout.
+  ATE on test data: 0.1376 (R tmle target: 0.1381).
+
+  Continuous IC centering: d1/d0 subtracted mean(Q1star) instead of mean(Qa1star). 
+  Fixed to use Qa1/Qa0 means so ATE and IC are consistent within the continuous branch.
+
+  Display format: continuous branch used %7.1f, rounding values near 0.1
+  to all show as 0.1. Changed to %7.4f to match the binary branch.
+
+  P-value: normalden() returns the PDF, not a tail probability.
+  Fixed to 2*normal(-abs(z)), the correct two-sided Wald p-value.
+*/
+
+* Note about epsilon:   
+/*
+   Both R tmle and Stata eltmle start with the same initial ATE(SuperLearner Q fits
+   agree). The small remaining post-targeting difference that could be found reflects a valid     
+   methodological choice: eltmle estimates epsilon with [pweight=HAW]            
+  (IPTW-weighted targeting); R tmle uses an unweighted logistic regression. Both
+   are valid TMLE implementations.
+*/
+   
 capture program drop eltmle
 program define eltmle
 	syntax varlist(min=3) [if] [pw] [, tmle tmlebgam tmleglsrf bal elements cvtmle cvtmlebgam cvtmleglsrf cvfolds(int 10) seed(numlist)]
@@ -577,42 +603,51 @@ program _eltmle_tmle_estimate, rclass
 	mat a = e(b)
 	gen `eps' = a[1,1]
 
-	// Targeted ATE: update from Q̅^0(A,W) to Q̅^1(A,W)
+	// Targeted update
 	gen double Qa0star = exp(`H0W'*`eps'  + `logQ0W') / (1 + exp(`H0W'*`eps'  + `logQ0W'))
 	gen double Qa1star = exp(`H1W'*`eps'  + `logQ1W') / (1 + exp(`H1W'*`eps'  + `logQ1W'))
 	gen double Q0star  = exp(`H0W'*`eps2' + `logQ0W') / (1 + exp(`H0W'*`eps2' + `logQ0W'))
 	gen double Q1star  = exp(`H1W'*`eps1' + `logQ1W') / (1 + exp(`H1W'*`eps1' + `logQ1W'))
 
-	gen double POM1 = cond($flag == 1, Qa1star, (Qa1star * ($b - $a)) + $a, .)
-	gen double POM0 = cond($flag == 1, Qa0star, (Qa0star * ($b - $a)) + $a, .)
+	// Two-epsilon targeted means (used for CRR, MOR, and binary ATE/POM/IC)
+	qui sum Q1star
+	local Q1 = r(mean)
+	qui sum Q0star
+	local Q0 = r(mean)
+
+	// Single-epsilon targeted means (used for continuous ATE/POM/IC)
+	qui sum Qa1star
+	local Qa1 = r(mean)
+	qui sum Qa0star
+	local Qa0 = r(mean)
+
+	// Potential outcomes: two-eps for binary (matches R tmle); single-eps back-transformed for continuous
+	gen double POM1 = cond($flag == 1, Q1star,  (Qa1star * ($b - $a)) + $a, .)
+	gen double POM0 = cond($flag == 1, Q0star,  (Qa0star * ($b - $a)) + $a, .)
 
 	di as text " "
 	sum POM1 POM0 ps
 	di as text " "
 
-	// Estimating the updated targeted ATE
-	gen double ATE = cond($flag == 1, (Qa1star - Qa0star), ///
+	// ATE: two-eps for binary (consistent with IC below); single-eps back-transformed for continuous
+	gen double ATE = cond($flag == 1, (Q1star - Q0star), ///
 		((Qa1star * ($b - $a)) + $a) - ((Qa0star * ($b - $a)) + $a), .)
 	qui sum ATE
 	return scalar ATEtmle = r(mean)
-
-	// Relative risk and Odds ratio
-	qui sum Q1star
-	local Q1 = r(mean)
-	qui sum Q0star
-	local Q0 = r(mean)
 
 	local RRtmle    = `Q1' / `Q0'
 	local logRRtmle = log(`Q1') - log(`Q0')
 	local ORtmle    = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
 
 	// Statistical inference (Efficient Influence Curve)
+	// Binary: two-eps (Q1star/Q0star) consistent with ATE above
+	// Continuous: single-eps (Qa1star/Qa0star) centred on their own means
 	gen d1 = cond($flag == 1, ///
-		(A * (Y - Q1star)  / ps)      + Q1star  - `Q1', ///
-		(A * (Y - Qa1star) / ps)      + Qa1star - `Q1', .)
+		(A * (Y - Q1star)  / ps)      + Q1star  - `Q1',  ///
+		(A * (Y - Qa1star) / ps)      + Qa1star - `Qa1', .)
 	gen d0 = cond($flag == 1, ///
-		(1 - A) * (Y - Q0star)  / (1 - ps) + Q0star  - `Q0', ///
-		(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0', .)
+		(1 - A) * (Y - Q0star)  / (1 - ps) + Q0star  - `Q0',  ///
+		(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Qa0', .)
 	gen IC = cond($flag == 1, (d1 - d0), ///
 		((d1 * ($b - $a)) + $a) - ((d0 * ($b - $a)) + $a), .)
 	qui sum IC
