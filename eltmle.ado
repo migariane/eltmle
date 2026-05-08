@@ -619,7 +619,7 @@ program _eltmle_tmle_estimate, rclass
 	return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
 
 	// Statistical inference ATE
-	return scalar ATE_pvalue = 2 * (normalden(abs(return(ATEtmle) / return(ATE_SE_tmle))))
+	return scalar ATE_pvalue = 2 * normal(-abs(return(ATEtmle) / return(ATE_SE_tmle)))
 	return scalar ATE_LCIa   = return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
 	return scalar ATE_UCIa   = return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
 
@@ -661,11 +661,11 @@ program _eltmle_tmle_estimate, rclass
 		disp as text "{hline 63}"
 		di "         {c |}" "    ATE         SE     P-value           95% CI"
 		disp as text "{hline 63}"
-		disp as text "TMLE:    {c |}" %7.1f as result return(ATEtmle) "    " ///
-			%7.1f as result return(ATE_SE_tmle) "     " ///
+		disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " ///
+			%7.4f as result return(ATE_SE_tmle) "     " ///
 			%7.4f as result return(ATE_pvalue) as text "     (" ///
-			%7.1f as result return(ATE_LCIa) as text "," ///
-			%7.1f as result return(ATE_UCIa) as text " )"
+			%7.4f as result return(ATE_LCIa) as text "," ///
+			%7.4f as result return(ATE_UCIa) as text " )"
 		disp as text "{hline 63}"
 		disp as text " "
 	}
