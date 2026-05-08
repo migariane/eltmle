@@ -1,4 +1,4 @@
-*! version 4.0.0  17.April.2026
+*! version 4.0.1  08.May.2026
 *! ELTMLE: Stata module for Ensemble Learning Targeted Maximum Likelihood Estimation
 *! by Miguel Angel Luque-Fernandez [cre,aut]
 *! and Matthew J. Smith [aut]
@@ -113,18 +113,15 @@ THE SOFTWARE.
 * Refactored: extracted 10 shared helper programs (_eltmle_*) to eliminate
 * copy-paste duplication across estimator variants. Behaviour unchanged.
 
-* May 2026
+* May 2026 (v4.0.1)
 /*
-  Inconsistent targeting for binary outcomes: ATE and POM1/POM0 used
-  single-eps estimates (Qa1star/Qa0star) while IC used two-eps estimates
-  (Q1star/Q0star). Binary branch now uses Q1star/Q0star throughout.
-  ATE on test data: 0.1376 (R tmle target: 0.1381).
-
-  Continuous IC centering: d1/d0 subtracted mean(Q1star) instead of mean(Qa1star). 
-  Fixed to use Qa1/Qa0 means so ATE and IC are consistent within the continuous branch.
-
-  Display format: continuous branch used %7.1f, rounding values near 0.1
-  to all show as 0.1. Changed to %7.4f to match the binary branch.
+  Counterfactual Q1star/Q0star: previously H1W = A/ps and H0W = (1-A)/(1-ps)
+  were used in the targeting update, so Q1star for A=0 obs equalled Q1W
+  (untargeted initial estimate) and Q0star for A=1 obs equalled Q0W.
+  Fixed to use counterfactual clever covariates 1/ps and 1/(1-ps) for ALL
+  observations, so every unit receives a properly targeted counterfactual Q.
+  This aligns POM1, POM0, ATE, and the IC with the canonical TMLE EIF.
+  Applies to both two-epsilon (Q1star/Q0star) and single-epsilon (Qa1star/Qa0star) branches.
 
   Display format (continuous, May 2026): %7.4f caused scientific notation
   for values >= 100 (e.g., bweight ATE = -230g displayed as -2.3e+02).
@@ -609,10 +606,12 @@ program _eltmle_tmle_estimate, rclass
 	gen `eps' = a[1,1]
 
 	// Targeted update
-	gen double Qa0star = exp(`H0W'*`eps'  + `logQ0W') / (1 + exp(`H0W'*`eps'  + `logQ0W'))
-	gen double Qa1star = exp(`H1W'*`eps'  + `logQ1W') / (1 + exp(`H1W'*`eps'  + `logQ1W'))
-	gen double Q0star  = exp(`H0W'*`eps2' + `logQ0W') / (1 + exp(`H0W'*`eps2' + `logQ0W'))
-	gen double Q1star  = exp(`H1W'*`eps1' + `logQ1W') / (1 + exp(`H1W'*`eps1' + `logQ1W'))
+	// Use counterfactual clever covariates (1/ps, 1/(1-ps)) for ALL observations
+	// so A=0 units get properly targeted Q1star (not untargeted Q1W), and vice versa.
+	gen double Qa0star = exp((1/(1-ps))*`eps'  + `logQ0W') / (1 + exp((1/(1-ps))*`eps'  + `logQ0W'))
+	gen double Qa1star = exp((1/ps)    *`eps'  + `logQ1W') / (1 + exp((1/ps)    *`eps'  + `logQ1W'))
+	gen double Q0star  = exp((1/(1-ps))*`eps2' + `logQ0W') / (1 + exp((1/(1-ps))*`eps2' + `logQ0W'))
+	gen double Q1star  = exp((1/ps)    *`eps1' + `logQ1W') / (1 + exp((1/ps)    *`eps1' + `logQ1W'))
 
 	// Two-epsilon targeted means (used for CRR, MOR, and binary ATE/POM/IC)
 	qui sum Q1star
