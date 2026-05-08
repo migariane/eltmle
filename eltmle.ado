@@ -1,4 +1,4 @@
-*! version 4.0.0  17.April.2026
+*! version 3.1.6  18.December.2024
 *! ELTMLE: Stata module for Ensemble Learning Targeted Maximum Likelihood Estimation
 *! by Miguel Angel Luque-Fernandez [cre,aut]
 *! and Matthew J. Smith [aut]
@@ -10,7 +10,7 @@
 
 
 /*
-Copyright (c) 2024  <Miguel Angel Luque-Fernandez> & <Matthew J. Smith> & <Camille Maringe>
+Copyright (c) 2024  <Miguel Angel Luque-Fernandez> & <Matthew J. Smith> & <Camille Maringe> 
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ THE SOFTWARE.
 
 ***************************************************************************
 ** MIGUEL ANGEL LUQUE FERNANDEZ
-** miguel-angel.luque at lshtm.ac.uk
+** miguel-angel.luque at lshtm.ac.uk 
 ** mluquefe at ugr.es
 ** TMLE ALGORITHM IMPLEMENTATION IN STATA FOR BINARY OR CONTINUOUS
 ** OUTCOME AND BINARY TREATMENT FOR MAC and WINDOWS USERS
@@ -70,17 +70,17 @@ THE SOFTWARE.
 * Complete case (Listwise) analysis
 
 * July 2022:
-* Improved display of the results Stata like format
+* Improved display of the results Stata like format 
 
 * January 2023:
 * Improved display of the CRR and MOR results to Stata like format
 
 * February 2023:
 * Added bal option
-* Added elements option
+* Added elements option 
 
 * March 2023:
-* Updated 95% CI for LogOR to match R-TMLE implementation
+* Updated 95%CI for LogOR to match R-TMLE implementation
 
 * March 2024:
 * Removed a bug that gave different results when using the 'bal' option
@@ -100,15 +100,11 @@ THE SOFTWARE.
 * The **seed** option is no longer necessary but remains in the syntax for reproducibility.
 * Added a progress bar for cross-validation.
 
+* February 2025
+* Updated estimation of the substitution parameter (Epsilon) as MLE weight 
+
 * June 2025
 * Updated cross-validated procedure for the TMLE estimation
-
-* April 2026
-* Updated density plot to check positivity assumption
-
-* April 2026
-* Refactored: extracted 10 shared helper programs (_eltmle_*) to eliminate
-* copy-paste duplication across estimator variants. Behaviour unchanged.
 
 capture program drop eltmle
 program define eltmle
@@ -119,16 +115,16 @@ program define eltmle
 		 foreach v of varlist `varlist' {
 			qui drop if missing(`v')
          }
-
+	 
 	 // Confirm that exposure is binary
-		local var  "`varlist'"
+		local var  "`varlist'" 
 		tokenize `var'
 		local xvar = "`2'"
 		quietly tabulate `xvar'
 		if r(r)!=2  di in red "`xvar' is not binary. Please either convert this variable to be binary or use a binary variable."
 		if r(r)!=2 exit(0)
 
-
+		
      // Drop the elements if they have been defined already
 				capture drop _merge
 				capture drop foldid
@@ -163,32 +159,32 @@ program define eltmle
 
 		global folds = `cvfolds'
 		capture drop foldid
-
+		
 		if "`seed'" != "" {
 			set seed `seed'
-			qui xtile foldid = uniform() , nq(`cvfolds')
+			qui xtile foldid = uniform() , nq(`cvfolds') 
 			}
 		else if "`seed'" == "" {
-			qui xtile foldid = uniform() , nq(`cvfolds')
+			qui xtile foldid = uniform() , nq(`cvfolds') 
 			}
 
 		//marksample touse
 		global variablelist `varlist'
 		local var  "`varlist'" // if `touse'
-
+		
 		capture drop rowid
 		gen rowid = _n
-
+		
 		// Identify continuous/binary outcome
 		tokenize `var'
 		local yvar = "`1'"
-		macro shift
+		macro shift 
 		local rest "`*'"
 		//global flag = cond(`yvar'<=1 & `yvar'>=0,1,0)   // 1 if binary, 0 if continuous.
 		qui tabulate `yvar'
 		global flag = cond(r(r)==2,1,0)
-
-		if $flag == 0 {
+				
+		if $flag == 0 {  
 			*di "Continuous outcome"
 			capture drop ytempvar
 			gen ytempvar = `yvar'
@@ -197,15 +193,15 @@ program define eltmle
 			global a = r(min)
 			replace ytempvar = (ytempvar - r(min)) / (r(max) - r(min))  // if `yvar'>1
 			global varusedforcv "ytempvar `rest' foldid rowid"
-		}
+		} 
 		else if $flag == 1 {
 			*di "Binary outcome"
 			qui sum `yvar'
 			global b = r(max)
 			global a = r(min)
 			global varusedforcv "`var' foldid rowid"
-		}
-
+		}		
+		
 		// Directory and data sets
 		local dir `c(pwd)'
 		qui cd "`dir'"
@@ -220,7 +216,7 @@ program define eltmle
 		local var `varlist' if `touse'
 		tokenize `var'
 		local yvar = "`1'"
-		global flag = cond(`yvar'<=1,1,0)
+		global flag = cond(`yvar'<=1,1,0) 
 		*di "Flag = $flag"
 		qui sum `yvar'
 		global b = `r(max)'
@@ -242,7 +238,7 @@ program define eltmle
 			global keepvars = 0
 		}
 
-	// Create global macro to show the covariate balance table
+	// Create global macro to show the covariate balance table 
 		if "`bal'" != "" {
 			global covbalancetable = 1
 		}
@@ -256,7 +252,7 @@ program define eltmle
 		}
 		else if "`cvres'" == "" {
 			global cvresultstable = 0
-		}
+		}	
 
 		if "`cvtmle'" == "cvtmle" & "`cvfolds'" == "" {
 			cvtmle `varlist'
@@ -308,387 +304,327 @@ program define eltmle
 			}
 end
 
+program tmle, rclass
+*di "Running TMLE"
+// Write R Code dependencies: foreign Surperlearner
+set more off
+qui: file close _all
+qui: file open rcode using SLS.R, write replace
+qui: file write rcode ///
+        `"set.seed(123)"' _newline ///
+        `"list.of.packages <- c("foreign","SuperLearner")"' _newline ///
+        `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
+        `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
+        `"library(SuperLearner)"' _newline ///
+        `"library(foreign)"' _newline ///
+        `"data <- read.csv("data.csv", sep=",")"' _newline ///
+        `"fulldata <- read.csv("fulldata.csv", sep=",")"' _newline ///
+        `"attach(data)"' _newline ///
+        `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction")"' _newline ///
+        `"n <- nrow(data)"' _newline ///
+        `"nvar <- dim(data)[[2]]"' _newline ///
+        `"Y <- data[,1]"' _newline ///
+        `"A <- data[,2]"' _newline ///
+        `"X <- data[,2:nvar]"' _newline ///
+        `"W <- as.data.frame(data[,3:nvar])"' _newline ///
+        `"X1 <- X0 <- X"' _newline ///
+        `"X1[,1] <- 1"' _newline ///
+        `"X0[,1] <- 0"' _newline ///
+        `"newdata <- rbind(X,X1,X0)"' _newline ///
+        `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
+        `"Q <- as.data.frame(Q[[4]])"' _newline ///
+        `"QAW <- Q[1:n,]"' _newline ///
+        `"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
+        `"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
+        `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"))"' _newline ///
+        `"ps <- g[[4]]"' _newline ///
+        `"ps[ps<0.025] <- 0.025"' _newline ///
+		`"ps[ps>0.975] <- 0.975"' _newline ///
+		`"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+		`"write.dta(data, "data2.dta")"'
+qui: file close rcode
 
-// ====================================================
-// INTERNAL HELPER PROGRAMS
-// Not intended to be called directly by users.
-// ====================================================
 
-// ---------------------------------------------------------------------------
-// _eltmle_run_r: OS-specific R execution
-// Assumes SLS.R has already been written to disk.
-// ---------------------------------------------------------------------------
-program _eltmle_run_r
 	if "`c(os)'" == "MacOSX" {
-		local wdir = c(pwd)
-		// Try common R locations on macOS
-		local r_found = 0
-		foreach rpath in "/usr/local/bin/Rscript" "/opt/homebrew/bin/Rscript" "/usr/bin/Rscript" "/Library/Frameworks/R.framework/Resources/bin/Rscript" {
-			quietly: capture confirm file "`rpath'"
-			if _rc == 0 & `r_found' == 0 {
-				local r_found = 1
-				local rscript_path "`rpath'"
-			}
-		}
-		if `r_found' == 0 {
-			di as error "Cannot find Rscript on this system."
-			di as error "Tried: /usr/local/bin/Rscript, /opt/homebrew/bin/Rscript, /usr/bin/Rscript"
-			di as error "/Library/Frameworks/R.framework/Resources/bin/Rscript"
-			di as error "Please install R from https://cran.r-project.org/"
-			exit 601
-		}
-		qui shell "`rscript_path'" SLS.R > SLS.Rout 2>&1
-		quietly: capture confirm file "data2.dta"
-		if _rc != 0 {
-			di as error "R script failed to produce data2.dta."
-			di as error "Working directory: `wdir'"
-			di as error "--- R error log (SLS.Rout) ---"
-			type SLS.Rout
-			di as error "--- end of R log ---"
-			quietly: capture rm SLS.Rout
-			exit 601
-		}
-		quietly: capture rm SLS.Rout
+	qui shell "/usr/local/bin/r" CMD BATCH SLS.R
 	}
-	else {
-		// Write batch file (informational only; rscript handles actual execution)
+	else{
+	// Write batch file to find R.exe path and R version
 		set more off
 		qui: file close _all
 		qui: file open bat using setup.bat, write replace
-		qui: file write bat `"@echo off"' _newline
-		qui: file write bat `"SET PATHROOT=C:\Program Files\R\"' _newline
-		qui: file write bat `"echo Locating path of R..."' _newline
-		qui: file write bat `"echo."' _newline
-		qui: file write bat `"if not exist "%PATHROOT%" goto:NO_R"' _newline
-		qui: file write bat `":NO_R"' _newline
-		qui: file write bat `"echo R is not installed in your system."' _newline
-		qui: file write bat `"echo."' _newline
-		qui: file write bat `"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline
-		qui: file write bat `"echo Install it and re-run this script"' _newline
-		qui: file write bat `":DONE"' _newline
-		qui: file write bat `"echo."' _newline
-		qui: file write bat `"pause"'
+		qui: file write bat ///
+		`"@echo off"' _newline ///
+		`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+		`"echo Locating path of R..."' _newline ///
+		`"echo."' _newline ///
+		`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+		`":NO_R"' _newline ///
+		`"echo R is not installed in your system."' _newline ///
+		`"echo."' _newline ///
+		`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+		`"echo Install it and re-run this script"' _newline ///
+		`":DONE"' _newline ///
+		`"echo."' _newline ///
+		`"pause"'
 		qui: file close bat
-		// Install rscript if needed and run SLS.R
+		
+		* Check you have 'rscript' command installed.
 		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
+		
+		* Run SLS.R in Windows - 'rscript' command will search for common folders to find R.exe
 		qui: rscript using SLS.R
-		quietly: capture rm SLS.Rout
-		quietly: capture confirm file "data2.dta"
-		if _rc != 0 {
-			di as error "R script failed to produce data2.dta."
-			di as error "Check that R and required packages (SuperLearner, foreign, gam, arm) are installed."
-			exit 601
-		}
 	}
-end
 
+// Read Revised Data Back to Stata
+	clear
+	quietly: use "data2.dta", clear
+	qui cap drop X__000000
+	tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 
-// ---------------------------------------------------------------------------
-// _eltmle_write_r_noncv: write SLS.R for non-CV estimators
-// Arg: learner = base | bgam | glsrf
-// ---------------------------------------------------------------------------
-program _eltmle_write_r_noncv
-	args learner
-	set more off
-	qui: file close _all
-	qui: file open rcode using SLS.R, write replace
-	qui: file write rcode `"set.seed(123)"' _newline
-	local wdir = c(pwd)
-	local wdir = subinstr("`wdir'","\","/",.)
-	qui: file write rcode `"setwd("`wdir'")"' _newline
-	// Learner-specific package list
-	if "`learner'" == "base" {
-		qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner")"' _newline
-	}
-	else if "`learner'" == "bgam" {
-		qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","gam","arm")"' _newline
-	}
-	else if "`learner'" == "glsrf" {
-		qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","glmnet","ranger")"' _newline
-	}
-	qui: file write rcode `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline
-	qui: file write rcode `"userlib <- Sys.getenv('R_LIBS_USER')"' _newline
-	qui: file write rcode `"if (!dir.exists(userlib)) dir.create(userlib, recursive = TRUE)"' _newline
-	qui: file write rcode `".libPaths(c(userlib, .libPaths()))"' _newline
-	qui: file write rcode `"if(length(new.packages)) install.packages(new.packages, repos='https://cran.r-project.org', lib=userlib)"' _newline
-	qui: file write rcode `"library(SuperLearner)"' _newline
-	qui: file write rcode `"library(foreign)"' _newline
-	// Learner-specific extra libraries
-	if "`learner'" == "bgam" {
-		qui: file write rcode `"library(gam)"' _newline
-		qui: file write rcode `"library(arm)"' _newline
-	}
-	else if "`learner'" == "glsrf" {
-		qui: file write rcode `"library(glmnet)"' _newline
-		qui: file write rcode `"library(ranger)"' _newline
-	}
-	qui: file write rcode `"data <- read.csv("data.csv", sep=",")"' _newline
-	qui: file write rcode `"fulldata <- read.csv("fulldata.csv", sep=",")"' _newline
-	qui: file write rcode `"attach(data)"' _newline
-	// Learner-specific SL library
-	if "`learner'" == "base" {
-		qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction")"' _newline
-	}
-	else if "`learner'" == "bgam" {
-		qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.bayesglm")"' _newline
-	}
-	else if "`learner'" == "glsrf" {
-		qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.glmnet","SL.ranger")"' _newline
-	}
-	// Common R code
-	qui: file write rcode `"n <- nrow(data)"' _newline
-	qui: file write rcode `"nvar <- dim(data)[[2]]"' _newline
-	qui: file write rcode `"Y <- data[,1]"' _newline
-	qui: file write rcode `"A <- data[,2]"' _newline
-	qui: file write rcode `"X <- data[,2:nvar]"' _newline
-	qui: file write rcode `"W <- as.data.frame(data[,3:nvar])"' _newline
-	qui: file write rcode `"X1 <- X0 <- X"' _newline
-	qui: file write rcode `"X1[,1] <- 1"' _newline
-	qui: file write rcode `"X0[,1] <- 0"' _newline
-	qui: file write rcode `"newdata <- rbind(X,X1,X0)"' _newline
-	qui: file write rcode `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline
-	qui: file write rcode `"Q <- as.data.frame(Q[[4]])"' _newline
-	qui: file write rcode `"QAW <- Q[1:n,]"' _newline
-	qui: file write rcode `"Q1W <- Q[((n+1):(2*n)),]"' _newline
-	qui: file write rcode `"Q0W <- Q[((2*n+1):(3*n)),]"' _newline
-	qui: file write rcode `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"))"' _newline
-	qui: file write rcode `"ps <- g[[4]]"' _newline
-	qui: file write rcode `"ps[ps<0.025] <- 0.025"' _newline
-	qui: file write rcode `"ps[ps>0.975] <- 0.975"' _newline
-	qui: file write rcode `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline
-	qui: file write rcode `"write.dta(data, "data2.dta")"' _newline
-	qui: file close rcode
-end
-
-
-// ---------------------------------------------------------------------------
-// _eltmle_write_r_cv: write SLS.R for CV estimators (called once per fold)
-// Arg: learner = base | bgam | glsrf
-// ---------------------------------------------------------------------------
-program _eltmle_write_r_cv
-	args learner
-	qui: set more off
-	qui: file close _all
-	qui: file open rcode using SLS.R, write replace
-	qui: file write rcode `"set.seed(123)"' _newline
-	local wdir = c(pwd)
-	local wdir = subinstr("`wdir'","\","/",.)
-	qui: file write rcode `"setwd("`wdir'")"' _newline
-	// Learner-specific package list (all CV variants include dplyr)
-	if "`learner'" == "base" {
-		qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","dplyr")"' _newline
-	}
-	else if "`learner'" == "bgam" {
-		qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","dplyr","gam","arm")"' _newline
-	}
-	else if "`learner'" == "glsrf" {
-		qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","dplyr","glmnet","ranger")"' _newline
-	}
-	qui: file write rcode `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline
-	qui: file write rcode `"userlib <- Sys.getenv('R_LIBS_USER')"' _newline
-	qui: file write rcode `"if (!dir.exists(userlib)) dir.create(userlib, recursive = TRUE)"' _newline
-	qui: file write rcode `".libPaths(c(userlib, .libPaths()))"' _newline
-	qui: file write rcode `"if(length(new.packages)) install.packages(new.packages, repos='https://cran.r-project.org', lib=userlib)"' _newline
-	qui: file write rcode `"library(SuperLearner)"' _newline
-	qui: file write rcode `"library(foreign)"' _newline
-	qui: file write rcode `"library(dplyr)"' _newline
-	// Learner-specific extra libraries
-	if "`learner'" == "bgam" {
-		qui: file write rcode `"library(gam)"' _newline
-		qui: file write rcode `"library(arm)"' _newline
-	}
-	else if "`learner'" == "glsrf" {
-		qui: file write rcode `"library(glmnet)"' _newline
-		qui: file write rcode `"library(ranger)"' _newline
-	}
-	qui: file write rcode `"data <- read.csv("cvdata.csv", sep=",")"' _newline
-	qui: file write rcode `"attach(data)"' _newline
-	// Learner-specific SL library
-	if "`learner'" == "base" {
-		qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction")"' _newline
-	}
-	else if "`learner'" == "bgam" {
-		qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.bayesglm")"' _newline
-	}
-	else if "`learner'" == "glsrf" {
-		qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.glmnet","SL.ranger")"' _newline
-	}
-	// Common CV R code (cross-validated fold logic)
-	qui: file write rcode `"nvar <- dim(data)[[2]]"' _newline
-	qui: file write rcode `"f <- foldnumber[1]"' _newline
-	qui: file write rcode `"data <- data %>% dplyr::select(-c("foldnumber"))"' _newline
-	qui: file write rcode `"tdata <- data[foldid!=f,]"' _newline
-	qui: file write rcode `"vdataAa <- data[foldid==f,]"' _newline
-	qui: file write rcode `"vdataA1 <- vdataAa; vdataA1[,2] <- 1"' _newline
-	qui: file write rcode `"vdataA0 <- vdataAa; vdataA0[,2] <- 0"' _newline
-	qui: file write rcode `"Vn <- nrow(vdataAa)"' _newline
-	qui: file write rcode `"Tn <- nrow(tdata)"' _newline
-	qui: file write rcode `"Y <- vdataAa[,1]"' _newline
-	qui: file write rcode `"A <- vdataAa[,2]"' _newline
-	qui: file write rcode `"X <- tdata %>% dplyr::select(-c(1, "foldid", "rowid"))"' _newline
-	qui: file write rcode `"W <- tdata %>% dplyr::select(-c(1, 2, "foldid", "rowid"))"' _newline
-	qui: file write rcode `"tset <- try(SuperLearner(Y = tdata[,1], X = X, SL.library = SL.library, family = "binomial", method = "method.NNLS"), silent=TRUE)"' _newline
-	qui: file write rcode `"QAW <- predict(tset, newdata=vdataAa)[[1]]"' _newline
-	qui: file write rcode `"Q1W <- predict(tset, newdata=vdataA1)[[1]]"' _newline
-	qui: file write rcode `"Q0W <- predict(tset, newdata=vdataA0)[[1]]"' _newline
-	qui: file write rcode `"QAWt <- predict(tset)[[1]]"' _newline
-	qui: file write rcode `"g <- try(SuperLearner(Y = tdata[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"), silent=TRUE)"' _newline
-	qui: file write rcode `"ps <- predict(g, newdata=vdataAa)[[1]]"' _newline
-	qui: file write rcode `"ps[ps<0.025] <- 0.025"' _newline
-	qui: file write rcode `"ps[ps>0.975] <- 0.975"' _newline
-	qui: file write rcode `"data <- cbind(vdataAa,QAW,Q1W,Q0W,ps,Y,A)"' _newline
-	qui: file write rcode `"write.dta(data, "data2.dta")"' _newline
-	qui: file close rcode
-end
-
-
-// ---------------------------------------------------------------------------
-// _eltmle_tmle_estimate: shared TMLE computation and display
-// Assumes data2.dta is already loaded. Uses globals: $flag, $a, $b.
-// Creates permanent dataset vars: d1, d0, ATE, IC, Q1star, Q0star,
-// Qa1star, Qa0star, POM1, POM0.
-// Returns: ATEtmle, ATE_SE_tmle, ATE_pvalue, ATE_LCIa, ATE_UCIa,
-//          CRR, SE_log_CRR, MOR, SE_log_MOR.
-// Caller must call "return add" immediately after to propagate scalars.
-// ---------------------------------------------------------------------------
-program _eltmle_tmle_estimate, rclass
-	tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ICrr ICor
-
-	// Q to logit scale
+// Q to logit scale
 	gen `logQAW' = log(QAW / (1 - QAW))
 	gen `logQ1W' = log(Q1W / (1 - Q1W))
 	gen `logQ0W' = log(Q0W / (1 - Q0W))
 
-	// Clever covariates
-	gen `HAW' = (A / ps) + ((1 - A) / (1 - ps))
-	gen `H1W' = A / ps
-	gen `H0W' = (1 - A) / (1 - ps)
+// Clever covariate HAW
+	gen  `HAW' = (A / ps) + ((1 - A) / (1 - ps))	
+	gen  `H1W' = A / ps
+	gen  `H0W' = (1 - A) / (1 - ps)
 
-	// Estimation of the substitution parameter (Epsilon)
-	qui glm Y `H1W' `H0W', fam(binomial) offset(`logQAW') robust noconstant
+// Estimation of the substitution parameter (Epsilon)
+	
+	qui glm Y `H1W' `H0W' [pweight = `HAW'], fam(binomial) offset(`logQAW') robust noconstant
 	mat a= e(b)
 	gen `eps1' = a[1,1]
 	gen `eps2' = a[1,2]
 
-	qui glm Y `HAW', fam(binomial) offset(`logQAW') robust noconstant
+	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust 
 	mat a= e(b)
 	gen `eps' = a[1,1]
+	
+// Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
+	gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
+	gen double Qa1star = exp(`H1W'*`eps' + `logQ1W')/(1 + exp(`H1W'*`eps' + `logQ1W'))
 
+	gen double Q0star = exp(`H0W'*`eps2' + `logQ0W')/(1 + exp(`H0W'*`eps2' + `logQ0W'))
+	gen double Q1star = exp(`H1W'*`eps1' + `logQ1W')/(1 + exp(`H1W'*`eps1' + `logQ1W'))
 
-	// Targeted ATE: update from Q̅^0(A,W) to Q̅^1(A,W)
-	gen double Qa0star = exp(`H0W'*`eps'  + `logQ0W') / (1 + exp(`H0W'*`eps'  + `logQ0W'))
-	gen double Qa1star = exp(`H1W'*`eps'  + `logQ1W') / (1 + exp(`H1W'*`eps'  + `logQ1W'))
-	gen double Q0star  = exp(`H0W'*`eps2' + `logQ0W') / (1 + exp(`H0W'*`eps2' + `logQ0W'))
-	gen double Q1star  = exp(`H1W'*`eps1' + `logQ1W') / (1 + exp(`H1W'*`eps1' + `logQ1W'))
+	//gen double cin = ($b - $a) 
 
-	gen double POM1 = cond($flag == 1, Qa1star, (Qa1star * ($b - $a)) + $a, .)
-	gen double POM0 = cond($flag == 1, Qa0star, (Qa0star * ($b - $a)) + $a, .)
+	gen double POM1 = cond($flag == 1, Qa1star, (Qa1star * ( $b - $a )) + $a , .)
+	gen double POM0 = cond($flag == 1, Qa0star, (Qa0star * ( $b - $a )) + $a , .)
 
-	di as text " "
 	sum POM1 POM0 ps
 	di as text " "
 
-	// Estimating the updated targeted ATE
-	gen double ATE = cond($flag == 1, (Qa1star - Qa0star), ///
-		((Qa1star * ($b - $a)) + $a) - ((Qa0star * ($b - $a)) + $a), .)
+// Estimating the updated targeted ATE binary outcome
+	gen double ATE = cond($flag == 1, (Qa1star - Qa0star), ((Qa1star * ( $b - $a )) + $a ) - ((Qa0star * ( $b - $a )) + $a ) , .)
 	qui sum ATE
 	return scalar ATEtmle = r(mean)
 
-	// Relative risk and Odds ratio
+// Relative risk
 	qui sum Q1star
 	local Q1 = r(mean)
 	qui sum Q0star
 	local Q0 = r(mean)
 
-	local RRtmle    = `Q1' / `Q0'
+// Relative risk and Odds ratio
+	local RRtmle = `Q1'/`Q0'
 	local logRRtmle = log(`Q1') - log(`Q0')
-	local ORtmle    = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
 
-	// Statistical inference (Efficient Influence Curve)
-	gen d1 = cond($flag == 1, ///
-		(A * (Y - Q1star)  / ps)      + Q1star  - `Q1', ///
-		(A * (Y - Qa1star) / ps)      + Qa1star - `Q1', .)
-	gen d0 = cond($flag == 1, ///
-		(1 - A) * (Y - Q0star)  / (1 - ps) + Q0star  - `Q0', ///
-		(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0', .)
-	gen IC = cond($flag == 1, (d1 - d0), ///
-		((d1 * ($b - $a)) + $a) - ((d0 * ($b - $a)) + $a), .)
+// Statistical inference (Efficient Influence Curve)
+	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+	gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+	gen IC = cond($flag == 1,(d1 - d0), (d1 * ($b - $a ) + $a ) - (d0 * ($b - $a ) + $a ), .)
 	qui sum IC
 	return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
 
-	// Statistical inference ATE
-	return scalar ATE_pvalue = 2 * (normalden(abs(return(ATEtmle) / return(ATE_SE_tmle))))
-	return scalar ATE_LCIa   = return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
-	return scalar ATE_UCIa   = return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
+// Statistical inference ATE
+	return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
+	return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
 
-	// Statistical inference RR
+// Statistical inference RR
 	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
 	qui sum `ICrr'
 	local varICrr = r(Var)/r(N)
-	local LCIrr   = exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
-	local UCIrr   = exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
 
-	// Statistical inference OR
-	local ORtmle = (`Q1' / (1 - `Q1')) / (`Q0' / (1 - `Q0'))
-	gen `ICor' = (1/(`Q1' * (1 - `Q1')) * d1) - (1/(`Q0' * (1 - `Q0')) * d0)
+	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
+
+// Statistical inference OR (We do not use the log of the OR)
+	local ORtmle = (`Q1'  / (1 - `Q1')) / (`Q0' / ((1 - `Q0')))
+	gen `ICor' = (1/ (`Q1' *(1 - `Q1')) * d1) - (1/ (`Q0' *(1 - `Q0')) * d0) // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
 	qui sum `ICor'
 	local varICor = r(Var)/r(N)
 	local LCIOr = exp(log(`ORtmle') - 1.96 * sqrt(`varICor'))
 	local UCIOr = exp(log(`ORtmle') + 1.96 * sqrt(`varICor'))
+	
+// Display Results of ATE
+	return scalar CRR = `RRtmle'
+	return scalar SE_log_CRR  = sqrt(`varICrr')
+	return scalar MOR = `ORtmle'
+	return scalar SE_log_MOR  = sqrt(`varICor')
 
-	// Return scalars
-	return scalar CRR        = `RRtmle'
-	return scalar SE_log_CRR = sqrt(`varICrr')
-	return scalar MOR        = `ORtmle'
-	return scalar SE_log_MOR = sqrt(`varICor')
-
-	// Display ATE table
-	if $flag == 1 {
-		disp as text "{hline 63}"
-		di "         {c |}" "    ATE         SE     P-value           95% CI"
-		disp as text "{hline 63}"
-		disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " ///
-			%7.4f as result return(ATE_SE_tmle) "     " ///
-			%7.4f as result return(ATE_pvalue) as text "     (" ///
-			%7.4f as result return(ATE_LCIa) as text "," ///
-			%7.4f as result return(ATE_UCIa) as text " )"
-		disp as text "{hline 63}"
-		disp as text " "
+	if $flag==1 {
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) as text ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
 	}
-	else {
-		disp as text "{hline 63}"
-		di "         {c |}" "    ATE         SE     P-value           95% CI"
-		disp as text "{hline 63}"
-		disp as text "TMLE:    {c |}" %7.1f as result return(ATEtmle) "    " ///
-			%7.1f as result return(ATE_SE_tmle) "     " ///
-			%7.4f as result return(ATE_pvalue) as text "     (" ///
-			%7.1f as result return(ATE_LCIa) as text "," ///
-			%7.1f as result return(ATE_UCIa) as text " )"
-		disp as text "{hline 63}"
-		disp as text " "
+	else if $flag!=1{
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.1f as result return(ATEtmle) "    " %7.1f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.1f as result return(ATE_LCIa) as text ","  %7.1f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
 	}
 
-	// Display CRR and MOR table
+	local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
+	local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
+
+	* Display the results of CRR and MOR
 	disp as text "{hline 51}"
 	di "                           Estimate          95% CI"
 	disp as text "{hline 51}"
-	disp as text "Causal Risk Ratio:      " "{c |}      " ///
-		%04.2f as result `RRtmle' as text "     (" ///
-		%03.2f as result `LCIrr'  as text ","  ///
-		%03.2f as result `UCIrr'  as text ")"
-	disp as text "Marginal Odds Ratio:    " "{c |}      " ///
-		%04.2f as result `ORtmle' as text "     (" ///
-		%03.2f as result `LCIOr'  as text "," ///
-		%03.2f as result `UCIOr'  as text ")"
+	disp as text "Causal Risk Ratio:      " "{c |}      "  %04.2f as result `RRtmle' as text "     (" %03.2f as result `LCIrr' as text ","  %03.2f as result `UCIrr' as text ")"
+	disp as text "Marginal Odds Ratio:    " "{c |}      "  %04.2f as result `ORtmle' as text "     (" %03.2f as result `LCIOr' as text "," %03.2f as result `UCIOr' as text ")"
 	disp as text "{hline 51}"
+
+// Drop the variables if the elements option is not specified
+		if $keepvars == 0 {
+			drop d1 d0
+			drop QAW Q1W Q0W
+			drop Q1star Qa1star Q0star Qa0star
+			drop ATE IC
+			drop Y A
+			drop POM1 POM0 ps
+			capture drop cin
+			capture drop ytempvar
+		}
+
+// Rename and label the variables if the elements option *is* specified
+		if $keepvars == 1 {
+			* Label the variables
+				lab var d1 "Parameter for the influence curve"
+				lab var d0 "Parameter for the influence curve"
+				lab var QAW "Initial prediction of the outcome"
+				lab var Q1W "Initial prediction of the outcome for A = 1"
+				lab var Q0W "Initial prediction of the outcome for A = 0"
+				lab var Q1star "Update of initial plug-in estimate for A=1"
+				lab var Qa1star "Update of the initial prediction for A = 1"
+				lab var Q0star "Update of initial plug-in estimate for A=0"
+				lab var Qa0star "Update of the initial prediction for A = 0"
+				lab var A "Exposure/Treatment"
+				lab var Y "Outcome"
+				lab var ATE "Average Treatment Effect"
+				lab var IC "Influence Curve"
+				lab var POM1 "Potential Outcome Y(1)"
+				lab var POM0 "Potential Otucome Y(0)"
+				lab var ps "Propensity Score"
+				//lab var cin "Range of Y"
+				capture drop ytempvar
+			* Rename the elements variables
+				foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps {
+					rename `var' _`var'
+				}
+		}
+
+	// Clean up
+	quietly: rm SLS.R
+	//quietly: rm SLS.Rout
+	quietly: rm data2.dta
+	quietly: rm data.csv
+	quietly: rm fulldata.csv
+	//quietly: rm .RData
+	quietly: memory clean
 end
 
+program tmlebal, rclass
 
-// ---------------------------------------------------------------------------
-// _eltmle_positivity_plot: density plot to check the positivity assumption
-// Uses preserve/restore so the calling program's data is unaffected.
-// ---------------------------------------------------------------------------
-program _eltmle_positivity_plot
+// Write R Code dependencies: foreign Surperlearner
+set more off
+qui: file close _all
+qui: file open rcode using SLS.R, write replace
+qui: file write rcode ///
+        `"set.seed(123)"' _newline ///
+        `"list.of.packages <- c("foreign","SuperLearner")"' _newline ///
+        `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
+        `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
+        `"library(SuperLearner)"' _newline ///
+        `"library(foreign)"' _newline ///
+        `"data <- read.csv("data.csv", sep=",")"' _newline ///
+        `"fulldata <- read.csv("fulldata.csv", sep=",")"' _newline ///
+        `"attach(data)"' _newline ///
+        `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction")"' _newline ///
+        `"n <- nrow(data)"' _newline ///
+        `"nvar <- dim(data)[[2]]"' _newline ///
+        `"Y <- data[,1]"' _newline ///
+        `"A <- data[,2]"' _newline ///
+        `"X <- data[,2:nvar]"' _newline ///
+        `"W <- as.data.frame(data[,3:nvar])"' _newline ///
+        `"X1 <- X0 <- X"' _newline ///
+        `"X1[,1] <- 1"' _newline ///
+        `"X0[,1] <- 0"' _newline ///
+        `"newdata <- rbind(X,X1,X0)"' _newline ///
+        `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
+        `"Q <- as.data.frame(Q[[4]])"' _newline ///
+        `"QAW <- Q[1:n,]"' _newline ///
+        `"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
+        `"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
+        `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"))"' _newline ///
+        `"ps <- g[[4]]"' _newline ///
+        `"ps[ps<0.025] <- 0.025"' _newline ///
+        `"ps[ps>0.975] <- 0.975"' _newline ///
+        `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+        `"write.dta(data, "data2.dta")"'
+qui: file close rcode
+
+
+	if "`c(os)'" == "MacOSX" {
+		qui shell "/usr/local/bin/r" CMD BATCH SLS.R
+	}
+	else{
+	// Write batch file to find R.exe path and R version
+		set more off
+		qui: file close _all
+		qui: file open bat using setup.bat, write replace
+		qui: file write bat ///
+		`"@echo off"' _newline ///
+		`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+		`"echo Locating path of R..."' _newline ///
+		`"echo."' _newline ///
+		`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+		`":NO_R"' _newline ///
+		`"echo R is not installed in your system."' _newline ///
+		`"echo."' _newline ///
+		`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+		`"echo Install it and re-run this script"' _newline ///
+		`":DONE"' _newline ///
+		`"echo."' _newline ///
+		`"pause"'
+		qui: file close bat
+		
+		* Check you have 'rscript' command installed.
+		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
+		
+		* Run SLS.R in Windows - 'rscript' command will search for common folders to find R.exe
+		qui: rscript using SLS.R
+	}
+
+	
+// Read Revised Data Back to Stata
+	qui clear
+	quietly: use "data2.dta", clear
+	qui cap drop X__000000
+	tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
+
+// Create density plot to check positivity assumption
 	preserve
 	sort A
 	qui by A: summarize ps
@@ -696,515 +632,2664 @@ program _eltmle_positivity_plot
 	qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
 	label variable d1A "A = 1"
 	label variable d0A "A = 0"
-	set scheme sj
 	twoway (line d0A x0pointsa) || ///
+			(line d1A x1pointsa), ///
+			xtitle("Propensity score") ///
+			ytitle("Density") ///
+			graphregion(color(white)) bgcolor(white) plotregion(fcolor(white)) ///
+			legend(order(2 "Treated" 1 "Not treated") position(11) cols(1) ring(0) ///
+				region(style(none)))
+	restore
+
+// Q to logit scale
+	gen `logQAW' = log(QAW / (1 - QAW))
+	gen `logQ1W' = log(Q1W / (1 - Q1W))
+	gen `logQ0W' = log(Q0W / (1 - Q0W))
+
+// Clever covariate HAW
+	gen  `HAW' = (A / ps) + ((1 - A) / (1 - ps))
+	gen  `H1W' = A / ps
+	gen  `H0W' = (1 - A) / (1 - ps)
+
+// Estimation of the substitution parameter (Epsilon)
+
+	qui glm Y `H1W' `H0W' [pweight = `HAW'], fam(binomial) offset(`logQAW') robust noconstant
+	mat a= e(b)
+	gen `eps1' = a[1,1]
+	gen `eps2' = a[1,2]
+
+	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust 
+	mat a= e(b)
+	gen `eps' = a[1,1]
+
+// Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
+	gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
+	gen double Qa1star = exp(`H1W'*`eps' + `logQ1W')/(1 + exp(`H1W'*`eps' + `logQ1W'))
+
+	gen double Q0star = exp(`H0W'*`eps2' + `logQ0W')/(1 + exp(`H0W'*`eps2' + `logQ0W'))
+	gen double Q1star = exp(`H1W'*`eps1' + `logQ1W')/(1 + exp(`H1W'*`eps1' + `logQ1W'))
+
+	// gen double cin = ($b - $a)
+
+	gen double POM1 = cond($flag == 1, Qa1star, (Qa1star * ($b - $a )) + $a , .)
+	gen double POM0 = cond($flag == 1, Qa0star, (Qa0star * ($b - $a )) + $a , .)
+
+	sum POM1 POM0 ps
+	di as text " "
+
+// Estimating the updated targeted ATE binary outcome
+	gen double ATE = cond($flag == 1, (Qa1star - Qa0star), ((Qa1star * ($b - $a )) + $a ) - ((Qa0star * ($b - $a )) + $a ) , .)
+	qui sum ATE
+	return scalar ATEtmle = r(mean)
+
+// Relative risk
+	qui sum Q1star
+	local Q1 = r(mean)
+	qui sum Q0star
+	local Q0 = r(mean)
+
+// Relative risk and Odds ratio
+	local RRtmle = `Q1'/`Q0'
+	local logRRtmle = log(`Q1') - log(`Q0')
+	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+
+// Statistical inference (Efficient Influence Curve)
+	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+	gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+	gen IC = cond($flag == 1,(d1 - d0), ((d1 * ($b - $a )) + $a ) - ((d0 * ($b - $a )) + $a ) , .)
+	qui sum IC
+	return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
+
+// Statistical inference ATE
+	return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
+	return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
+
+// Statistical inference RR
+	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
+	qui sum `ICrr'
+	local varICrr = r(Var)/r(N)
+	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
+
+// Statistical inference OR (We do not use the log of the OR)
+	*local ORtmle = (`Q1'  / (1 - `Q1')) / (`Q0' / ((1 - `Q0')))
+	gen `ICor' = (1/ (`Q1' *(1 - `Q1')) * d1) - (1/ (`Q0' *(1 - `Q0')) * d0) // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
+	qui sum `ICor'
+	local varICor = r(Var)/r(N)
+	local LCIOr = exp(log(`ORtmle') - 1.96 * sqrt(`varICor'))
+	local UCIOr = exp(log(`ORtmle') + 1.96 * sqrt(`varICor'))
+	
+	// Display Results of ATE
+		return scalar CRR = `RRtmle'
+		return scalar SE_log_CRR  = sqrt(`varICrr')
+		return scalar MOR = `ORtmle'
+		return scalar SE_log_MOR  = sqrt(`varICor')
+
+		if $flag==1 {
+		disp as text "{hline 63}"
+		di "         {c |}" "    ATE         SE     P-value           95% CI"
+		disp as text "{hline 63}"
+		disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) as text ","  %7.4f as result return(ATE_UCIa) as text " )"
+		disp as text "{hline 63}"
+		disp as text " "
+		}
+		else if $flag!=1{
+		disp as text "{hline 63}"
+		di "         {c |}" "    ATE         SE     P-value           95% CI"
+		disp as text "{hline 63}"
+		disp as text "TMLE:    {c |}" %7.1f as result return(ATEtmle) "    " %7.1f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.1f as result return(ATE_LCIa) as text ","  %7.1f as result return(ATE_UCIa) as text " )"
+		disp as text "{hline 63}"
+		disp as text " "
+		}
+
+		local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
+		local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
+
+		* Display the results of CRR and MOR
+		disp as text "{hline 51}"
+		di "                           Estimate          95% CI"
+		disp as text "{hline 51}"
+		disp as text "Causal Risk Ratio:      " "{c |}      "  %4.2f as result `RRtmle' as text "     (" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
+		disp as text "Marginal Odds Ratio:    " "{c |}      "  %4.2f as result `ORtmle' as text "     (" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
+		disp as text "{hline 51}"
+
+// Display covariate balance table
+		* Create macros from the varlist
+			tokenize $variablelist
+			local outcome `1'
+			macro shift
+			local exposure `1'
+			macro shift
+			local varlist `*'
+
+		* Create the IPW weights
+			capture drop _ipw
+			qui gen _ipw = .
+			qui replace _ipw = (`exposure'==1) / ps if `exposure'==1
+			qui replace _ipw = (`exposure'==0) / (1- ps) if `exposure'==0
+
+		* Layout of the results
+			di as text "{hline 67}"
+			di as text "                 Standardised Differences            Variance ratio"
+			di as text "                          Raw    Weighted           Raw    Weighted"
+			di as text "{hline 67}"
+
+		* Calculate the covariate balance
+			foreach var in `varlist' {
+					di as text "`var'"
+
+					* Raw SMD
+					qui summarize `var' if `exposure'==1
+					local m1 = r(mean)
+					local v1 = r(Var)
+					qui summarize `var' if `exposure'==0
+					local m0 = r(mean)
+					local v0 = r(Var)
+					* Calculate the Standardised "mean difference"
+					local rSMD = (`m1' - `m0') / sqrt( (`v1' + `v0') /2 )
+
+					* Weighted SMD
+					qui summarize `var' [iw=_ipw] if `exposure'==1
+					local m1 = r(mean)
+					local v1 = r(Var)
+					qui summarize `var' [iw=_ipw] if `exposure'==0
+					local m0 = r(mean)
+					local v0 = r(Var)
+					* Calculate the Standardised "mean difference"
+					local wSMD = (`m1' - `m0') / sqrt( (`v1' + `v0') /2 )
+
+					* Raw VR
+					qui sum `var' if `exposure' ==1
+					local v1 = r(Var)
+					qui sum `var' if `exposure' ==0
+					local v0 = r(Var)
+					* Calculate the variance ratio
+					local rVR = `v1' / `v0'
+
+					* Weighted VR
+					qui sum `var' [iw=_ipw] if `exposure' ==1
+					local v1 = r(Var)
+					qui sum `var' [iw=_ipw] if `exposure' ==0
+					local v0 = r(Var)
+					* Calculate the variance ratio
+					local wVR `v1' / `v0'
+
+					* Display the values
+					di as text "                    " %9.7g as result `rSMD' as text "   " %9.7g as result `wSMD' as text "     " %9.7g as result `rVR' as text "   " %9.7g as result `wVR'
+			}
+			di as text "{hline 67}"
+
+	* Drop the variables if the elements option is not specified
+		if $keepvars == 0 {
+			drop d1 d0
+			drop QAW Q1W Q0W
+			drop Q1star Qa1star Q0star Qa0star
+			drop ATE IC
+			drop Y A
+			drop POM1 POM0 ps
+			*drop cin
+			capture drop ytempvar
+		}
+
+	* Rename and label the variables if the elements option *is* specified
+		if $keepvars == 1 {
+			* Label the variables
+				lab var d1 "Parameter for the influence curve"
+				lab var d0 "Parameter for the influence curve"
+				lab var QAW "Initial prediction of the outcome"
+				lab var Q1W "Initial prediction of the outcome for A = 1"
+				lab var Q0W "Initial prediction of the outcome for A = 0"
+				lab var Qa1star "Update of the initial prediction for A = 1"
+				lab var Qa0star "Update of the initial prediction for A = 0"
+				lab var A "Exposure/Treatment"
+				lab var Y "Outcome"
+				lab var ATE "Average Treatment Effect"
+				lab var IC "Influence Curve"
+				lab var Q1star "Update of initial plug-in estimate for A=1"
+				lab var Q0star "Update of initial plug-in estimate for A=0"
+				lab var POM1 "Potential Outcome Y(1)"
+				lab var POM0 "Potential Otucome Y(0)"
+				lab var ps "Propensity Score"
+				*lab var cin "Range of Y"
+				capture drop ytempvar
+			* Rename the elements variables
+				foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps {
+					rename `var' _`var'
+				}
+		}
+
+	// Clean up
+	quietly: rm SLS.R
+	//quietly: rm SLS.Rout
+	quietly: rm data2.dta
+	quietly: rm data.csv
+	quietly: rm fulldata.csv
+    //quietly: rm .RData
+	quietly: memory clean
+
+end
+
+program tmlebgam, rclass
+// Write R Code dependencies: foreign Surperlearner
+set more off
+qui: file close _all
+qui: file open rcode using SLS.R, write replace
+qui: file write rcode ///
+		`"set.seed(123)"' _newline ///
+        `"list.of.packages <- c("foreign","SuperLearner","gam","arm")"' _newline ///
+        `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
+        `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
+        `"library(SuperLearner)"' _newline ///
+        `"library(foreign)"' _newline ///
+        `"data <- read.csv("data.csv", sep=",")"' _newline ///
+        `"fulldata <- read.csv("fulldata.csv", sep=",")"' _newline ///
+        `"attach(data)"' _newline ///
+        `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.bayesglm")"' _newline ///
+        `"n <- nrow(data)"' _newline ///
+        `"nvar <- dim(data)[[2]]"' _newline ///
+        `"Y <- data[,1]"' _newline ///
+        `"A <- data[,2]"' _newline ///
+        `"X <- data[,2:nvar]"' _newline ///
+        `"W <- data[,3:nvar]"' _newline ///
+        `"X1 <- X0 <- X"' _newline ///
+        `"X1[,1] <- 1"' _newline ///
+        `"X0[,1] <- 0"' _newline ///
+        `"newdata <- rbind(X,X1,X0)"' _newline ///
+        `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
+        `"Q <- as.data.frame(Q[[4]])"' _newline ///
+        `"QAW <- Q[1:n,]"' _newline ///
+        `"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
+        `"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
+        `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"))"' _newline ///
+        `"ps <- g[[4]]"' _newline ///
+        `"ps[ps<0.025] <- 0.025"' _newline ///
+        `"ps[ps>0.975] <- 0.975"' _newline ///
+        `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+        `"write.dta(data, "data2.dta")"'
+qui: file close rcode
+
+
+	if "`c(os)'" == "MacOSX" {
+	qui shell "/usr/local/bin/r" CMD BATCH SLS.R
+	}
+	else{
+	// Write batch file to find R.exe path and R version
+		set more off
+		qui: file close _all
+		qui: file open bat using setup.bat, write replace
+		qui: file write bat ///
+		`"@echo off"' _newline ///
+		`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+		`"echo Locating path of R..."' _newline ///
+		`"echo."' _newline ///
+		`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+		`":NO_R"' _newline ///
+		`"echo R is not installed in your system."' _newline ///
+		`"echo."' _newline ///
+		`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+		`"echo Install it and re-run this script"' _newline ///
+		`":DONE"' _newline ///
+		`"echo."' _newline ///
+		`"pause"'
+		qui: file close bat
+		
+		* Check you have 'rscript' command installed.
+		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
+		
+		* Run SLS.R in Windows - 'rscript' command will search for common folders to find R.exe
+		qui: rscript using SLS.R
+	}
+
+// Read Revised Data Back to Stata
+qui clear
+quietly: use "data2.dta", clear
+qui cap drop X__000000
+tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
+// Q to logit scale
+gen `logQAW' = log(QAW / (1 - QAW))
+gen `logQ1W' = log(Q1W / (1 - Q1W))
+gen `logQ0W' = log(Q0W / (1 - Q0W))
+
+// Clever covariate HAW
+gen  `HAW' = (A / ps) + ((1 - A) / (1 - ps))
+gen  `H1W' = A / ps
+gen  `H0W' = (1 - A) / (1 - ps)
+
+// Estimation of the substitution parameter (Epsilon)
+
+	qui glm Y `H1W' `H0W' [pweight = `HAW'], fam(binomial) offset(`logQAW') robust noconstant
+	mat a= e(b)
+	gen `eps1' = a[1,1]
+	gen `eps2' = a[1,2]
+
+	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust 
+	mat a= e(b)
+	gen `eps' = a[1,1]
+
+// Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
+gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
+gen double Qa1star = exp(`H1W'*`eps' + `logQ1W')/(1 + exp(`H1W'*`eps' + `logQ1W'))
+
+gen double Q0star = exp(`H0W'*`eps2' + `logQ0W')/(1 + exp(`H0W'*`eps2' + `logQ0W'))
+gen double Q1star = exp(`H1W'*`eps1' + `logQ1W')/(1 + exp(`H1W'*`eps1' + `logQ1W'))
+
+// gen double cin = ($b - $a)
+
+gen double POM1 = cond($flag == 1, Qa1star, (Qa1star * ($b - $a )) + $a , .)
+gen double POM0 = cond($flag == 1, Qa0star, (Qa0star * ($b - $a )) + $a , .)
+
+summ POM1 POM0 ps
+di as text " "
+
+// Estimating the updated targeted ATE binary outcome
+gen double ATE = cond($flag == 1, (Qa1star - Qa0star), ((Qa1star * ($b - $a )) + $a ) - ((Qa0star * ($b - $a )) + $a ) , .)
+qui sum ATE
+return scalar ATEtmle = r(mean)
+
+// Relative risk and Odds ratio
+qui sum Q1star
+local Q1 = r(mean)
+qui sum Q0star
+local Q0 = r(mean)
+
+// Relative risk and Odds ratio
+	local RRtmle = `Q1'/`Q0'
+	local logRRtmle = log(`Q1') - log(`Q0')
+	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	local logORtmle = log((`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0'))
+
+// Statistical inference (Efficient Influence Curve)
+	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+	gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+	gen IC = cond($flag == 1,(d1 - d0), ((d1 * ($b - $a )) + $a ) - ((d0 * ($b - $a )) + $a ) , .)
+	qui sum IC
+	return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
+
+// Statistical inference ATE
+	return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
+	return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
+
+// Statistical inference RR
+	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
+	qui sum `ICrr'
+	local varICrr = r(Var)/r(N)
+	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
+	
+// Statistical inference OR (We do not use the log of the OR
+    gen `ICor' = 1/ (`Q1' *(1 - `Q1')) * d1 - 1/ (`Q0' *(1 - `Q0')) * d0 // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
+    qui sum `ICor'
+    local varICor = r(Var)/r(N)
+	local LCIOr = exp(log(`ORtmle') - 1.96 * sqrt(`varICor'))
+	local UCIOr = exp(log(`ORtmle') + 1.96 * sqrt(`varICor'))
+	
+// Display Results of ATE
+	return scalar CRR = `RRtmle'
+	return scalar SE_log_CRR  = sqrt(`varICrr')
+	return scalar MOR = `ORtmle'
+	return scalar SE_log_MOR  = sqrt(`varICor')
+
+	if $flag==1 {
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
+	}
+	else if $flag!=1{
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.1f as result return(ATEtmle) "    " %7.1f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
+	}
+
+	local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
+	local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
+
+	* Display the results of CRR and MOR
+	disp as text "{hline 51}"
+	di "                           Estimate          95% CI"
+	disp as text "{hline 51}"
+	disp as text "Causal Risk Ratio:      " "{c |}      "  %4.2f as result `RRtmle' "     (" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
+	disp as text "Marginal Odds Ratio:    " "{c |}      "  %4.2f as result `ORtmle' "     (" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
+	disp as text "{hline 51}"
+
+// Drop the variables if the elements option is not specified
+	if $keepvars == 0 {
+		drop d1 d0
+		drop QAW Q1W Q0W
+		drop Q1star Qa1star Q0star Qa0star
+		drop ATE IC
+		drop Y A
+		drop POM1 POM0 ps
+		*drop cin
+		capture drop ytempvar
+	}
+
+// Rename and label the variables if the elements option *is* specified
+	if $keepvars == 1 {
+		* Label the variables
+			lab var d1 "Parameter for the influence curve"
+			lab var d0 "Parameter for the influence curve"
+			lab var QAW "Initial prediction of the outcome"
+			lab var Q1W "Initial prediction of the outcome for A = 1"
+			lab var Q0W "Initial prediction of the outcome for A = 0"
+			lab var Qa1star "Update of the initial prediction for A = 1"
+			lab var Qa0star "Update of the initial prediction for A = 0"
+			lab var A "Exposure/Treatment"
+			lab var Y "Outcome"
+			lab var ATE "Average Treatment Effect"
+			lab var IC "Influence Curve"
+			lab var Q1star "Update of initial plug-in estimate for A=1"
+			lab var Q0star "Update of initial plug-in estimate for A=0"
+			lab var POM1 "Potential Outcome Y(1)"
+			lab var POM0 "Potential Otucome Y(0)"
+			lab var ps "Propensity Score"
+			*lab var cin "Range of Y"
+			capture drop ytempvar
+		* Rename the elements variables
+			foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps  {
+				rename `var' _`var'
+			}
+	}
+
+// Clean up
+quietly: rm SLS.R
+//quietly: rm SLS.Rout
+quietly: rm data2.dta
+quietly: rm data.csv
+quietly: rm fulldata.csv
+//quietly: rm .RData
+quietly: memory clean
+end
+
+program tmlebgambal, rclass
+// Write R Code dependencies: foreign Surperlearner
+set more off
+qui: file close _all
+qui: file open rcode using SLS.R, write replace
+qui: file write rcode ///
+		`"set.seed(123)"' _newline ///
+        `"list.of.packages <- c("foreign","SuperLearner","gam","arm")"' _newline ///
+        `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
+        `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
+        `"library(SuperLearner)"' _newline ///
+        `"library(foreign)"' _newline ///
+        `"data <- read.csv("data.csv", sep=",")"' _newline ///
+        `"fulldata <- read.csv("fulldata.csv", sep=",")"' _newline ///
+        `"attach(data)"' _newline ///
+        `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.bayesglm")"' _newline ///
+        `"n <- nrow(data)"' _newline ///
+        `"nvar <- dim(data)[[2]]"' _newline ///
+        `"Y <- data[,1]"' _newline ///
+        `"A <- data[,2]"' _newline ///
+        `"X <- data[,2:nvar]"' _newline ///
+        `"W <- data[,3:nvar]"' _newline ///
+        `"X1 <- X0 <- X"' _newline ///
+        `"X1[,1] <- 1"' _newline ///
+        `"X0[,1] <- 0"' _newline ///
+        `"newdata <- rbind(X,X1,X0)"' _newline ///
+        `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
+        `"Q <- as.data.frame(Q[[4]])"' _newline ///
+        `"QAW <- Q[1:n,]"' _newline ///
+        `"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
+        `"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
+        `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"))"' _newline ///
+        `"ps <- g[[4]]"' _newline ///
+        `"ps[ps<0.025] <- 0.025"' _newline ///
+        `"ps[ps>0.975] <- 0.975"' _newline ///
+        `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+        `"write.dta(data, "data2.dta")"'
+qui: file close rcode
+
+
+	if "`c(os)'" == "MacOSX" {
+	qui shell "/usr/local/bin/r" CMD BATCH SLS.R
+	}
+	else{
+	// Write batch file to find R.exe path and R version
+		set more off
+		qui: file close _all
+		qui: file open bat using setup.bat, write replace
+		qui: file write bat ///
+		`"@echo off"' _newline ///
+		`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+		`"echo Locating path of R..."' _newline ///
+		`"echo."' _newline ///
+		`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+		`":NO_R"' _newline ///
+		`"echo R is not installed in your system."' _newline ///
+		`"echo."' _newline ///
+		`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+		`"echo Install it and re-run this script"' _newline ///
+		`":DONE"' _newline ///
+		`"echo."' _newline ///
+		`"pause"'
+		qui: file close bat
+		
+		* Check you have 'rscript' command installed.
+		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
+		
+		* Run SLS.R in Windows - 'rscript' command will search for common folders to find R.exe
+		qui: rscript using SLS.R
+	}
+
+// Read Revised Data Back to Stata
+clear
+quietly: use "data2.dta", clear
+qui cap drop X__000000
+tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
+
+// Create density plot to check positivity assumption
+preserve
+sort A
+qui by A: summarize ps
+qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
+qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
+label variable d1A "A = 1"
+label variable d0A "A = 0"
+twoway (line d0A x0pointsa) || ///
 		(line d1A x1pointsa), ///
 		xtitle("Propensity score") ///
 		ytitle("Density") ///
 		graphregion(color(white)) bgcolor(white) plotregion(fcolor(white)) ///
-		legend(order(2 "Treated" 1 "Not treated") position(1) cols(1) ring(0) ///
-			region(style(none)))
-	restore
-end
+		legend(order(2 "Treated" 1 "Not treated") position(11) cols(1) ring(0) ///
+				region(style(none)))
+restore
 
+// Q to logit scale
+gen `logQAW' = log(QAW / (1 - QAW))
+gen `logQ1W' = log(Q1W / (1 - Q1W))
+gen `logQ0W' = log(Q0W / (1 - Q0W))
 
-// ---------------------------------------------------------------------------
-// _eltmle_covbal_table: standardised differences and variance ratio table
-// Creates _ipw. Requires: ps in dataset, $variablelist global set.
-// ---------------------------------------------------------------------------
-program _eltmle_covbal_table
-	tokenize $variablelist
-	local outcome `1'
-	macro shift
-	local exposure `1'
-	macro shift
-	local covars `*'
+// Clever covariate HAW
+gen  `HAW' = (A / ps) + ((1 - A) / (1 - ps))
+gen  `H1W' = A / ps
+gen  `H0W' = (1 - A) / (1 - ps)
 
-	// Inverse probability weights
-	capture drop _ipw
-	qui gen _ipw = .
-	qui replace _ipw = (`exposure'==1) / ps       if `exposure'==1
-	qui replace _ipw = (`exposure'==0) / (1 - ps) if `exposure'==0
+// Estimation of the substitution parameter (Epsilon)
 
-	// Display table header
-	di as text "{hline 67}"
-	di as text "                 Standardised Differences            Variance ratio"
-	di as text "                          Raw    Weighted           Raw    Weighted"
-	di as text "{hline 67}"
+	qui glm Y `H1W' `H0W' [pweight = `HAW'], fam(binomial) offset(`logQAW') robust noconstant
+	mat a= e(b)
+	gen `eps1' = a[1,1]
+	gen `eps2' = a[1,2]
 
-	// Per-covariate statistics
-	foreach var in `covars' {
-		di as text "`var'"
+	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust 
+	mat a= e(b)
+	gen `eps' = a[1,1]
 
-		// Raw SMD
-		qui summarize `var' if `exposure'==1
-		local m1 = r(mean)
-		local v1 = r(Var)
-		qui summarize `var' if `exposure'==0
-		local m0 = r(mean)
-		local v0 = r(Var)
-		local rSMD = (`m1' - `m0') / sqrt((`v1' + `v0') / 2)
+// Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
+gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
+gen double Qa1star = exp(`H1W'*`eps' + `logQ1W')/(1 + exp(`H1W'*`eps' + `logQ1W'))
 
-		// Weighted SMD
-		qui summarize `var' [iw=_ipw] if `exposure'==1
-		local m1 = r(mean)
-		local v1 = r(Var)
-		qui summarize `var' [iw=_ipw] if `exposure'==0
-		local m0 = r(mean)
-		local v0 = r(Var)
-		local wSMD = (`m1' - `m0') / sqrt((`v1' + `v0') / 2)
+gen double Q0star = exp(`H0W'*`eps2' + `logQ0W')/(1 + exp(`H0W'*`eps2' + `logQ0W'))
+gen double Q1star = exp(`H1W'*`eps1' + `logQ1W')/(1 + exp(`H1W'*`eps1' + `logQ1W'))
 
-		// Raw VR
-		qui sum `var' if `exposure'==1
-		local v1 = r(Var)
-		qui sum `var' if `exposure'==0
-		local v0 = r(Var)
-		local rVR = `v1' / `v0'
+//gen double cin = ($b - $a)
 
-		// Weighted VR
-		qui sum `var' [iw=_ipw] if `exposure'==1
-		local v1 = r(Var)
-		qui sum `var' [iw=_ipw] if `exposure'==0
-		local v0 = r(Var)
-		local wVR = `v1' / `v0'
+gen double POM1 = cond($flag == 1, Qa1star, (Qa1star * ($b - $a )) + $a , .)
+gen double POM0 = cond($flag == 1, Qa0star, (Qa0star * ($b - $a )) + $a , .)
 
-		di as text "                    " ///
-			%9.7g as result `rSMD' as text "   " ///
-			%9.7g as result `wSMD' as text "     " ///
-			%9.7g as result `rVR'  as text "   " ///
-			%9.7g as result `wVR'
+summ POM1 POM0 ps
+di as text " "
+
+// Estimating the updated targeted ATE binary outcome
+gen double ATE = cond($flag == 1, (Qa1star - Qa0star), ((Qa1star * ($b - $a )) + $a ) - ((Qa0star * ($b - $a )) + $a ) , .)
+qui sum ATE
+return scalar ATEtmle = r(mean)
+
+// Relative risk and Odss ratio
+qui sum Q1star
+local Q1 = r(mean)
+qui sum Q0star
+local Q0 = r(mean)
+
+// Relative risk and Odds ratio
+	local RRtmle = `Q1'/`Q0'
+	local logRRtmle = log(`Q1') - log(`Q0')
+	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	local logORtmle = log((`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0'))
+
+// Statistical inference (Efficient Influence Curve)
+	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+	gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+	gen IC = cond($flag == 1,(d1 - d0), ((d1 * ($b - $a )) + $a ) - ((d0 * ($b - $a )) + $a ) , .)
+	qui sum IC
+	return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
+
+// Statistical inference ATE
+	return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
+	return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
+
+// Statistical inference RR
+	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
+	qui sum `ICrr'
+	local varICrr = r(Var)/r(N)
+	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
+	
+// Statistical inference OR (We do not use the log of the OR
+    gen `ICor' = 1/ (`Q1' *(1 - `Q1')) * d1 - 1/ (`Q0' *(1 - `Q0')) * d0 // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
+    qui sum `ICor'
+    local varICor = r(Var)/r(N)
+	local LCIOr = exp(log(`ORtmle') - 1.96 * sqrt(`varICor'))
+	local UCIOr = exp(log(`ORtmle') + 1.96 * sqrt(`varICor'))
+
+// Display Results of ATE
+	return scalar CRR = `RRtmle'
+	return scalar SE_log_CRR  = sqrt(`varICrr')
+	return scalar MOR = `ORtmle'
+	return scalar SE_log_MOR  = sqrt(`varICor')
+
+	if $flag==1 {
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
 	}
-	di as text "{hline 67}"
-end
+	else if $flag!=1{
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.1f as result return(ATEtmle) "    " %7.1f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
+	}
+
+	local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
+	local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
+
+	* Display the results of CRR and MOR
+	disp as text "{hline 51}"
+	di "                           Estimate          95% CI"
+	disp as text "{hline 51}"
+	disp as text "Causal Risk Ratio:      " "{c |}      "  %4.2f as result `RRtmle' "     (" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
+	disp as text "Marginal Odds Ratio:    " "{c |}      "  %4.2f as result `ORtmle' "     (" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
+	disp as text "{hline 51}"
 
 
-// ---------------------------------------------------------------------------
-// _eltmle_label_rename_noncv: label / drop elements for non-CV programs
-// Controlled by global $keepvars (0 = drop, 1 = label and prefix with _).
-// ---------------------------------------------------------------------------
-program _eltmle_label_rename_noncv
+	* Display covariate balance table
+		* Create macros from the varlist
+			tokenize $variablelist
+			local outcome `1'
+			macro shift
+			local exposure `1'
+			macro shift
+			local varlist `*'
+
+		* Create the IPW weights
+			capture drop _ipw
+			qui gen _ipw = .
+			qui replace _ipw = (`exposure'==1) / ps if `exposure'==1
+			qui replace _ipw = (`exposure'==0) / (1- ps) if `exposure'==0
+
+		* Layout of the results
+			di as text "{hline 67}"
+			di as text "                 Standardised Differences            Variance ratio"
+			di as text "                          Raw    Weighted           Raw    Weighted"
+			di as text "{hline 67}"
+
+		* Calculate the covariate balance
+			foreach var in `varlist' {
+					di as text "`var'"
+
+					* Raw SMD
+					qui summarize `var' if `exposure'==1
+					local m1 = r(mean)
+					local v1 = r(Var)
+					qui summarize `var' if `exposure'==0
+					local m0 = r(mean)
+					local v0 = r(Var)
+					* Calculate the Standardised "mean difference"
+					local rSMD = (`m1' - `m0') / sqrt( (`v1' + `v0') /2 )
+
+					* Weighted SMD
+					qui summarize `var' [iw=_ipw] if `exposure'==1
+					local m1 = r(mean)
+					local v1 = r(Var)
+					qui summarize `var' [iw=_ipw] if `exposure'==0
+					local m0 = r(mean)
+					local v0 = r(Var)
+					* Calculate the Standardised "mean difference"
+					local wSMD = (`m1' - `m0') / sqrt( (`v1' + `v0') /2 )
+
+					* Raw VR
+					qui sum `var' if `exposure' ==1
+					local v1 = r(Var)
+					qui sum `var' if `exposure' ==0
+					local v0 = r(Var)
+					* Calculate the variance ratio
+					local rVR = `v1' / `v0'
+
+					* Weighted VR
+					qui sum `var' [iw=_ipw] if `exposure' ==1
+					local v1 = r(Var)
+					qui sum `var' [iw=_ipw] if `exposure' ==0
+					local v0 = r(Var)
+					* Calculate the variance ratio
+					local wVR `v1' / `v0'
+
+					* Display the values
+					di as text "                    " %9.7g as result `rSMD' as text "   " %9.7g as result `wSMD' as text "     " %9.7g as result `rVR' as text "   " %9.7g as result `wVR'
+			}
+			di as text "{hline 67}"
+
+
+// Drop the variables if the elements option is not specified
 	if $keepvars == 0 {
-		drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A POM1 POM0 ps
-		capture drop ytempvar
-	}
-	if $keepvars == 1 {
-		lab var d1      "Parameter for the influence curve"
-		lab var d0      "Parameter for the influence curve"
-		lab var QAW     "Initial prediction of the outcome"
-		lab var Q1W     "Initial prediction of the outcome for A = 1"
-		lab var Q0W     "Initial prediction of the outcome for A = 0"
-		lab var Q1star  "Update of initial plug-in estimate for A=1"
-		lab var Qa1star "Update of the initial prediction for A = 1"
-		lab var Q0star  "Update of initial plug-in estimate for A=0"
-		lab var Qa0star "Update of the initial prediction for A = 0"
-		lab var A       "Exposure/Treatment"
-		lab var Y       "Outcome"
-		lab var ATE     "Average Treatment Effect"
-		lab var IC      "Influence Curve"
-		lab var POM1    "Potential Outcome Y(1)"
-		lab var POM0    "Potential Outcome Y(0)"
-		lab var ps      "Propensity Score"
-		capture drop ytempvar
-		foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A POM1 POM0 ps {
-			rename `var' _`var'
-		}
-	}
-end
-
-
-// ---------------------------------------------------------------------------
-// _eltmle_label_rename_cv: label / drop elements for CV programs
-// Controlled by global $keepvars. CV variant also handles foldid, rowid,
-// _ipw; with keepvars==1 saves elementsdata.dta for later merge.
-// ---------------------------------------------------------------------------
-program _eltmle_label_rename_cv
-	if $keepvars == 0 {
-		drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC
-		rename Y _Y
-		rename A _A
-		drop _Y _A
-		capture drop _ipw
+		drop d1 d0
+		drop QAW Q1W Q0W
+		drop Q1star Qa1star Q0star Qa0star
+		drop ATE IC
+		drop Y A
 		drop POM1 POM0 ps
-		capture drop cin
-		drop foldid rowid
-		capture drop x1pointsa x0pointsa d1A d0A
+		*drop cin
 		capture drop ytempvar
 	}
+
+// Rename and label the variables if the elements option *is* specified
 	if $keepvars == 1 {
-		capture drop x1pointsa x0pointsa d1A d0A
-		lab var d1      "Parameter for the influence curve"
-		lab var d0      "Parameter for the influence curve"
-		lab var QAW     "Initial prediction of the outcome"
-		lab var Q1W     "Initial prediction of the outcome for A = 1"
-		lab var Q0W     "Initial prediction of the outcome for A = 0"
-		lab var Q1star  "Update of initial plug-in estimate for A=1"
-		lab var Qa1star "Update of the initial prediction for A = 1"
-		lab var Q0star  "Update of initial plug-in estimate for A=0"
-		lab var Qa0star "Update of the initial prediction for A = 0"
-		lab var A       "Exposure/Treatment"
-		lab var Y       "Outcome"
-		lab var ATE     "Average Treatment Effect"
-		lab var IC      "Influence Curve"
-		lab var POM1    "Potential Outcome Y(1)"
-		lab var POM0    "Potential Outcome Y(0)"
-		lab var ps      "Propensity Score"
-		lab var _ipw    "Inverse probability of treatment weights"
-		capture drop ytempvar
-		foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A POM1 POM0 ps {
-			rename `var' _`var'
-		}
-		keep rowid _d1 _d0 _QAW _Q1W _Q0W _Q1star _Qa1star _Q0star _Qa0star ///
-			_ATE _IC _Y _A _POM1 _POM0 _ps _ipw
-		qui save "elementsdata.dta", replace
+		* Label the variables
+			lab var d1 "Parameter for the influence curve"
+			lab var d0 "Parameter for the influence curve"
+			lab var QAW "Initial prediction of the outcome"
+			lab var Q1W "Initial prediction of the outcome for A = 1"
+			lab var Q0W "Initial prediction of the outcome for A = 0"
+			lab var Qa1star "Update of the initial prediction for A = 1"
+			lab var Qa0star "Update of the initial prediction for A = 0"
+			lab var A "Exposure/Treatment"
+			lab var Y "Outcome"
+			lab var ATE "Average Treatment Effect"
+			lab var IC "Influence Curve"
+			lab var Q1star "Update of initial plug-in estimate for A=1"
+			lab var Q0star "Update of initial plug-in estimate for A=0"
+			lab var POM1 "Potential Outcome Y(1)"
+			lab var POM0 "Potential Otucome Y(0)"
+			lab var ps "Propensity Score"
+			*lab var cin "Range of Y"
+			capture drop ytempvar
+		* Rename the elements variables
+			foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps {
+				rename `var' _`var'
+			}
 	}
+
+// Clean up
+quietly: rm SLS.R
+//quietly: rm SLS.Rout
+quietly: rm data2.dta
+quietly: rm data.csv
+quietly: rm fulldata.csv
+//quietly: rm .RData
+quietly: memory clean
 end
 
+program tmleglsrf, rclass
+// Write R Code dependencies: foreign Surperlearner
+set more off
+qui: file close _all
+qui: file open rcode using SLS.R, write replace
+qui: file write rcode ///
+		`"set.seed(123)"' _newline ///
+        `"list.of.packages <- c("foreign","SuperLearner","glmnet","randomForest")"' _newline ///
+        `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
+        `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
+        `"library(SuperLearner)"' _newline ///
+        `"library(foreign)"' _newline ///
+        `"data <- read.csv("data.csv", sep=",")"' _newline ///
+        `"fulldata <- read.csv("fulldata.csv", sep=",")"' _newline ///
+        `"attach(data)"' _newline ///
+        `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.glmnet","SL.randomForest")"' _newline ///
+        `"n <- nrow(data)"' _newline ///
+        `"nvar <- dim(data)[[2]]"' _newline ///
+        `"Y <- data[,1]"' _newline ///
+        `"A <- data[,2]"' _newline ///
+        `"X <- data[,2:nvar]"' _newline ///
+        `"W <- data[,3:nvar]"' _newline ///
+        `"X1 <- X0 <- X"' _newline ///
+        `"X1[,1] <- 1"' _newline ///
+        `"X0[,1] <- 0"' _newline ///
+        `"newdata <- rbind(X,X1,X0)"' _newline ///
+        `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
+        `"Q <- as.data.frame(Q[[4]])"' _newline ///
+        `"QAW <- Q[1:n,]"' _newline ///
+        `"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
+        `"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
+        `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"))"' _newline ///
+        `"ps <- g[[4]]"' _newline ///
+        `"ps[ps<0.025] <- 0.025"' _newline ///
+        `"ps[ps>0.975] <- 0.975"' _newline ///
+        `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+        `"write.dta(data, "data2.dta")"'
+qui: file close rcode
 
-// ---------------------------------------------------------------------------
-// _eltmle_cleanup_noncv: remove temp files for non-CV estimators
-// ---------------------------------------------------------------------------
-program _eltmle_cleanup_noncv
-	quietly: rm SLS.R
-	quietly: rm data2.dta
-	quietly: rm data.csv
-	quietly: rm fulldata.csv
-	quietly: memory clean
+	if "`c(os)'" == "MacOSX" {
+	qui shell "/usr/local/bin/r" CMD BATCH SLS.R
+	}
+	else{
+	// Write batch file to find R.exe path and R version
+		set more off
+		qui: file close _all
+		qui: file open bat using setup.bat, write replace
+		qui: file write bat ///
+		`"@echo off"' _newline ///
+		`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+		`"echo Locating path of R..."' _newline ///
+		`"echo."' _newline ///
+		`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+		`":NO_R"' _newline ///
+		`"echo R is not installed in your system."' _newline ///
+		`"echo."' _newline ///
+		`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+		`"echo Install it and re-run this script"' _newline ///
+		`":DONE"' _newline ///
+		`"echo."' _newline ///
+		`"pause"'
+		qui: file close bat
+		
+		* Check you have 'rscript' command installed.
+		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
+		
+		* Run SLS.R in Windows - 'rscript' command will search for common folders to find R.exe
+		qui: rscript using SLS.R
+	}
+
+// Read Revised Data Back to Stata
+clear
+quietly: use "data2.dta", clear
+qui cap drop X__000000
+tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
+// Q to logit scale
+gen `logQAW' = log(QAW / (1 - QAW))
+gen `logQ1W' = log(Q1W / (1 - Q1W))
+gen `logQ0W' = log(Q0W / (1 - Q0W))
+
+// Clever covariate HAW
+gen  `HAW' = (A / ps) + ((1 - A) / (1 - ps))
+gen  `H1W' = A / ps
+gen  `H0W' = (1 - A) / (1 - ps)
+
+// Estimation of the substitution parameter (Epsilon)
+
+	qui glm Y `H1W' `H0W' [pweight = `HAW'], fam(binomial) offset(`logQAW') robust noconstant
+	mat a= e(b)
+	gen `eps1' = a[1,1]
+	gen `eps2' = a[1,2]
+
+	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust 
+	mat a= e(b)
+	gen `eps' = a[1,1]
+
+// Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
+gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
+gen double Qa1star = exp(`H1W'*`eps' + `logQ1W')/(1 + exp(`H1W'*`eps' + `logQ1W'))
+
+gen double Q0star = exp(`H0W'*`eps2' + `logQ0W')/(1 + exp(`H0W'*`eps2' + `logQ0W'))
+gen double Q1star = exp(`H1W'*`eps1' + `logQ1W')/(1 + exp(`H1W'*`eps1' + `logQ1W'))
+
+// gen double cin = ($b - $a)
+
+gen double POM1 = cond($flag == 1, Qa1star, (Qa1star * ($b - $a )) + $a , .)
+gen double POM0 = cond($flag == 1, Qa0star, (Qa0star * ($b - $a )) + $a , .)
+
+summ POM1 POM0 ps
+di as text " "
+
+// Estimating the updated targeted ATE binary outcome
+gen double ATE = cond($flag == 1, (Qa1star - Qa0star), ((Qa1star * ($b - $a )) + $a ) - ((Qa0star * ($b - $a )) + $a ) , .)
+qui sum ATE
+return scalar ATEtmle = r(mean)
+
+// Relative risk and Odss ratio
+qui sum Q1star
+local Q1 = r(mean)
+qui sum Q0star
+local Q0 = r(mean)
+
+// Relative risk and Odds ratio
+	local RRtmle = `Q1'/`Q0'
+	local logRRtmle = log(`Q1') - log(`Q0')
+	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	local logORtmle = log((`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0'))
+
+// Statistical inference (Efficient Influence Curve)
+	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+	gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+	gen IC = cond($flag == 1,(d1 - d0), ((d1 * ($b - $a )) + $a ) - ((d0 * ($b - $a )) + $a ) , .)
+	qui sum IC
+	return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
+
+// Statistical inference ATE
+	return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
+	return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
+
+// Statistical inference RR
+	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
+	qui sum `ICrr'
+	local varICrr = r(Var)/r(N)
+	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
+	
+// Statistical inference OR (We do not use the log of the OR
+    gen `ICor' = 1/ (`Q1' *(1 - `Q1')) * d1 - 1/ (`Q0' *(1 - `Q0')) * d0 // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
+    qui sum `ICor'
+    local varICor = r(Var)/r(N)
+	local LCIOr = exp(log(`ORtmle') - 1.96 * sqrt(`varICor'))
+	local UCIOr = exp(log(`ORtmle') + 1.96 * sqrt(`varICor'))
+
+// Display Results of ATE
+	return scalar CRR = `RRtmle'
+	return scalar SE_log_CRR  = sqrt(`varICrr')
+	return scalar MOR = `ORtmle'
+	return scalar SE_log_MOR  = sqrt(`varICor')
+
+	if $flag==1 {
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
+	}
+	else if $flag!=1{
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.1f as result return(ATEtmle) "    " %7.1f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
+	}
+
+	local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
+	local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
+
+	* Display the results of CRR and MOR
+	disp as text "{hline 51}"
+	di "                           Estimate          95% CI"
+	disp as text "{hline 51}"
+	disp as text "Causal Risk Ratio:      " "{c |}      "  %4.2f as result `RRtmle' "     (" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
+	disp as text "Marginal Odds Ratio:    " "{c |}      "  %4.2f as result `ORtmle' "     (" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
+	disp as text "{hline 51}"
+
+// Drop the variables if the elements option is not specified
+	if $keepvars == 0 {
+		drop d1 d0
+		drop QAW Q1W Q0W
+		drop Q1star Qa1star Q0star Qa0star
+		drop ATE IC
+		drop Y A
+		drop POM1 POM0 ps
+		*drop cin
+		capture drop ytempvar
+	}
+
+// Rename and label the variables if the elements option *is* specified
+	if $keepvars == 1 {
+		* Label the variables
+			lab var d1 "Parameter for the influence curve"
+			lab var d0 "Parameter for the influence curve"
+			lab var QAW "Initial prediction of the outcome"
+			lab var Q1W "Initial prediction of the outcome for A = 1"
+			lab var Q0W "Initial prediction of the outcome for A = 0"
+			lab var Qa1star "Update of the initial prediction for A = 1"
+			lab var Qa0star "Update of the initial prediction for A = 0"
+			lab var A "Exposure/Treatment"
+			lab var Y "Outcome"
+			lab var ATE "Average Treatment Effect"
+			lab var IC "Influence Curve"
+			lab var Q1star "Update of initial plug-in estimate for A=1"
+			lab var Q0star "Update of initial plug-in estimate for A=0"
+			lab var POM1 "Potential Outcome Y(1)"
+			lab var POM0 "Potential Otucome Y(0)"
+			lab var ps "Propensity Score"
+			*lab var cin "Range of Y"
+			capture drop ytempvar
+		* Rename the elements variables
+			foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps {
+				rename `var' _`var'
+			}
+	}
+
+// Clean up
+quietly: rm SLS.R
+//quietly: rm SLS.Rout
+quietly: rm data2.dta
+quietly: rm data.csv
+quietly: rm fulldata.csv
+//quietly: rm .RData
+quietly: memory clean
 end
 
+program tmleglsrfbal, rclass
+// Write R Code dependencies: foreign Surperlearner
+set more off
+qui: file close _all
+qui: file open rcode using SLS.R, write replace
+qui: file write rcode ///
+		`"set.seed(123)"' _newline ///
+        `"list.of.packages <- c("foreign","SuperLearner","glmnet","randomForest")"' _newline ///
+        `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
+        `"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
+        `"library(SuperLearner)"' _newline ///
+        `"library(foreign)"' _newline ///
+        `"data <- read.csv("data.csv", sep=",")"' _newline ///
+        `"fulldata <- read.csv("fulldata.csv", sep=",")"' _newline ///
+        `"attach(data)"' _newline ///
+        `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.glmnet","SL.randomForest")"' _newline ///
+        `"n <- nrow(data)"' _newline ///
+        `"nvar <- dim(data)[[2]]"' _newline ///
+        `"Y <- data[,1]"' _newline ///
+        `"A <- data[,2]"' _newline ///
+        `"X <- data[,2:nvar]"' _newline ///
+        `"W <- data[,3:nvar]"' _newline ///
+        `"X1 <- X0 <- X"' _newline ///
+        `"X1[,1] <- 1"' _newline ///
+        `"X0[,1] <- 0"' _newline ///
+        `"newdata <- rbind(X,X1,X0)"' _newline ///
+        `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline ///
+        `"Q <- as.data.frame(Q[[4]])"' _newline ///
+        `"QAW <- Q[1:n,]"' _newline ///
+        `"Q1W <- Q[((n+1):(2*n)),]"' _newline ///
+        `"Q0W <- Q[((2*n+1):(3*n)),]"' _newline ///
+        `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"))"' _newline ///
+        `"ps <- g[[4]]"' _newline ///
+        `"ps[ps<0.025] <- 0.025"' _newline ///
+        `"ps[ps>0.975] <- 0.975"' _newline ///
+        `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+        `"write.dta(data, "data2.dta")"'
+qui: file close rcode
 
-// ---------------------------------------------------------------------------
-// _eltmle_cleanup_cv: remove temp files for CV estimators
-// ---------------------------------------------------------------------------
-program _eltmle_cleanup_cv
+	if "`c(os)'" == "MacOSX" {
+	qui shell "/usr/local/bin/r" CMD BATCH SLS.R
+	}
+	else{
+	// Write batch file to find R.exe path and R version
+		set more off
+		qui: file close _all
+		qui: file open bat using setup.bat, write replace
+		qui: file write bat ///
+		`"@echo off"' _newline ///
+		`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+		`"echo Locating path of R..."' _newline ///
+		`"echo."' _newline ///
+		`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+		`":NO_R"' _newline ///
+		`"echo R is not installed in your system."' _newline ///
+		`"echo."' _newline ///
+		`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+		`"echo Install it and re-run this script"' _newline ///
+		`":DONE"' _newline ///
+		`"echo."' _newline ///
+		`"pause"'
+		qui: file close bat
+		
+		* Check you have 'rscript' command installed.
+		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
+		
+		* Run SLS.R in Windows - 'rscript' command will search for common folders to find R.exe
+		qui: rscript using SLS.R
+	}
+	
+// Read Revised Data Back to Stata
+clear
+quietly: use "data2.dta", clear
+qui cap drop X__000000
+tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
+
+// Create density plot to check positivity assumption
+preserve
+sort A
+qui by A: summarize ps
+qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
+qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
+label variable d1A "A = 1"
+label variable d0A "A = 0"
+twoway (line d0A x0pointsa) || ///
+		(line d1A x1pointsa), ///
+		xtitle("Propensity score") ///
+		ytitle("Density") ///
+		graphregion(color(white)) bgcolor(white) plotregion(fcolor(white)) ///
+		legend(order(2 "Treated" 1 "Not treated") position(11) cols(1) ring(0) ///
+				region(style(none)))
+restore
+
+// Q to logit scale
+gen `logQAW' = log(QAW / (1 - QAW))
+gen `logQ1W' = log(Q1W / (1 - Q1W))
+gen `logQ0W' = log(Q0W / (1 - Q0W))
+
+// Clever covariate HAW
+gen  `HAW' = (A / ps) + ((1 - A) / (1 - ps))
+gen  `H1W' = A / ps
+gen  `H0W' = (1 - A) / (1 - ps)
+
+// Estimation of the substitution parameter (Epsilon)
+
+	qui glm Y `H1W' `H0W' [pweight = `HAW'], fam(binomial) offset(`logQAW') robust noconstant
+	mat a= e(b)
+	gen `eps1' = a[1,1]
+	gen `eps2' = a[1,2]
+
+	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust 
+	mat a= e(b)
+	gen `eps' = a[1,1]
+
+// Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
+gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
+gen double Qa1star = exp(`H1W'*`eps' + `logQ1W')/(1 + exp(`H1W'*`eps' + `logQ1W'))
+
+gen double Q0star = exp(`H0W'*`eps2' + `logQ0W')/(1 + exp(`H0W'*`eps2' + `logQ0W'))
+gen double Q1star = exp(`H1W'*`eps1' + `logQ1W')/(1 + exp(`H1W'*`eps1' + `logQ1W'))
+
+// gen double cin = ($b - $a)
+
+	gen double POM1 = cond($flag == 1, Qa1star, (Qa1star * ($b - $a )) + $a , .)
+	gen double POM0 = cond($flag == 1, Qa0star, (Qa0star * ($b - $a )) + $a , .)
+
+summ POM1 POM0 ps
+di as text " "
+
+// Estimating the updated targeted ATE binary outcome
+	gen double ATE = cond($flag == 1, (Qa1star - Qa0star), ((Qa1star * ($b - $a )) + $a ) - ((Qa0star * ($b - $a )) + $a ) , .)
+qui sum ATE
+return scalar ATEtmle = r(mean)
+
+// Relative risk and Odds ratio
+qui sum Q1star
+local Q1 = r(mean)
+qui sum Q0star
+local Q0 = r(mean)
+
+// Relative risk and Odds ratio
+	local RRtmle = `Q1'/`Q0'
+	local logRRtmle = log(`Q1') - log(`Q0')
+	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	local logORtmle = log((`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0'))
+
+// Statistical inference (Efficient Influence Curve)
+	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+	gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+	gen IC = cond($flag == 1,(d1 - d0), ((d1 * ($b - $a )) + $a ) - ((d0 * ($b - $a )) + $a ) , .)
+	qui sum IC
+	return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
+
+// Statistical inference ATE
+	return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
+	return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
+
+// Statistical inference RR
+	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
+	qui sum `ICrr'
+	local varICrr = r(Var)/r(N)
+	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
+	
+// Statistical inference OR (We do not use the log of the OR
+    gen `ICor' = 1/ (`Q1' *(1 - `Q1')) * d1 - 1/ (`Q0' *(1 - `Q0')) * d0 // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
+    qui sum `ICor'
+    local varICor = r(Var)/r(N)
+	local LCIOr = exp(log(`ORtmle') - 1.96 * sqrt(`varICor'))
+	local UCIOr = exp(log(`ORtmle') + 1.96 * sqrt(`varICor'))
+	
+// Display Results of ATE
+	return scalar CRR = `RRtmle'
+	return scalar SE_log_CRR  = sqrt(`varICrr')
+	return scalar MOR = `ORtmle'
+	return scalar SE_log_MOR  = sqrt(`varICor')
+
+	if $flag==1 {
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
+	}
+	else if $flag!=1{
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.1f as result return(ATEtmle) "    " %7.1f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.1f as result return(ATE_LCIa) ","  %7.1f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
+	}
+
+	local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
+	local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
+
+	* Display the results of CRR and MOR
+	disp as text "{hline 51}"
+	di "                           Estimate          95% CI"
+	disp as text "{hline 51}"
+	disp as text "Causal Risk Ratio:      " "{c |}      "  %4.2f as result `RRtmle' "     (" %3.2f as result `LCIrr' as text ","  %3.2f as result `UCIrr' as text ")"
+	disp as text "Marginal Odds Ratio:    " "{c |}      "  %4.2f as result `ORtmle' "     (" %3.2f as result `LCIOr' as text "," %3.2f as result `UCIOr' as text ")"
+	disp as text "{hline 51}"
+
+// Display covariate balance table
+		* Create macros from the varlist
+			tokenize $variablelist
+			local outcome `1'
+			macro shift
+			local exposure `1'
+			macro shift
+			local varlist `*'
+
+		* Create the IPW weights
+			capture drop _ipw
+			qui gen _ipw = .
+			qui replace _ipw = (`exposure'==1) / ps if `exposure'==1
+			qui replace _ipw = (`exposure'==0) / (1- ps) if `exposure'==0
+
+		* Layout of the results
+			di as text "{hline 67}"
+			di as text "                 Standardised Differences            Variance ratio"
+			di as text "                          Raw    Weighted           Raw    Weighted"
+			di as text "{hline 67}"
+
+		* Calculate the covariate balance
+			foreach var in `varlist' {
+					di as text "`var'"
+
+					* Raw SMD
+					qui summarize `var' if `exposure'==1
+					local m1 = r(mean)
+					local v1 = r(Var)
+					qui summarize `var' if `exposure'==0
+					local m0 = r(mean)
+					local v0 = r(Var)
+					* Calculate the Standardised "mean difference"
+					local rSMD = (`m1' - `m0') / sqrt( (`v1' + `v0') /2 )
+
+					* Weighted SMD
+					qui summarize `var' [iw=_ipw] if `exposure'==1
+					local m1 = r(mean)
+					local v1 = r(Var)
+					qui summarize `var' [iw=_ipw] if `exposure'==0
+					local m0 = r(mean)
+					local v0 = r(Var)
+					* Calculate the Standardised "mean difference"
+					local wSMD = (`m1' - `m0') / sqrt( (`v1' + `v0') /2 )
+
+					* Raw VR
+					qui sum `var' if `exposure' ==1
+					local v1 = r(Var)
+					qui sum `var' if `exposure' ==0
+					local v0 = r(Var)
+					* Calculate the variance ratio
+					local rVR = `v1' / `v0'
+
+					* Weighted VR
+					qui sum `var' [iw=_ipw] if `exposure' ==1
+					local v1 = r(Var)
+					qui sum `var' [iw=_ipw] if `exposure' ==0
+					local v0 = r(Var)
+					* Calculate the variance ratio
+					local wVR `v1' / `v0'
+
+					* Display the values
+					di as text "                    " %9.7g as result `rSMD' as text "   " %9.7g as result `wSMD' as text "     " %9.7g as result `rVR' as text "   " %9.7g as result `wVR'
+			}
+			di as text "{hline 67}"
+
+// Drop the variables if the elements option is not specified
+	if $keepvars == 0 {
+		drop d1 d0
+		drop QAW Q1W Q0W
+		drop Q1star Qa1star Q0star Qa0star
+		drop ATE IC
+		drop Y A
+		drop POM1 POM0 ps
+		*drop cin
+		capture drop ytempvar
+	}
+
+// Rename and label the variables if the elements option *is* specified
+	if $keepvars == 1 {
+		* Label the variables
+			lab var d1 "Parameter for the influence curve"
+			lab var d0 "Parameter for the influence curve"
+			lab var QAW "Initial prediction of the outcome"
+			lab var Q1W "Initial prediction of the outcome for A = 1"
+			lab var Q0W "Initial prediction of the outcome for A = 0"
+			lab var Qa1star "Update of the initial prediction for A = 1"
+			lab var Qa0star "Update of the initial prediction for A = 0"
+			lab var A "Exposure/Treatment"
+			lab var Y "Outcome"
+			lab var ATE "Average Treatment Effect"
+			lab var IC "Influence Curve"
+			lab var Q1star "Update of initial plug-in estimate for A=1"
+			lab var Q0star "Update of initial plug-in estimate for A=0"
+			lab var POM1 "Potential Outcome Y(1)"
+			lab var POM0 "Potential Otucome Y(0)"
+			lab var ps "Propensity Score"
+			*lab var cin "Range of Y"
+			capture drop ytempvar
+		* Rename the elements variables
+			foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC  Y A  POM1 POM0 ps {
+				rename `var' _`var'
+			}
+	}
+
+// Clean up
+quietly: rm SLS.R
+//quietly: rm SLS.Rout
+quietly: rm data2.dta
+quietly: rm data.csv
+quietly: rm fulldata.csv
+//quietly: rm .RData
+quietly: memory clean
+end
+
+program cvtmle, rclass
+	*di "Starting cvtmle..."
+
+preserve
+	forval fold = 1/$folds {
+		
+		if `fold' == 1 _dots 0, title (Performing $folds folds) 
+		
+		* Load the data to be used for the folds
+		qui use "cvdata.dta", clear
+		
+		* Create a variable indicating the fold number
+		capture drop foldnumber
+		qui gen foldnumber = `fold'
+		
+		* Count number of observations
+		qui count
+		local nobstotal = r(N)
+		
+		* Export to csv file
+		qui: export delimited $varusedforcv foldnumber using "cvdata.csv", nolabel replace
+		
+		* Rcode for the SuperLearner
+		qui: set more off
+		qui: file close _all
+		qui: file open rcode using SLS.R, write replace
+		qui: file write rcode ///
+			`"set.seed(123)"' _newline ///
+			`"list.of.packages <- c("foreign","SuperLearner","dplyr")"' _newline ///
+			`"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
+			`"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
+			`"library(SuperLearner)"' _newline ///
+			`"library(foreign)"' _newline ///
+			`"library(dplyr)"' _newline ///
+			`"data <- read.csv("cvdata.csv", sep=",")"' _newline ///
+			`"attach(data)"' _newline ///
+			`"SL.library <- c("SL.glm","SL.step","SL.glm.interaction")"' _newline ///
+			`"nvar <- dim(data)[[2]]"' _newline ///
+			`"f <- foldnumber[1]"' _newline ///
+			`"data <- data %>% select(-c("foldnumber"))"' _newline ///
+			`"tdata <- data[foldid!=f,]"' _newline ///		
+			`"vdataAa <- data[foldid==f,]"' _newline ///
+			`"vdataA1 <- vdataAa; vdataA1[,2] <- 1"' _newline ///
+			`"vdataA0 <- vdataAa; vdataA0[,2] <- 0"' _newline ///
+			`"Vn <- nrow(vdataAa)"' _newline ///
+			`"Tn <- nrow(tdata)"' _newline ///
+			`"Y <- vdataAa[,1]"' _newline ///
+			`"A <- vdataAa[,2]"' _newline ///
+			`"X <- tdata %>% select(-c(1,    "foldid", "rowid"))"' _newline ///
+			`"W <- tdata %>% select(-c(1, 2, "foldid", "rowid"))"' _newline ///
+			`"tset <- try(SuperLearner(Y = tdata[,1], X = X, SL.library = SL.library, family = "binomial", method = "method.NNLS"), silent=TRUE)"' _newline ///
+			`"QAW <- predict(tset, newdata=vdataAa)[[1]]"' _newline ///
+			`"Q1W <- predict(tset, newdata=vdataA1)[[1]]"' _newline ///
+			`"Q0W <- predict(tset, newdata=vdataA0)[[1]]"' _newline ///
+			`"QAWt <- predict(tset)[[1]]"' _newline ///
+			`"g <-    try(SuperLearner(Y = tdata[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"), silent=TRUE)"' _newline ///
+			`"ps <- predict(g, newdata=vdataAa)[[1]]"' _newline ///
+			`"ps[ps<0.025] <- 0.025"' _newline ///
+			`"ps[ps>0.975] <- 0.975"' _newline ///
+			`"data <- cbind(vdataAa,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+			`"write.dta(data, "data2.dta")"' 
+		qui: file close rcode
+		
+		* Specify the operating system
+	if "`c(os)'" == "MacOSX" {
+	qui shell "/usr/local/bin/r" CMD BATCH SLS.R
+	}
+	else{
+	// Write batch file to find R.exe path and R version
+		set more off
+		qui: file close _all
+		qui: file open bat using setup.bat, write replace
+		qui: file write bat ///
+		`"@echo off"' _newline ///
+		`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+		`"echo Locating path of R..."' _newline ///
+		`"echo."' _newline ///
+		`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+		`":NO_R"' _newline ///
+		`"echo R is not installed in your system."' _newline ///
+		`"echo."' _newline ///
+		`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+		`"echo Install it and re-run this script"' _newline ///
+		`":DONE"' _newline ///
+		`"echo."' _newline ///
+		`"pause"'
+		qui: file close bat
+		
+		* Check you have 'rscript' command installed.
+		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
+		
+		* Run SLS.R in Windows - 'rscript' command will search for common folders to find R.exe
+		qui: rscript using SLS.R
+	}
+	
+	* Load the data created by R
+		quietly: use "data2.dta", clear
+		local folddataname "folddata`fold'"
+		qui save "`folddataname'.dta", replace
+		
+	*if $progress == 1 di "Done fold `fold'"
+	
+	_dots `fold' 0
+		
+	}
+	
+	* Combine the predictions into one data set
+		* Append the data sets
+		qui: use "folddata1.dta", clear
+		forval fold = 2/$folds {
+			qui: append using "folddata`fold'"
+		}
+		qui save "data2.dta", replace
+
+// Read Revised Data Back to Stata
+	qui clear
+	quietly: use "data2.dta", clear
+	*import delimited "data2.csv", case(preserve) clear 
+	qui cap drop X__000000
+	tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
+
+// Q to logit scale
+	gen `logQAW' = log(QAW / (1 - QAW))
+	gen `logQ1W' = log(Q1W / (1 - Q1W))
+	gen `logQ0W' = log(Q0W / (1 - Q0W))
+
+// Clever covariate HAW
+	gen  `HAW' = (A / ps) + ((1 - A) / (1 - ps))
+	gen  `H1W' = A / ps
+	gen  `H0W' = (1 - A) / (1 - ps)
+
+// Estimation of the substitution parameter (Epsilon)
+
+	qui glm Y `H1W' `H0W' [pweight = `HAW'], fam(binomial) offset(`logQAW') robust noconstant
+	mat a= e(b)
+	gen `eps1' = a[1,1]
+	gen `eps2' = a[1,2]
+
+	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust 
+	mat a= e(b)
+	gen `eps' = a[1,1]
+	
+// Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
+	gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
+	gen double Qa1star = exp(`H1W'*`eps' + `logQ1W')/(1 + exp(`H1W'*`eps' + `logQ1W'))
+
+	gen double Q0star = exp(`H0W'*`eps2' + `logQ0W')/(1 + exp(`H0W'*`eps2' + `logQ0W'))
+	gen double Q1star = exp(`H1W'*`eps1' + `logQ1W')/(1 + exp(`H1W'*`eps1' + `logQ1W'))
+
+	// gen double cin = ($b - $a) 
+
+	gen double POM1 = cond($flag == 1, Qa1star, (Qa1star * ($b - $a )) + $a , .)
+	gen double POM0 = cond($flag == 1, Qa0star, (Qa0star * ($b - $a )) + $a , .)
+
+	di as text " "
+	sum POM1 POM0 ps
+	di as text " "
+
+// Estimating the updated targeted ATE binary outcome
+	gen double ATE = cond($flag == 1, (Qa1star - Qa0star), ((Qa1star * ($b - $a )) + $a ) - ((Qa0star * ($b - $a )) + $a ) , .)
+	qui sum ATE
+	return scalar ATEtmle = r(mean)
+
+// Relative risk
+	qui sum Q1star
+	local Q1 = r(mean)
+	qui sum Q0star
+	local Q0 = r(mean)
+
+// Relative risk and Odds ratio
+	local RRtmle = `Q1'/`Q0'
+	local logRRtmle = log(`Q1') - log(`Q0')
+	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+
+// Statistical inference (Efficient Influence Curve)
+	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+	gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+	gen IC = cond($flag == 1,(d1 - d0), ((d1 * ($b - $a )) + $a ) - ((d0 * ($b - $a )) + $a ) , .)
+	qui sum IC
+	return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
+
+// Statistical inference ATE
+	return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
+	return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
+
+// Statistical inference RR
+	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
+	qui sum `ICrr'
+	local varICrr = r(Var)/r(N)
+	
+	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
+	
+// Statistical inference OR (We do not use the log of the OR)
+	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	gen `ICor' = (1/ (`Q1' *(1 - `Q1')) * d1) - (1/ (`Q0' *(1 - `Q0')) * d0) // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
+	qui sum `ICor'
+	local varICor = r(Var)/r(N)
+	local LCIOr = exp(log(`ORtmle') - 1.96 * sqrt(`varICor'))
+	local UCIOr = exp(log(`ORtmle') + 1.96 * sqrt(`varICor'))
+	*di sqrt(`varICor')
+	
+// Display Results of ATE
+	return scalar CRR = `RRtmle'
+	return scalar SE_log_CRR  = sqrt(`varICrr')
+	return scalar MOR = `ORtmle'
+	return scalar SE_log_MOR  = sqrt(`varICor')
+
+	if $flag==1 {
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) as text ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
+	}
+	else if $flag!=1{
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.1f as result return(ATEtmle) "    " %7.1f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.1f as result return(ATE_LCIa) as text ","  %7.1f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
+	}
+
+	local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
+	local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
+
+	* Display the results of CRR and MOR
+	disp as text "{hline 51}"
+	di "                           Estimate          95% CI"
+	disp as text "{hline 51}"
+	disp as text "Causal Risk Ratio:      " "{c |}      "  %04.2f as result `RRtmle' as text "     (" %03.2f as result `LCIrr' as text ","  %03.2f as result `UCIrr' as text ")"
+	disp as text "Marginal Odds Ratio:    " "{c |}      "  %04.2f as result `ORtmle' as text "     (" %03.2f as result `LCIOr' as text "," %03.2f as result `UCIOr' as text ")"
+	disp as text "{hline 51}"
+
+// Display covariate balance table
+
+	if $covbalancetable == 0 {
+		
+			* Create macros from the varlist
+				tokenize $variablelist
+				local outcome `1'
+				macro shift
+				local exposure `1'
+				macro shift
+				local varlist `*'
+
+			* Create the IPW weights
+				*di "Capture dropping _ipw 1"
+				qui capture drop _ipw
+				qui gen _ipw = .
+				qui replace _ipw = (`exposure'==1) / ps if `exposure'==1
+				qui replace _ipw = (`exposure'==0) / (1- ps) if `exposure'==0
+	}
+
+	if $covbalancetable == 1 {
+
+		* Create macros from the varlist
+			tokenize $variablelist
+			local outcome `1'
+			macro shift
+			local exposure `1'
+			macro shift
+			local varlist `*'
+
+		* Create the IPW weights
+			*di "Capture dropping _ipw 1"
+			qui capture drop _ipw
+			qui gen _ipw = .
+			qui replace _ipw = (`exposure'==1) / ps if `exposure'==1
+			qui replace _ipw = (`exposure'==0) / (1- ps) if `exposure'==0
+
+		* Layout of the results
+			di as text "{hline 67}"
+			di as text "                 Standardised Differences            Variance ratio"
+			di as text "                          Raw    Weighted           Raw    Weighted"
+			di as text "{hline 67}"
+
+		* Calculate the covariate balance
+			foreach var in `varlist' {
+					di as text "`var'"
+
+					* Raw SMD
+					qui summarize `var' if `exposure'==1
+					local m1 = r(mean)
+					local v1 = r(Var)
+					qui summarize `var' if `exposure'==0
+					local m0 = r(mean)
+					local v0 = r(Var)
+					* Calculate the Standardised "mean difference"
+					local rSMD = (`m1' - `m0') / sqrt( (`v1' + `v0') /2 )
+
+					* Weighted SMD
+					qui summarize `var' [iw=_ipw] if `exposure'==1
+					local m1 = r(mean)
+					local v1 = r(Var)
+					qui summarize `var' [iw=_ipw] if `exposure'==0
+					local m0 = r(mean)
+					local v0 = r(Var)
+					* Calculate the Standardised "mean difference"
+					local wSMD = (`m1' - `m0') / sqrt( (`v1' + `v0') /2 )
+
+					* Raw VR
+					qui sum `var' if `exposure' ==1
+					local v1 = r(Var)
+					qui sum `var' if `exposure' ==0
+					local v0 = r(Var)
+					* Calculate the variance ratio
+					local rVR = `v1' / `v0'
+
+					* Weighted VR
+					qui sum `var' [iw=_ipw] if `exposure' ==1
+					local v1 = r(Var)
+					qui sum `var' [iw=_ipw] if `exposure' ==0
+					local v0 = r(Var)
+					* Calculate the variance ratio
+					local wVR `v1' / `v0'
+
+					* Display the values
+					di as text "                    " %9.7g as result `rSMD' as text "   " %9.7g as result `wSMD' as text "     " %9.7g as result `rVR' as text "   " %9.7g as result `wVR'
+			}
+			di as text "{hline 67}"
+
+	}
+	
+// Create density plot to check positivity assumption
+	if $covbalancetable == 1 {
+	*preserve
+	*sort A
+	*qui by A: summarize ps
+	qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
+	qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
+	label variable d1A "A = 1"
+	label variable d0A "A = 0"
+	twoway (line d0A x0pointsa) || ///
+			(line d1A x1pointsa), ///
+			xtitle("Propensity score") ///
+			ytitle("Density") ///
+			graphregion(color(white)) bgcolor(white) plotregion(fcolor(white)) ///
+			legend(order(2 "Treated" 1 "Not treated") position(11) cols(1) ring(0) ///
+				region(style(none)))
+	*restore
+	}
+
+
+// Drop the variables if the elements option is not specified
+		if $keepvars == 0 {
+			drop d1 d0
+			drop QAW Q1W Q0W
+			drop Q1star Qa1star Q0star Qa0star
+			drop ATE IC
+			rename Y _Y
+			rename A _A
+			drop _Y _A
+			*di "Capture dropping _ipw 2"
+			capture drop _ipw
+			drop POM1 POM0 ps
+			capture drop cin
+			drop foldid rowid
+			capture drop x1pointsa x0pointsa d1A d0A
+			capture drop ytempvar
+		}
+
+// Rename and label the variables if the elements option *is* specified
+		if $keepvars == 1 {
+			
+			capture drop x1pointsa x0pointsa d1A d0A
+			
+			* Label the variables
+				lab var d1 "Parameter for the influence curve"
+				lab var d0 "Parameter for the influence curve"
+				lab var QAW "Initial prediction of the outcome"
+				lab var Q1W "Initial prediction of the outcome for A = 1"
+				lab var Q0W "Initial prediction of the outcome for A = 0"
+				lab var Qa1star "Update of the initial prediction for A = 1"
+				lab var Qa0star "Update of the initial prediction for A = 0"
+				lab var A "Exposure/Treatment"
+				lab var Y "Outcome"
+				lab var ATE "Average Treatment Effect"
+				lab var IC "Influence Curve"
+				lab var Q1star "Update of initial plug-in estimate for A=1"
+				lab var Q0star "Update of initial plug-in estimate for A=0"
+				lab var POM1 "Potential Outcome Y(1)"
+				lab var POM0 "Potential Otucome Y(0)"
+				lab var ps "Propensity Score"
+				//lab var cin "Range of Y"
+				lab var _ipw "Inverse probability of treatment weights"
+				capture drop ytempvar
+			* Rename the elements variables
+				foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A  POM1 POM0 ps {
+					rename `var' _`var'
+				}
+				*di "Keeping _ipw 1"
+				keep rowid _d1 _d0 _QAW _Q1W _Q0W _Q1star _Qa1star _Q0star _Qa0star _ATE _IC _Y _A _POM1 _POM0 _ps _ipw 
+				qui save "elementsdata.dta", replace
+		}
+
+
+restore
+
+	// Drop the temporary variable for Y
+	capture drop ytempvar
+
+	// Clean up
 	quietly: rm SLS.R
+	//quietly: rm SLS.Rout
 	quietly: rm data2.dta
 	quietly: rm cvdata.csv
 	quietly: rm cvdata.dta
 	quietly: rm fulldata.csv
-	forvalues i = 1(1)$folds {
-		quietly: rm "folddata`i'.dta"
-	}
+	forvalues i = 1(1)$folds{
+              quietly: rm "folddata`i'.dta"	
+           } 	
+	//quietly: rm .RData
 	quietly: memory clean
-end
 
+* Note the completion of the program
+	//di "Success"
 
-// ====================================================
-// NON-CV ESTIMATOR PROGRAMS
-// Each collapses to: write R → run R → load data →
-//   (optional bal helpers) → estimate → return → label/cleanup
-// ====================================================
+	// Merge in the elements
+		if $keepvars == 0 {
+			qui drop foldid rowid
+		}
 
-program tmle, rclass
-	_eltmle_write_r_noncv base
-	_eltmle_run_r
-	clear
-	quietly: use "data2.dta", clear
-	qui cap drop X__000000
-	_eltmle_tmle_estimate
-	return add
-	_eltmle_label_rename_noncv
-	_eltmle_cleanup_noncv
-end
-
-program tmlebal, rclass
-	_eltmle_write_r_noncv base
-	_eltmle_run_r
-	clear
-	quietly: use "data2.dta", clear
-	qui cap drop X__000000
-	_eltmle_positivity_plot
-	_eltmle_tmle_estimate
-	return add
-	_eltmle_covbal_table
-	_eltmle_label_rename_noncv
-	_eltmle_cleanup_noncv
-end
-
-program tmlebgam, rclass
-	_eltmle_write_r_noncv bgam
-	_eltmle_run_r
-	clear
-	quietly: use "data2.dta", clear
-	qui cap drop X__000000
-	_eltmle_tmle_estimate
-	return add
-	_eltmle_label_rename_noncv
-	_eltmle_cleanup_noncv
-end
-
-program tmlebgambal, rclass
-	_eltmle_write_r_noncv bgam
-	_eltmle_run_r
-	clear
-	quietly: use "data2.dta", clear
-	qui cap drop X__000000
-	_eltmle_positivity_plot
-	_eltmle_tmle_estimate
-	return add
-	_eltmle_covbal_table
-	_eltmle_label_rename_noncv
-	_eltmle_cleanup_noncv
-end
-
-program tmleglsrf, rclass
-	_eltmle_write_r_noncv glsrf
-	_eltmle_run_r
-	clear
-	quietly: use "data2.dta", clear
-	qui cap drop X__000000
-	_eltmle_tmle_estimate
-	return add
-	_eltmle_label_rename_noncv
-	_eltmle_cleanup_noncv
-end
-
-program tmleglsrfbal, rclass
-	_eltmle_write_r_noncv glsrf
-	_eltmle_run_r
-	clear
-	quietly: use "data2.dta", clear
-	qui cap drop X__000000
-	_eltmle_positivity_plot
-	_eltmle_tmle_estimate
-	return add
-	_eltmle_covbal_table
-	_eltmle_label_rename_noncv
-	_eltmle_cleanup_noncv
-end
-
-
-// ====================================================
-// CROSS-VALIDATION ESTIMATOR PROGRAMS
-// Structure: preserve → fold loop (write R, run R, save folddata) →
-//   combine folds → TMLE estimate → covbal → label → restore →
-//   cleanup → merge elements
-// ====================================================
-
-program cvtmle, rclass
-preserve
-	forval fold = 1/$folds {
-
-		if `fold' == 1 _dots 0, title(Performing $folds folds)
-
-		qui use "cvdata.dta", clear
-		capture drop foldnumber
-		qui gen foldnumber = `fold'
-		qui: export delimited $varusedforcv foldnumber using "cvdata.csv", nolabel replace
-
-		_eltmle_write_r_cv base
-		_eltmle_run_r
-
-		quietly: use "data2.dta", clear
-		qui save "folddata`fold'.dta", replace
-
-		_dots `fold' 0
-	}
-
-	// Combine fold predictions
-	qui: use "folddata1.dta", clear
-	forval fold = 2/$folds {
-		qui: append using "folddata`fold'"
-	}
-	qui save "data2.dta", replace
-
-	// Load combined data and run TMLE estimation
-	qui clear
-	quietly: use "data2.dta", clear
-	qui cap drop X__000000
-	_eltmle_tmle_estimate
-	return add
-
-	// IPW weights (always); covbal table and positivity plot (conditional)
-	if $covbalancetable == 0 {
-		tokenize $variablelist
-		local outcome `1'
-		macro shift
-		local exposure `1'
-		capture drop _ipw
-		qui gen _ipw = .
-		qui replace _ipw = (`exposure'==1) / ps       if `exposure'==1
-		qui replace _ipw = (`exposure'==0) / (1 - ps) if `exposure'==0
-	}
-	if $covbalancetable == 1 {
-		_eltmle_covbal_table
-		// Positivity plot — inline (no nested preserve; already inside one)
-		qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
-		qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
-		label variable d1A "A = 1"
-		label variable d0A "A = 0"
-		set scheme sj
-		twoway (line d0A x0pointsa) || ///
-			(line d1A x1pointsa), ///
-			xtitle("Propensity score") ///
-			ytitle("Density") ///
-			graphregion(color(white)) bgcolor(white) plotregion(fcolor(white)) ///
-			legend(order(2 "Treated" 1 "Not treated") position(1) cols(1) ring(0) ///
-				region(style(none)))
-	}
-
-	_eltmle_label_rename_cv
-
-restore
-
-	capture drop ytempvar
-	_eltmle_cleanup_cv
-
-	if $keepvars == 0 {
-		qui drop foldid rowid
-	}
-	if $keepvars == 1 {
-		qui merge 1:1 rowid using "elementsdata.dta"
-	}
+	// Merge in the elements
+		if $keepvars == 1 {
+			qui merge 1:1 rowid using "elementsdata.dta"
+		}
 end
 
 program cvtmlebgam, rclass
+	*di "Starting cvtmle..."
+
 preserve
 	forval fold = 1/$folds {
-
-		if `fold' == 1 _dots 0, title(Performing $folds folds)
-
+		
+		if `fold' == 1 _dots 0, title (Performing $folds folds) 
+		
+		* Load the data to be used for the folds
 		qui use "cvdata.dta", clear
+		
+		* Create a variable indicating the fold number
 		capture drop foldnumber
 		qui gen foldnumber = `fold'
+		
+		* Count number of observations
+		qui count
+		local nobstotal = r(N)
+		
+		* Export to csv file
 		qui: export delimited $varusedforcv foldnumber using "cvdata.csv", nolabel replace
-
-		_eltmle_write_r_cv bgam
-		_eltmle_run_r
-
+		
+		* Rcode for the SuperLearner
+		qui: set more off
+		qui: file close _all
+		qui: file open rcode using SLS.R, write replace
+		qui: file write rcode ///
+			`"set.seed(123)"' _newline ///
+			`"list.of.packages <- c("foreign","SuperLearner","dplyr","gam","arm")"' _newline ///
+			`"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
+			`"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
+			`"library(SuperLearner)"' _newline ///
+			`"library(foreign)"' _newline ///
+			`"library(dplyr)"' _newline ///
+			`"library(gam)"' _newline ///			
+			`"library(arm)"' _newline ///
+			`"data <- read.csv("cvdata.csv", sep=",")"' _newline ///
+			`"attach(data)"' _newline ///
+			`"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.bayesglm")"' _newline ///
+			`"nvar <- dim(data)[[2]]"' _newline ///
+			`"f <- foldnumber[1]"' _newline ///
+			`"data <- subset(data, select = -(foldnumber))"' _newline ///
+			`"tdata <- data[foldid!=f,]"' _newline ///		
+			`"vdataAa <- data[foldid==f,]"' _newline ///
+			`"vdataA1 <- vdataAa; vdataA1[,2] <- 1"' _newline ///
+			`"vdataA0 <- vdataAa; vdataA0[,2] <- 0"' _newline ///
+			`"Vn <- nrow(vdataAa)"' _newline ///
+			`"Tn <- nrow(tdata)"' _newline ///
+			`"Y <- vdataAa[,1]"' _newline ///
+			`"A <- vdataAa[,2]"' _newline ///
+			`"X <- subset(tdata, select = -c(1, foldid, rowid))"' _newline ///
+			`"W <- subset(tdata, select = -c(1, 2, foldid, rowid))"' _newline ///
+			`"tset <- try(SuperLearner(Y = tdata[,1], X = X, SL.library = SL.library, family = "binomial", method = "method.NNLS"), silent=TRUE)"' _newline ///
+			`"QAW <- predict(tset, newdata=vdataAa)[[1]]"' _newline ///
+			`"Q1W <- predict(tset, newdata=vdataA1)[[1]]"' _newline ///
+			`"Q0W <- predict(tset, newdata=vdataA0)[[1]]"' _newline ///
+			`"QAWt <- predict(tset)[[1]]"' _newline ///
+			`"g <-    try(SuperLearner(Y = tdata[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"), silent=TRUE)"' _newline ///
+			`"ps <- predict(g, newdata=vdataAa)[[1]]"' _newline ///
+			`"ps[ps<0.025] <- 0.025"' _newline ///
+			`"ps[ps>0.975] <- 0.975"' _newline ///
+			`"data <- cbind(vdataAa,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+			`"write.dta(data, "data2.dta")"' 
+		qui: file close rcode
+		
+		* Specify the operating system
+	if "`c(os)'" == "MacOSX" {
+	qui shell "/usr/local/bin/r" CMD BATCH SLS.R
+	}
+	else{
+	// Write batch file to find R.exe path and R version
+		set more off
+		qui: file close _all
+		qui: file open bat using setup.bat, write replace
+		qui: file write bat ///
+		`"@echo off"' _newline ///
+		`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+		`"echo Locating path of R..."' _newline ///
+		`"echo."' _newline ///
+		`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+		`":NO_R"' _newline ///
+		`"echo R is not installed in your system."' _newline ///
+		`"echo."' _newline ///
+		`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+		`"echo Install it and re-run this script"' _newline ///
+		`":DONE"' _newline ///
+		`"echo."' _newline ///
+		`"pause"'
+		qui: file close bat
+		
+		* Check you have 'rscript' command installed.
+		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
+		
+		* Run SLS.R in Windows - 'rscript' command will search for common folders to find R.exe
+		qui: rscript using SLS.R
+	}
+	
+	
+	* Load the data created by R
 		quietly: use "data2.dta", clear
-		qui save "folddata`fold'.dta", replace
-
-		_dots `fold' 0
+		local folddataname "folddata`fold'"
+		qui save "`folddataname'.dta", replace
+		
+	*if $progress == 1 di "Done fold `fold'"
+	
+	_dots `fold' 0
+		
 	}
-
-	// Combine fold predictions
-	qui: use "folddata1.dta", clear
-	forval fold = 2/$folds {
-		qui: append using "folddata`fold'"
-	}
-	qui save "data2.dta", replace
-
-	// Load combined data and run TMLE estimation
+	
+	* Combine the predictions into one data set
+		* Append the data sets
+		qui: use "folddata1.dta", clear
+		forval fold = 2/$folds {
+			qui: append using "folddata`fold'"
+		}
+		qui save "data2.dta", replace
+	
+// Read Revised Data Back to Stata
 	qui clear
 	quietly: use "data2.dta", clear
+	*import delimited "data2.csv", case(preserve) clear 
 	qui cap drop X__000000
-	_eltmle_tmle_estimate
-	return add
+	tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 
-	// IPW weights (always); covbal table and positivity plot (conditional)
-	if $covbalancetable == 0 {
-		tokenize $variablelist
-		local outcome `1'
-		macro shift
-		local exposure `1'
-		capture drop _ipw
-		qui gen _ipw = .
-		qui replace _ipw = (`exposure'==1) / ps       if `exposure'==1
-		qui replace _ipw = (`exposure'==0) / (1 - ps) if `exposure'==0
+// Q to logit scale
+	gen `logQAW' = log(QAW / (1 - QAW))
+	gen `logQ1W' = log(Q1W / (1 - Q1W))
+	gen `logQ0W' = log(Q0W / (1 - Q0W))
+
+// Clever covariate HAW
+	gen  `HAW' = (A / ps) + ((1 - A) / (1 - ps))
+	gen  `H1W' = A / ps
+	gen  `H0W' = (1 - A) / (1 - ps)
+
+// Estimation of the substitution parameter (Epsilon)
+
+	qui glm Y `H1W' `H0W' [pweight = `HAW'], fam(binomial) offset(`logQAW') robust noconstant
+	mat a= e(b)
+	gen `eps1' = a[1,1]
+	gen `eps2' = a[1,2]
+
+	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust 
+	mat a= e(b)
+	gen `eps' = a[1,1]
+	
+// Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
+	gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
+	gen double Qa1star = exp(`H1W'*`eps' + `logQ1W')/(1 + exp(`H1W'*`eps' + `logQ1W'))
+
+	gen double Q0star = exp(`H0W'*`eps2' + `logQ0W')/(1 + exp(`H0W'*`eps2' + `logQ0W'))
+	gen double Q1star = exp(`H1W'*`eps1' + `logQ1W')/(1 + exp(`H1W'*`eps1' + `logQ1W'))
+
+	// gen double cin = ($b - $a) 
+
+	gen double POM1 = cond($flag == 1, Qa1star, (Qa1star * ($b - $a )) + $a , .)
+	gen double POM0 = cond($flag == 1, Qa0star, (Qa0star * ($b - $a )) + $a , .)
+
+	di as text " "
+	sum POM1 POM0 ps
+	di as text " "
+
+// Estimating the updated targeted ATE binary outcome
+	gen double ATE = cond($flag == 1, (Qa1star - Qa0star), ((Qa1star * ($b - $a )) + $a ) - ((Qa0star * ($b - $a )) + $a ) , .)
+	qui sum ATE
+	return scalar ATEtmle = r(mean)
+
+// Relative risk
+	qui sum Q1star
+	local Q1 = r(mean)
+	qui sum Q0star
+	local Q0 = r(mean)
+
+// Relative risk and Odds ratio
+	local RRtmle = `Q1'/`Q0'
+	local logRRtmle = log(`Q1') - log(`Q0')
+	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+
+// Statistical inference (Efficient Influence Curve)
+	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+	gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+	gen IC = cond($flag == 1,(d1 - d0), ((d1 * ($b - $a )) + $a ) - ((d0 * ($b - $a )) + $a ) , .)
+	qui sum IC
+	return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
+
+// Statistical inference ATE
+	return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
+	return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
+
+// Statistical inference RR
+	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
+	qui sum `ICrr'
+	local varICrr = r(Var)/r(N)
+	
+	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
+	
+// Statistical inference OR (We do not use the log of the OR)
+	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	gen `ICor' = (1/ (`Q1' *(1 - `Q1')) * d1) - (1/ (`Q0' *(1 - `Q0')) * d0) // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
+	qui sum `ICor'
+	local varICor = r(Var)/r(N)
+	local LCIOr = exp(log(`ORtmle') - 1.96 * sqrt(`varICor'))
+	local UCIOr = exp(log(`ORtmle') + 1.96 * sqrt(`varICor'))
+	*di sqrt(`varICor')
+	
+// Display Results of ATE
+	return scalar CRR = `RRtmle'
+	return scalar SE_log_CRR  = sqrt(`varICrr')
+	return scalar MOR = `ORtmle'
+	return scalar SE_log_MOR  = sqrt(`varICor')
+
+	if $flag==1 {
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) as text ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
 	}
+	else if $flag!=1{
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.1f as result return(ATEtmle) "    " %7.1f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.1f as result return(ATE_LCIa) as text ","  %7.1f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
+	}
+
+	local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
+	local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
+
+	* Display the results of CRR and MOR
+	disp as text "{hline 51}"
+	di "                           Estimate          95% CI"
+	disp as text "{hline 51}"
+	disp as text "Causal Risk Ratio:      " "{c |}      "  %04.2f as result `RRtmle' as text "     (" %03.2f as result `LCIrr' as text ","  %03.2f as result `UCIrr' as text ")"
+	disp as text "Marginal Odds Ratio:    " "{c |}      "  %04.2f as result `ORtmle' as text "     (" %03.2f as result `LCIOr' as text "," %03.2f as result `UCIOr' as text ")"
+	disp as text "{hline 51}"
+
+	
+// Display covariate balance table
+
+	if $covbalancetable == 0 {
+		
+			* Create macros from the varlist
+				tokenize $variablelist
+				local outcome `1'
+				macro shift
+				local exposure `1'
+				macro shift
+				local varlist `*'
+
+			* Create the IPW weights
+				*di "Capture dropping _ipw 1"
+				qui capture drop _ipw
+				qui gen _ipw = .
+				qui replace _ipw = (`exposure'==1) / ps if `exposure'==1
+				qui replace _ipw = (`exposure'==0) / (1- ps) if `exposure'==0
+	}
+
 	if $covbalancetable == 1 {
-		_eltmle_covbal_table
-		qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
-		qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
-		label variable d1A "A = 1"
-		label variable d0A "A = 0"
-		set scheme sj
-		twoway (line d0A x0pointsa) || ///
+
+		* Create macros from the varlist
+			tokenize $variablelist
+			local outcome `1'
+			macro shift
+			local exposure `1'
+			macro shift
+			local varlist `*'
+
+		* Create the IPW weights
+			*di "Capture dropping _ipw 1"
+			qui capture drop _ipw
+			qui gen _ipw = .
+			qui replace _ipw = (`exposure'==1) / ps if `exposure'==1
+			qui replace _ipw = (`exposure'==0) / (1- ps) if `exposure'==0
+
+		* Layout of the results
+			di as text "{hline 67}"
+			di as text "                 Standardised Differences            Variance ratio"
+			di as text "                          Raw    Weighted           Raw    Weighted"
+			di as text "{hline 67}"
+			
+		* Calculate the covariate balance
+			foreach var in `varlist' {
+					di as text "`var'"
+
+					* Raw SMD
+					qui summarize `var' if `exposure'==1
+					local m1 = r(mean)
+					local v1 = r(Var)
+					qui summarize `var' if `exposure'==0
+					local m0 = r(mean)
+					local v0 = r(Var)
+					* Calculate the Standardised "mean difference"
+					local rSMD = (`m1' - `m0') / sqrt( (`v1' + `v0') /2 )
+
+					* Weighted SMD
+					qui summarize `var' [iw=_ipw] if `exposure'==1
+					local m1 = r(mean)
+					local v1 = r(Var)
+					qui summarize `var' [iw=_ipw] if `exposure'==0
+					local m0 = r(mean)
+					local v0 = r(Var)
+					* Calculate the Standardised "mean difference"
+					local wSMD = (`m1' - `m0') / sqrt( (`v1' + `v0') /2 )
+
+					* Raw VR
+					qui sum `var' if `exposure' ==1
+					local v1 = r(Var)
+					qui sum `var' if `exposure' ==0
+					local v0 = r(Var)
+					* Calculate the variance ratio
+					local rVR = `v1' / `v0'
+
+					* Weighted VR
+					qui sum `var' [iw=_ipw] if `exposure' ==1
+					local v1 = r(Var)
+					qui sum `var' [iw=_ipw] if `exposure' ==0
+					local v0 = r(Var)
+					* Calculate the variance ratio
+					local wVR `v1' / `v0'
+
+					* Display the values
+					di as text "                    " %9.7g as result `rSMD' as text "   " %9.7g as result `wSMD' as text "     " %9.7g as result `rVR' as text "   " %9.7g as result `wVR'
+			}
+			di as text "{hline 67}"
+
+	}
+	
+// Create density plot to check positivity assumption
+	if $covbalancetable == 1 {
+	qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
+	qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
+	label variable d1A "A = 1"
+	label variable d0A "A = 0"
+	twoway (line d0A x0pointsa) || ///
 			(line d1A x1pointsa), ///
 			xtitle("Propensity score") ///
 			ytitle("Density") ///
 			graphregion(color(white)) bgcolor(white) plotregion(fcolor(white)) ///
-			legend(order(2 "Treated" 1 "Not treated") position(1) cols(1) ring(0) ///
+			legend(order(2 "Treated" 1 "Not treated") position(11) cols(1) ring(0) ///
 				region(style(none)))
 	}
 
-	_eltmle_label_rename_cv
+// Drop the variables if the elements option is not specified
+		if $keepvars == 0 {
+			drop d1 d0
+			drop QAW Q1W Q0W
+			drop Q1star Qa1star Q0star Qa0star
+			drop ATE IC
+			rename Y _Y
+			rename A _A
+			drop _Y _A
+			*di "Capture dropping _ipw 2"
+			capture drop _ipw
+			drop POM1 POM0 ps
+			capture drop cin
+			drop foldid rowid
+			capture drop x1pointsa x0pointsa d1A d0A
+			capture drop ytempvar
+		}
+
+// Rename and label the variables if the elements option *is* specified
+		if $keepvars == 1 {
+			
+			capture drop x1pointsa x0pointsa d1A d0A
+			
+			* Label the variables
+				lab var d1 "Parameter for the influence curve"
+				lab var d0 "Parameter for the influence curve"
+				lab var QAW "Initial prediction of the outcome"
+				lab var Q1W "Initial prediction of the outcome for A = 1"
+				lab var Q0W "Initial prediction of the outcome for A = 0"
+				lab var Qa1star "Update of the initial prediction for A = 1"
+				lab var Qa0star "Update of the initial prediction for A = 0"
+				lab var A "Exposure/Treatment"
+				lab var Y "Outcome"
+				lab var ATE "Average Treatment Effect"
+				lab var IC "Influence Curve"
+				lab var Q1star "Update of initial plug-in estimate for A=1"
+				lab var Q0star "Update of initial plug-in estimate for A=0"
+				lab var POM1 "Potential Outcome Y(1)"
+				lab var POM0 "Potential Otucome Y(0)"
+				lab var ps "Propensity Score"
+				//lab var cin "Range of Y"
+				lab var _ipw "Inverse probability of treatment weights"
+				capture drop ytempvar
+			* Rename the elements variables
+				foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A  POM1 POM0 ps {
+					rename `var' _`var'
+				}
+				*di "Keeping _ipw 1"
+				keep rowid _d1 _d0 _QAW _Q1W _Q0W _Q1star _Qa1star _Q0star _Qa0star _ATE _IC _Y _A _POM1 _POM0 _ps _ipw 
+				qui save "elementsdata.dta", replace
+		}
+
 
 restore
 
+	// Drop the temporary variable for Y
 	capture drop ytempvar
-	_eltmle_cleanup_cv
 
-	if $keepvars == 0 {
-		qui drop foldid rowid
-	}
-	if $keepvars == 1 {
-		qui merge 1:1 rowid using "elementsdata.dta"
-	}
+	// Clean up
+	quietly: rm SLS.R
+	//quietly: rm SLS.Rout
+	quietly: rm data2.dta
+	quietly: rm cvdata.csv
+	quietly: rm cvdata.dta
+	quietly: rm fulldata.csv
+	forvalues i = 1(1)$folds{
+              quietly: rm "folddata`i'.dta"	
+           } 
+	// quietly: rm .RData
+	quietly: memory clean
+
+* Note the completion of the program
+	//di "Success"
+
+
+
+	// Merge in the elements
+		if $keepvars == 0 {
+			qui drop foldid rowid
+		}
+
+	// Merge in the elements
+		if $keepvars == 1 {
+			qui merge 1:1 rowid using "elementsdata.dta"
+		}
+	
 end
 
 program cvtmleglsrf, rclass
+	*di "Starting cvtmle..."
+
 preserve
 	forval fold = 1/$folds {
-
-		if `fold' == 1 _dots 0, title(Performing $folds folds)
-
+		
+		if `fold' == 1 _dots 0, title (Performing $folds folds) 
+		
+		* Load the data to be used for the folds
 		qui use "cvdata.dta", clear
+		
+		* Create a variable indicating the fold number
 		capture drop foldnumber
 		qui gen foldnumber = `fold'
+		
+		* Count number of observations
+		qui count
+		local nobstotal = r(N)
+		
+		* Export to csv file
 		qui: export delimited $varusedforcv foldnumber using "cvdata.csv", nolabel replace
-
-		_eltmle_write_r_cv glsrf
-		_eltmle_run_r
-
+		
+		* Rcode for the SuperLearner
+		qui: set more off
+		qui: file close _all
+		qui: file open rcode using SLS.R, write replace
+		qui: file write rcode ///
+			`"set.seed(123)"' _newline ///
+			`"list.of.packages <- c("foreign","SuperLearner","dplyr","glmnet","randomForest")"' _newline ///
+			`"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline ///
+			`"if(length(new.packages)) install.packages(new.packages, repos='http://cran.us.r-project.org')"' _newline ///
+			`"library(SuperLearner)"' _newline ///
+			`"library(foreign)"' _newline ///
+			`"library(dplyr)"' _newline ///
+			`"library(randomForest)"' _newline ///
+			`"library(glmnet)"' _newline ///
+			`"data <- read.csv("cvdata.csv", sep=",")"' _newline ///
+			`"attach(data)"' _newline ///
+			`"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.glmnet","SL.randomForest")"' _newline ///
+			`"nvar <- dim(data)[[2]]"' _newline ///
+			`"f <- foldnumber[1]"' _newline ///
+			`"data <- data %>% select(-c("foldnumber"))"' _newline ///
+			`"tdata <- data[foldid!=f,]"' _newline ///		
+			`"vdataAa <- data[foldid==f,]"' _newline ///
+			`"vdataA1 <- vdataAa; vdataA1[,2] <- 1"' _newline ///
+			`"vdataA0 <- vdataAa; vdataA0[,2] <- 0"' _newline ///
+			`"Vn <- nrow(vdataAa)"' _newline ///
+			`"Tn <- nrow(tdata)"' _newline ///
+			`"Y <- vdataAa[,1]"' _newline ///
+			`"A <- vdataAa[,2]"' _newline ///
+			`"X <- tdata %>% select(-c(1,    "foldid", "rowid"))"' _newline ///
+			`"W <- tdata %>% select(-c(1, 2, "foldid", "rowid"))"' _newline ///
+			`"tset <- try(SuperLearner(Y = tdata[,1], X = X, SL.library = SL.library, family = "binomial", method = "method.NNLS"), silent=TRUE)"' _newline ///
+			`"QAW <- predict(tset, newdata=vdataAa)[[1]]"' _newline ///
+			`"Q1W <- predict(tset, newdata=vdataA1)[[1]]"' _newline ///
+			`"Q0W <- predict(tset, newdata=vdataA0)[[1]]"' _newline ///
+			`"QAWt <- predict(tset)[[1]]"' _newline ///
+			`"g <-    try(SuperLearner(Y = tdata[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"), silent=TRUE)"' _newline ///
+			`"ps <- predict(g, newdata=vdataAa)[[1]]"' _newline ///
+			`"ps[ps<0.025] <- 0.025"' _newline ///
+			`"ps[ps>0.975] <- 0.975"' _newline ///
+			`"data <- cbind(vdataAa,QAW,Q1W,Q0W,ps,Y,A)"' _newline ///
+			`"write.dta(data, "data2.dta")"' 
+		qui: file close rcode
+		
+		* Specify the operating system
+	if "`c(os)'" == "MacOSX" {
+	qui shell "/usr/local/bin/r" CMD BATCH SLS.R
+	}
+	else{
+	// Write batch file to find R.exe path and R version
+		set more off
+		qui: file close _all
+		qui: file open bat using setup.bat, write replace
+		qui: file write bat ///
+		`"@echo off"' _newline ///
+		`"SET PATHROOT=C:\Program Files\R\"' _newline ///
+		`"echo Locating path of R..."' _newline ///
+		`"echo."' _newline ///
+		`"if not exist "%PATHROOT%" goto:NO_R"' _newline ///
+		`":NO_R"' _newline ///
+		`"echo R is not installed in your system."' _newline ///
+		`"echo."' _newline ///
+		`"echo Download it from https://cran.r-project.org/bin/windows/base/"' _newline ///
+		`"echo Install it and re-run this script"' _newline ///
+		`":DONE"' _newline ///
+		`"echo."' _newline ///
+		`"pause"'
+		qui: file close bat
+		
+		* Check you have 'rscript' command installed.
+		qui: net install rscript, from("https://raw.githubusercontent.com/reifjulian/rscript/master") replace
+		
+		* Run SLS.R in Windows - 'rscript' command will search for common folders to find R.exe
+		qui: rscript using SLS.R
+	}
+	
+	
+	* Load the data created by R
 		quietly: use "data2.dta", clear
-		qui save "folddata`fold'.dta", replace
-
-		_dots `fold' 0
+		local folddataname "folddata`fold'"
+		qui save "`folddataname'.dta", replace
+		
+	*if $progress == 1 di "Done fold `fold'"
+	
+	_dots `fold' 0
+		
 	}
-
-	// Combine fold predictions
-	qui: use "folddata1.dta", clear
-	forval fold = 2/$folds {
-		qui: append using "folddata`fold'"
-	}
-	qui save "data2.dta", replace
-
-	// Load combined data and run TMLE estimation
+	
+	* Combine the predictions into one data set
+		* Append the data sets
+		qui: use "folddata1.dta", clear
+		forval fold = 2/$folds {
+			qui: append using "folddata`fold'"
+		}
+		qui save "data2.dta", replace	
+		
+// Read Revised Data Back to Stata
 	qui clear
 	quietly: use "data2.dta", clear
+	*import delimited "data2.csv", case(preserve) clear 
 	qui cap drop X__000000
-	_eltmle_tmle_estimate
-	return add
+	tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ATE ICrr ICor
 
-	// IPW weights (always); covbal table and positivity plot (conditional)
-	if $covbalancetable == 0 {
-		tokenize $variablelist
-		local outcome `1'
-		macro shift
-		local exposure `1'
-		capture drop _ipw
-		qui gen _ipw = .
-		qui replace _ipw = (`exposure'==1) / ps       if `exposure'==1
-		qui replace _ipw = (`exposure'==0) / (1 - ps) if `exposure'==0
+// Q to logit scale
+	gen `logQAW' = log(QAW / (1 - QAW))
+	gen `logQ1W' = log(Q1W / (1 - Q1W))
+	gen `logQ0W' = log(Q0W / (1 - Q0W))
+
+// Clever covariate HAW
+	gen  `HAW' = (A / ps) + ((1 - A) / (1 - ps))
+	gen  `H1W' = A / ps
+	gen  `H0W' = (1 - A) / (1 - ps)
+	
+// Estimation of the substitution parameter (Epsilon)
+
+	qui glm Y `H1W' `H0W' [pweight = `HAW'], fam(binomial) offset(`logQAW') robust noconstant
+	mat a= e(b)
+	gen `eps1' = a[1,1]
+	gen `eps2' = a[1,2]
+
+	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust 
+	mat a= e(b)
+	gen `eps' = a[1,1]
+	
+// Targeted ATE, update from Q̅^0 (A,W) to Q̅^1 (A,W)
+	gen double Qa0star = exp(`H0W'*`eps' + `logQ0W')/(1 + exp(`H0W'*`eps' + `logQ0W'))
+	gen double Qa1star = exp(`H1W'*`eps' + `logQ1W')/(1 + exp(`H1W'*`eps' + `logQ1W'))
+
+	gen double Q0star = exp(`H0W'*`eps2' + `logQ0W')/(1 + exp(`H0W'*`eps2' + `logQ0W'))
+	gen double Q1star = exp(`H1W'*`eps1' + `logQ1W')/(1 + exp(`H1W'*`eps1' + `logQ1W'))
+
+	// gen double cin = ($b - $a) 
+
+	gen double POM1 = cond($flag == 1, Qa1star, (Qa1star * ($b - $a )) + $a , .)
+	gen double POM0 = cond($flag == 1, Qa0star, (Qa0star * ($b - $a )) + $a , .)
+
+	di as text " "
+	sum POM1 POM0 ps
+	di as text " "
+
+// Estimating the updated targeted ATE binary outcome
+	gen double ATE = cond($flag == 1, (Qa1star - Qa0star), ((Qa1star * ($b - $a )) + $a ) - ((Qa0star * ($b - $a )) + $a ) , .)
+	qui sum ATE
+	return scalar ATEtmle = r(mean)
+
+// Relative risk
+	qui sum Q1star
+	local Q1 = r(mean)
+	qui sum Q0star
+	local Q0 = r(mean)
+
+// Relative risk and Odds ratio
+	local RRtmle = `Q1'/`Q0'
+	local logRRtmle = log(`Q1') - log(`Q0')
+	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+
+// Statistical inference (Efficient Influence Curve)
+	gen d1 = cond($flag == 1,(A * (Y - Q1star) / ps) + Q1star - `Q1',(A * (Y - Qa1star) / ps) + Qa1star - `Q1' ,.)
+	gen d0 = cond($flag == 1,(1 - A) * (Y - Q0star) / (1 - ps) + Q0star - `Q0',(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Q0' ,.)
+	gen IC = cond($flag == 1,(d1 - d0), ((d1 * ($b - $a )) + $a ) - ((d0 * ($b - $a )) + $a ) , .)
+	qui sum IC
+	return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
+
+// Statistical inference ATE
+	return scalar ATE_pvalue =  2 * (normalden(abs(return(ATEtmle) / (return(ATE_SE_tmle)))))
+	return scalar ATE_LCIa   =  return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
+	return scalar ATE_UCIa   =  return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
+
+// Statistical inference RR
+	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
+	qui sum `ICrr'
+	local varICrr = r(Var)/r(N)
+	
+	local LCIrr =  exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
+	local UCIrr =  exp(`logRRtmle' + 1.96 * sqrt(`varICrr'))
+	
+// Statistical inference OR (We do not use the log of the OR)
+	local ORtmle = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
+	gen `ICor' = (1/ (`Q1' *(1 - `Q1')) * d1) - (1/ (`Q0' *(1 - `Q0')) * d0) // Partial derivatives (use wolfram to check: d/dx log(x/(1-x))+ log(y/(1-y)))
+	qui sum `ICor'
+	local varICor = r(Var)/r(N)
+	local LCIOr = exp(log(`ORtmle') - 1.96 * sqrt(`varICor'))
+	local UCIOr = exp(log(`ORtmle') + 1.96 * sqrt(`varICor'))
+	*di sqrt(`varICor')
+	
+// Display Results of ATE
+	return scalar CRR = `RRtmle'
+	return scalar SE_log_CRR  = sqrt(`varICrr')
+	return scalar MOR = `ORtmle'
+	return scalar SE_log_MOR  = sqrt(`varICor')
+
+	if $flag==1 {
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " %7.4f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.4f as result return(ATE_LCIa) as text ","  %7.4f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
 	}
+	else if $flag!=1{
+	disp as text "{hline 63}"
+	di "         {c |}" "    ATE         SE     P-value           95% CI"
+	disp as text "{hline 63}"
+	disp as text "TMLE:    {c |}" %7.1f as result return(ATEtmle) "    " %7.1f as result return(ATE_SE_tmle) "     " %7.4f as result return(ATE_pvalue) as text "     (" %7.1f as result return(ATE_LCIa) as text ","  %7.1f as result return(ATE_UCIa) as text " )"
+	disp as text "{hline 63}"
+	disp as text " "
+	}
+
+	local rrbin ""CRR: "%4.2f `RRtmle'  "; 95%CI:("%3.2f `LCIrr' ", "%3.2f `UCIrr' ")""
+	local orbin ""MOR: "%4.2f `ORtmle'  "; 95%CI:("%3.2f `LCIOr' ", "%3.2f `UCIOr' ")""
+
+	* Display the results of CRR and MOR
+	disp as text "{hline 51}"
+	di "                           Estimate          95% CI"
+	disp as text "{hline 51}"
+	disp as text "Causal Risk Ratio:      " "{c |}      "  %04.2f as result `RRtmle' as text "     (" %03.2f as result `LCIrr' as text ","  %03.2f as result `UCIrr' as text ")"
+	disp as text "Marginal Odds Ratio:    " "{c |}      "  %04.2f as result `ORtmle' as text "     (" %03.2f as result `LCIOr' as text "," %03.2f as result `UCIOr' as text ")"
+	disp as text "{hline 51}"
+
+	
+// Display covariate balance table
+
+	if $covbalancetable == 0 {
+		
+			* Create macros from the varlist
+				tokenize $variablelist
+				local outcome `1'
+				macro shift
+				local exposure `1'
+				macro shift
+				local varlist `*'
+
+			* Create the IPW weights
+				*di "Capture dropping _ipw 1"
+				qui capture drop _ipw
+				qui gen _ipw = .
+				qui replace _ipw = (`exposure'==1) / ps if `exposure'==1
+				qui replace _ipw = (`exposure'==0) / (1- ps) if `exposure'==0
+	}
+
 	if $covbalancetable == 1 {
-		_eltmle_covbal_table
-		qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
-		qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
-		label variable d1A "A = 1"
-		label variable d0A "A = 0"
-		set scheme sj
-		twoway (line d0A x0pointsa) || ///
+
+		* Create macros from the varlist
+			tokenize $variablelist
+			local outcome `1'
+			macro shift
+			local exposure `1'
+			macro shift
+			local varlist `*'
+
+		* Create the IPW weights
+			*di "Capture dropping _ipw 1"
+			qui capture drop _ipw
+			qui gen _ipw = .
+			qui replace _ipw = (`exposure'==1) / ps if `exposure'==1
+			qui replace _ipw = (`exposure'==0) / (1- ps) if `exposure'==0
+
+		* Layout of the results
+			di as text "{hline 67}"
+			di as text "                 Standardised Differences            Variance ratio"
+			di as text "                          Raw    Weighted           Raw    Weighted"
+			di as text "{hline 67}"
+			
+		* Calculate the covariate balance
+			foreach var in `varlist' {
+					di as text "`var'"
+
+					* Raw SMD
+					qui summarize `var' if `exposure'==1
+					local m1 = r(mean)
+					local v1 = r(Var)
+					qui summarize `var' if `exposure'==0
+					local m0 = r(mean)
+					local v0 = r(Var)
+					* Calculate the Standardised "mean difference"
+					local rSMD = (`m1' - `m0') / sqrt( (`v1' + `v0') /2 )
+
+					* Weighted SMD
+					qui summarize `var' [iw=_ipw] if `exposure'==1
+					local m1 = r(mean)
+					local v1 = r(Var)
+					qui summarize `var' [iw=_ipw] if `exposure'==0
+					local m0 = r(mean)
+					local v0 = r(Var)
+					* Calculate the Standardised "mean difference"
+					local wSMD = (`m1' - `m0') / sqrt( (`v1' + `v0') /2 )
+
+					* Raw VR
+					qui sum `var' if `exposure' ==1
+					local v1 = r(Var)
+					qui sum `var' if `exposure' ==0
+					local v0 = r(Var)
+					* Calculate the variance ratio
+					local rVR = `v1' / `v0'
+
+					* Weighted VR
+					qui sum `var' [iw=_ipw] if `exposure' ==1
+					local v1 = r(Var)
+					qui sum `var' [iw=_ipw] if `exposure' ==0
+					local v0 = r(Var)
+					* Calculate the variance ratio
+					local wVR `v1' / `v0'
+
+					* Display the values
+					di as text "                    " %9.7g as result `rSMD' as text "   " %9.7g as result `wSMD' as text "     " %9.7g as result `rVR' as text "   " %9.7g as result `wVR'
+			}
+			di as text "{hline 67}"
+
+	}
+	
+// Create density plot to check positivity assumption
+	if $covbalancetable == 1 {
+	*preserve
+	*sort A
+	*qui by A: summarize ps
+	qui kdensity ps if A==1, generate(x1pointsa d1A) nograph n(10000)
+	qui kdensity ps if A==0, generate(x0pointsa d0A) nograph n(10000)
+	label variable d1A "A = 1"
+	label variable d0A "A = 0"
+	twoway (line d0A x0pointsa) || ///
 			(line d1A x1pointsa), ///
 			xtitle("Propensity score") ///
 			ytitle("Density") ///
 			graphregion(color(white)) bgcolor(white) plotregion(fcolor(white)) ///
-			legend(order(2 "Treated" 1 "Not treated") position(1) cols(1) ring(0) ///
+			legend(order(2 "Treated" 1 "Not treated") position(11) cols(1) ring(0) ///
 				region(style(none)))
+	*restore
 	}
 
-	_eltmle_label_rename_cv
+// Drop the variables if the elements option is not specified
+		if $keepvars == 0 {
+			drop d1 d0
+			drop QAW Q1W Q0W
+			drop Q1star Qa1star Q0star Qa0star
+			drop ATE IC
+			rename Y _Y
+			rename A _A
+			drop _Y _A
+			*di "Capture dropping _ipw 2"
+			capture drop _ipw
+			drop POM1 POM0 ps
+			capture drop cin
+			drop foldid rowid
+			capture drop x1pointsa x0pointsa d1A d0A
+			capture drop ytempvar
+		}
+
+// Rename and label the variables if the elements option *is* specified
+		if $keepvars == 1 {
+			
+			capture drop x1pointsa x0pointsa d1A d0A
+			
+			* Label the variables
+				lab var d1 "Parameter for the influence curve"
+				lab var d0 "Parameter for the influence curve"
+				lab var QAW "Initial prediction of the outcome"
+				lab var Q1W "Initial prediction of the outcome for A = 1"
+				lab var Q0W "Initial prediction of the outcome for A = 0"
+				lab var Q1star "Update of the initial prediction for A = 1"
+				lab var Qa1star "Update of the initial prediction for A = 1"
+				lab var Q0star "Update of the initial prediction for A = 0"
+				lab var Qa0star "Update of the initial prediction for A = 0"
+				lab var A "Exposure/Treatment"
+				lab var Y "Outcome"
+				lab var ATE "Average Treatment Effect"
+				lab var IC "Influence Curve"
+				lab var Q1star "Update of initial plug-in estimate for A=1"
+				lab var Q0star "Update of initial plug-in estimate for A=0"
+				lab var POM1 "Potential Outcome Y(1)"
+				lab var POM0 "Potential Otucome Y(0)"
+				lab var ps "Propensity Score"
+				//lab var cin "Range of Y"
+				lab var _ipw "Inverse probability of treatment weights"
+				capture drop ytempvar
+			* Rename the elements variables
+				foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A  POM1 POM0 ps {
+					rename `var' _`var'
+				}
+				*di "Keeping _ipw 1"
+				keep rowid _d1 _d0 _QAW _Q1W _Q0W _Q1star _Qa1star _Q0star _Qa0star _ATE _IC _Y _A _POM1 _POM0 _ps _ipw 
+				qui save "elementsdata.dta", replace
+		}
 
 restore
 
+	// Drop the temporary variable for Y
 	capture drop ytempvar
-	_eltmle_cleanup_cv
 
-	if $keepvars == 0 {
-		qui drop foldid rowid
-	}
-	if $keepvars == 1 {
-		qui merge 1:1 rowid using "elementsdata.dta"
-	}
+	// Clean up
+	quietly: rm SLS.R
+	//quietly: rm SLS.Rout
+	quietly: rm data2.dta
+	quietly: rm cvdata.csv
+	quietly: rm cvdata.dta
+	quietly: rm fulldata.csv
+	forvalues i = 1(1)$folds{
+		quietly: rm "folddata`i'.dta"	
+           } 	
+	//quietly: rm .RData
+	quietly: memory clean
+
+* Note the completion of the program
+	//di "Success"
+
+	// Merge in the elements
+		if $keepvars == 0 {
+			qui drop foldid rowid
+		}
+
+	// Merge in the elements
+		if $keepvars == 1 {
+			qui merge 1:1 rowid using "elementsdata.dta"
+		}
+	
 end
+
