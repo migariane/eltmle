@@ -80,7 +80,7 @@ THE SOFTWARE.
 * Added elements option
 
 * March 2023:
-* Updated 95%CI for LogOR to match R-TMLE implementation
+* Updated 95% CI for LogOR to match R-TMLE implementation
 
 * March 2024:
 * Removed a bug that gave different results when using the 'bal' option
@@ -99,9 +99,6 @@ THE SOFTWARE.
 * October 2024:
 * The **seed** option is no longer necessary but remains in the syntax for reproducibility.
 * Added a progress bar for cross-validation.
-
-* February 2025
-* Updated estimation of the substitution parameter (Epsilon) as MLE weight
 
 * June 2025
 * Updated cross-validated procedure for the TMLE estimation
@@ -549,7 +546,7 @@ end
 // _eltmle_tmle_estimate: shared TMLE computation and display
 // Assumes data2.dta is already loaded. Uses globals: $flag, $a, $b.
 // Creates permanent dataset vars: d1, d0, ATE, IC, Q1star, Q0star,
-//   Qa1star, Qa0star, POM1, POM0.
+// Qa1star, Qa0star, POM1, POM0.
 // Returns: ATEtmle, ATE_SE_tmle, ATE_pvalue, ATE_LCIa, ATE_UCIa,
 //          CRR, SE_log_CRR, MOR, SE_log_MOR.
 // Caller must call "return add" immediately after to propagate scalars.
@@ -568,14 +565,15 @@ program _eltmle_tmle_estimate, rclass
 	gen `H0W' = (1 - A) / (1 - ps)
 
 	// Estimation of the substitution parameter (Epsilon)
-	qui glm Y `H1W' `H0W' [pweight = `HAW'], fam(binomial) offset(`logQAW') robust noconstant
-	mat a = e(b)
+	qui glm Y `H1W' `H0W', fam(binomial) offset(`logQAW') robust noconstant
+	mat a= e(b)
 	gen `eps1' = a[1,1]
 	gen `eps2' = a[1,2]
 
-	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust
-	mat a = e(b)
+	qui glm Y `HAW', fam(binomial) offset(`logQAW') robust noconstant
+	mat a= e(b)
 	gen `eps' = a[1,1]
+
 
 	// Targeted ATE: update from Q̅^0(A,W) to Q̅^1(A,W)
 	gen double Qa0star = exp(`H0W'*`eps'  + `logQ0W') / (1 + exp(`H0W'*`eps'  + `logQ0W'))
