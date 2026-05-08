@@ -126,6 +126,11 @@ THE SOFTWARE.
   Display format: continuous branch used %7.1f, rounding values near 0.1
   to all show as 0.1. Changed to %7.4f to match the binary branch.
 
+  Display format (continuous, May 2026): %7.4f caused scientific notation
+  for values >= 100 (e.g., bweight ATE = -230g displayed as -2.3e+02).
+  Changed to %8.1f for ATE/SE/CI in continuous branch; %6.4f for p-value.
+  Results now match help file: -230.0, 24.5, (-278.0, -182.0).
+
   P-value: normalden() returns the PDF, not a tail probability.
   Fixed to 2*normal(-abs(z)), the correct two-sided Wald p-value.
 */
@@ -694,13 +699,13 @@ program _eltmle_tmle_estimate, rclass
 	}
 	else {
 		disp as text "{hline 63}"
-		di "         {c |}" "    ATE         SE     P-value           95% CI"
+		di "         {c |}" "     ATE        SE    P-value           95% CI"
 		disp as text "{hline 63}"
-		disp as text "TMLE:    {c |}" %7.4f as result return(ATEtmle) "    " ///
-			%7.4f as result return(ATE_SE_tmle) "     " ///
-			%7.4f as result return(ATE_pvalue) as text "     (" ///
-			%7.4f as result return(ATE_LCIa) as text "," ///
-			%7.4f as result return(ATE_UCIa) as text " )"
+		disp as text "TMLE:    {c |}" %8.1f as result return(ATEtmle) "  " ///
+			%8.1f as result return(ATE_SE_tmle) "    " ///
+			%6.4f as result return(ATE_pvalue) as text "     (" ///
+			%8.1f as result return(ATE_LCIa) as text "," ///
+			%8.1f as result return(ATE_UCIa) as text " )"
 		disp as text "{hline 63}"
 		disp as text " "
 	}
