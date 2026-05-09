@@ -1,4 +1,4 @@
-*! version 4.0.1  08.May.2026
+*! version 4.0.3  09.May.2026
 *! ELTMLE: Stata module for Ensemble Learning Targeted Maximum Likelihood Estimation
 *! by Miguel Angel Luque-Fernandez [cre,aut]
 *! and Matthew J. Smith [aut]
@@ -121,7 +121,8 @@ THE SOFTWARE.
   Fixed to use counterfactual clever covariates 1/ps and 1/(1-ps) for ALL
   observations, so every unit receives a properly targeted counterfactual Q.
   This aligns POM1, POM0, ATE, and the IC with the canonical TMLE EIF.
-  Applies to both two-epsilon (Q1star/Q0star) and single-epsilon (Qa1star/Qa0star) branches.
+  Applies to both two-epsilon (Q1star/Q0star) and single-epsilon (Qa1star/Qa0star) 
+  branches.
 
   Display format (continuous, May 2026): %7.4f caused scientific notation
   for values >= 100 (e.g., bweight ATE = -230g displayed as -2.3e+02).
@@ -132,15 +133,105 @@ THE SOFTWARE.
   Fixed to 2*normal(-abs(z)), the correct two-sided Wald p-value.
 */
 
-* Note about epsilon:   
+* May 2026 (v4.0.2)
 /*
-   Both R tmle and Stata eltmle start with the same initial ATE(SuperLearner Q fits
-   agree). The small remaining post-targeting difference that could be found reflects a valid     
-   methodological choice: eltmle estimates epsilon with [pweight=HAW]            
-  (IPTW-weighted targeting); R tmle uses an unweighted logistic regression. Both
-   are valid TMLE implementations.
+  FOUR bugs fixed: a binary/continuous flag mis-detection, a data-plumbing
+  collision (most impactful for users whose outcome/treatment variables are
+  literally named "Y"/"A"), and two targeting specification deviations from
+  R tmle::tmle.
+
+  Bug -1 (continuous outcome in [0,1] silently mis-classified as binary):
+    The non-CV main entry used `global flag = cond(`yvar'<=1, 1, 0)`, which
+    evaluates Y[1] -- so any continuous outcome with values bounded in [0,1]
+    (e.g. simulated E[Y|A,W] probabilities, ratios, proportions, or anything
+    from a [0,1]-bounded scale) was wrongly flagged binary.  Consequence:
+    the back-transform `(b - a)` was skipped, and the displayed ATE was on
+    the bounded [0,1] scale rather than the original outcome scale,
+    producing apparent bias when compared to teffects (which always reports
+    on the original scale).  Fix: use `tabulate; flag = cond(r(r)==2, 1, 0)`,
+    matching the CV branch.
+
+  Bug 0 (data plumbing -- only manifests when outcome named "Y" or treatment
+         named "A"):
+    The R-side script wrote data2.dta as cbind(fulldata, ..., Y, A), where
+    fulldata.csv carried the user's ORIGINAL (unscaled) outcome and
+    treatment, and the explicit Y, A came from data.csv (SCALED).  When the
+    user's outcome is literally named "Y" (or treatment "A"), this produced
+    a .dta file with two columns named "Y" -- foreign::write.dta does not
+    rename duplicates, and Stata reads both with the same name.  Subsequent
+    references to `Y' in _eltmle_tmle_estimate resolved to the FIRST (i.e.
+    unscaled) column, while QAW/Q1W/Q0W were predictions on the SCALED
+    Y* in [0,1].  The targeting GLM therefore tried to fit unscaled Y to
+    a scaled offset, producing biased epsilon and biased Q*(a,W).  Effect
+    on sim.do (Y in [0.10, 0.99]): ATE bias of ~+0.04 with 0% CI coverage.
+    Fix: drop the user's outcome/treatment columns from fulldata before
+    cbind in both _eltmle_write_r_noncv and _eltmle_write_r_cv.
+
+  Bug 1 (catastrophic, continuous outcome path):
+    The previous version fit a single-epsilon submodel
+        glm Y [pweight=HAW], offset(logQAW)            (intercept-only)
+    whose implied fluctuation is a CONSTANT epsilon
+        Q*(A,W) = expit(logit(Q(A,W)) + epsilon)
+    but then formed the counterfactual updates as
+        Qa1star = expit(logit(Q1W) + (1/ps)    * epsilon)
+        Qa0star = expit(logit(Q0W) + (1/(1-ps))* epsilon)
+    -- a *varying* fluctuation that does NOT correspond to the submodel that
+    was fit.  Score equation of the EIF was therefore not solved, the
+    counterfactual Q's were biased, and the IC variance estimator severely
+    under-estimated the true sampling variance.  
+
+  Bug 2 (mild, binary outcome path):
+    The previous version fit
+        glm Y H1W H0W [pweight=HAW], fam(binomial) offset(logQAW), nocons
+    which combines IPW *both* in the weight AND in the clever covariate.
+    The score actually solved is sum (Y-mu)/ps^2 = 0 (not the canonical
+    sum (Y-mu)/ps = 0 of the EIF).  In MC bias was small for this DGP, but
+    the form is non-canonical and not what R tmle does.
+
+  Fix:
+    Use a single canonical two-epsilon targeting GLM for BOTH binary and
+    continuous outcomes (continuous Y was already mapped to Y* in [0,1]
+    before the SuperLearner fit, so the binomial fluctuation is on the
+    bounded scale).  No [pweight=HAW] -- weights are 1.
+
+        glm Y H1W H0W, fam(binomial) offset(logQAW) noconstant
+        Q1star = invlogit(logQ1W + eps1 * (1/ps))
+        Q0star = invlogit(logQ0W + eps2 * (1/(1-ps)))
+
+    Q1star/Q0star are now used uniformly for ATE, POM, IC, CRR, MOR; the
+    redundant Qa1star/Qa0star path has been removed.  IC formula matches
+    R tmle's calcParameters exactly.  Sign of the IC for log-RR was also
+    corrected (was `+`, should be `-` per R tmle line 1623-1624).
 */
-   
+
+* May 2026 (v4.0.3)
+/*
+  Bug: non-CV estimators (tmle, tmlebal, tmlebgam, tmlebgambal, tmleglsrf,
+  tmleglsrfbal) clobbered the user's in-memory data.  The subprograms did
+  `clear; use "data2.dta"`, then `_eltmle_label_rename_noncv` dropped Y, A,
+  and the prediction columns -- leaving the user with a partially gutted
+  copy of `data2.dta` (covariates from fulldata, but no Y, no A) instead of
+  the original dataset.
+
+  Cleanup fix (same release): the CV variants (cvtmle, cvtmlebgam,
+  cvtmleglsrf) left the user's dataset polluted when called with the
+  `elements` option -- foldid, rowid, and the merge indicator _merge
+  were never dropped, and the scratch elementsdata.dta file was never
+  deleted.  Consolidated post-restore cleanup into a single helper,
+  _eltmle_merge_elements_cv, that performs the merge with `nogenerate`,
+  removes elementsdata.dta from disk, and drops foldid/rowid in both
+  the keepvars=0 and keepvars=1 paths.  Also added `ytempvar` to the
+  capture-drop list at the start of eltmle main so a leftover from a
+  prior run cannot interfere with the current call.
+
+  Continuous-CI display fix (same release): the upper-bound 95% CI for
+  continuous outcomes was displayed as "...0 )" -- a stray space before
+  the closing bracket made it look detached from the number.  Trimmed
+  the trailing " )" to ")" so the bracket abuts the value cleanly.
+*/
+
+
+
 capture program drop eltmle
 program define eltmle
 	syntax varlist(min=3) [if] [pw] [, tmle tmlebgam tmleglsrf bal elements cvtmle cvtmlebgam cvtmleglsrf cvfolds(int 10) seed(numlist)]
@@ -186,6 +277,7 @@ program define eltmle
 				capture drop x1pointsa
 				capture drop d0A
 				capture drop x0pointsa
+				capture drop ytempvar
 
 
 	// Specify whether the user is doing Cross-Validation
@@ -251,17 +343,31 @@ program define eltmle
 		local var `varlist' if `touse'
 		tokenize `var'
 		local yvar = "`1'"
-		global flag = cond(`yvar'<=1,1,0)
-		*di "Flag = $flag"
+		// Detect binary outcome by counting distinct values, NOT by checking
+		// `yvar'<=1.  The latter is buggy: when the user's outcome is a
+		// continuous probability in [0,1] (e.g. simulated E[Y|A,W]) every Y
+		// value is <=1 and the flag is wrongly set to 1, causing the back-
+		// transform `(b-a)` to be skipped.  The CV branch already uses
+		// tabulate; align the non-CV branch with it. (v4.0.2)
+		qui tabulate `yvar'
+		global flag = cond(r(r)==2, 1, 0)
 		qui sum `yvar'
 		global b = `r(max)'
 		global a = `r(min)'
+		// Save the user's original outcome so we can restore it after exporting
+		// the rescaled copy to data.csv.  Without this, repeated calls to
+		// `eltmle ... tmle' on the same dataset (or a tmle call followed by a
+		// cvtmle call, as in sim.do) silently re-rescale an already-rescaled
+		// Y, putting subsequent estimates on a different scale than the truth.
+		tempvar __eltmle_orig_y
+		qui gen double `__eltmle_orig_y' = `yvar'
 		qui replace `yvar' = (`yvar' - `r(min)') / (`r(max)' - `r(min)') // if `yvar'>1
 		local dir `c(pwd)'
-		cd "`dir'"
+		qui cd "`dir'"
 		tempfile data
 		qui save "`data'.dta", replace
 		qui export delimited `var' using "data.csv", nolabel replace
+		qui replace `yvar' = `__eltmle_orig_y'
 	}
 
 
@@ -486,6 +592,16 @@ program _eltmle_write_r_noncv
 	qui: file write rcode `"ps <- g[[4]]"' _newline
 	qui: file write rcode `"ps[ps<0.025] <- 0.025"' _newline
 	qui: file write rcode `"ps[ps>0.975] <- 0.975"' _newline
+	// Drop user's outcome/treatment columns from fulldata before cbind so
+	// data2.dta does not end up with two columns named "Y" and "A" when the
+	// user's varlist literally uses those names.  Without this, foreign's
+	// write.dta keeps both, Stata loads two same-named columns, and any
+	// reference to `Y' downstream in _eltmle_tmle_estimate resolves to the
+	// FIRST occurrence (the unscaled original from fulldata) instead of the
+	// scaled outcome the SuperLearner Q's were trained on -- silently
+	// producing biased ATE and undercoverage.  See changelog v4.0.2.
+	qui: file write rcode `"yname <- colnames(data)[1]; aname <- colnames(data)[2]"' _newline
+	qui: file write rcode `"fulldata <- fulldata[, !(colnames(fulldata) %in% c(yname, aname)), drop = FALSE]"' _newline
 	qui: file write rcode `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline
 	qui: file write rcode `"write.dta(data, "data2.dta")"' _newline
 	qui: file close rcode
@@ -567,6 +683,10 @@ program _eltmle_write_r_cv
 	qui: file write rcode `"ps <- predict(g, newdata=vdataAa)[[1]]"' _newline
 	qui: file write rcode `"ps[ps<0.025] <- 0.025"' _newline
 	qui: file write rcode `"ps[ps>0.975] <- 0.975"' _newline
+	// Drop user's outcome/treatment columns from vdataAa to avoid duplicate
+	// "Y" and "A" columns in data2.dta -- see comment in _eltmle_write_r_noncv.
+	qui: file write rcode `"yname <- colnames(vdataAa)[1]; aname <- colnames(vdataAa)[2]"' _newline
+	qui: file write rcode `"vdataAa <- vdataAa[, !(colnames(vdataAa) %in% c(yname, aname)), drop = FALSE]"' _newline
 	qui: file write rcode `"data <- cbind(vdataAa,QAW,Q1W,Q0W,ps,Y,A)"' _newline
 	qui: file write rcode `"write.dta(data, "data2.dta")"' _newline
 	qui: file close rcode
@@ -583,59 +703,51 @@ end
 // Caller must call "return add" immediately after to propagate scalars.
 // ---------------------------------------------------------------------------
 program _eltmle_tmle_estimate, rclass
-	tempvar logQAW logQ1W logQ0W HAW H1W H0W eps1 eps2 eps ICrr ICor
+	tempvar logQAW logQ1W logQ0W H1W H0W ICrr ICor
 
 	// Q to logit scale
 	gen `logQAW' = log(QAW / (1 - QAW))
 	gen `logQ1W' = log(Q1W / (1 - Q1W))
 	gen `logQ0W' = log(Q0W / (1 - Q0W))
 
-	// Clever covariates
-	gen `HAW' = (A / ps) + ((1 - A) / (1 - ps))
+	// Canonical EIF clever covariates
 	gen `H1W' = A / ps
 	gen `H0W' = (1 - A) / (1 - ps)
 
-	// Estimation of the substitution parameter (Epsilon)
-	qui glm Y `H1W' `H0W' [pweight = `HAW'], fam(binomial) offset(`logQAW') robust noconstant
+	// ----------------------------------------------------------------------
+	// Canonical two-epsilon TMLE targeting step (matches R tmle::tmle).
+	//   Submodel:  logit(Q*(A,W)) = logit(Q(A,W)) + eps1*H1W + eps2*H0W
+	//   Score eqs: sum (A/ps)(Y - Q*) = 0  AND  sum ((1-A)/(1-ps))(Y - Q*) = 0
+	// Same form for binary AND continuous outcomes (continuous Y was already
+	// mapped to Y* in [0,1] before the SuperLearner fit, so this binomial
+	// fluctuation is on the bounded scale).  No [pweight=HAW] -- weights = 1.
+	// See changelog v4.0.2 for the previous, broken specification.
+	// ----------------------------------------------------------------------
+	qui glm Y `H1W' `H0W', fam(binomial) offset(`logQAW') noconstant
 	mat a = e(b)
-	gen `eps1' = a[1,1]
-	gen `eps2' = a[1,2]
+	local eps1 = a[1,1]   // coefficient on H1W (treated)
+	local eps2 = a[1,2]   // coefficient on H0W (controls)
 
-	qui glm Y [pweight = `HAW'], fam(binomial) offset(`logQAW') robust
-	mat a = e(b)
-	gen `eps' = a[1,1]
+	// Counterfactual updates: 1/ps and 1/(1-ps) applied to ALL observations
+	gen double Q1star = invlogit(`logQ1W' + (1/ps)     * `eps1')
+	gen double Q0star = invlogit(`logQ0W' + (1/(1-ps)) * `eps2')
 
-	// Targeted update
-	// Use counterfactual clever covariates (1/ps, 1/(1-ps)) for ALL observations
-	// so A=0 units get properly targeted Q1star (not untargeted Q1W), and vice versa.
-	gen double Qa0star = exp((1/(1-ps))*`eps'  + `logQ0W') / (1 + exp((1/(1-ps))*`eps'  + `logQ0W'))
-	gen double Qa1star = exp((1/ps)    *`eps'  + `logQ1W') / (1 + exp((1/ps)    *`eps'  + `logQ1W'))
-	gen double Q0star  = exp((1/(1-ps))*`eps2' + `logQ0W') / (1 + exp((1/(1-ps))*`eps2' + `logQ0W'))
-	gen double Q1star  = exp((1/ps)    *`eps1' + `logQ1W') / (1 + exp((1/ps)    *`eps1' + `logQ1W'))
-
-	// Two-epsilon targeted means (used for CRR, MOR, and binary ATE/POM/IC)
 	qui sum Q1star
 	local Q1 = r(mean)
 	qui sum Q0star
 	local Q0 = r(mean)
 
-	// Single-epsilon targeted means (used for continuous ATE/POM/IC)
-	qui sum Qa1star
-	local Qa1 = r(mean)
-	qui sum Qa0star
-	local Qa0 = r(mean)
-
-	// Potential outcomes: two-eps for binary (matches R tmle); single-eps back-transformed for continuous
-	gen double POM1 = cond($flag == 1, Q1star,  (Qa1star * ($b - $a)) + $a, .)
-	gen double POM0 = cond($flag == 1, Q0star,  (Qa0star * ($b - $a)) + $a, .)
+	// Potential outcomes (back-transform to original scale for continuous Y)
+	gen double POM1 = cond($flag == 1, Q1star, (Q1star * ($b - $a)) + $a, .)
+	gen double POM0 = cond($flag == 1, Q0star, (Q0star * ($b - $a)) + $a, .)
 
 	di as text " "
 	sum POM1 POM0 ps
 	di as text " "
 
-	// ATE: two-eps for binary (consistent with IC below); single-eps back-transformed for continuous
+	// ATE
 	gen double ATE = cond($flag == 1, (Q1star - Q0star), ///
-		((Qa1star * ($b - $a)) + $a) - ((Qa0star * ($b - $a)) + $a), .)
+		(Q1star - Q0star) * ($b - $a), .)
 	qui sum ATE
 	return scalar ATEtmle = r(mean)
 
@@ -643,17 +755,14 @@ program _eltmle_tmle_estimate, rclass
 	local logRRtmle = log(`Q1') - log(`Q0')
 	local ORtmle    = (`Q1' * (1 - `Q0')) / ((1 - `Q1') * `Q0')
 
-	// Statistical inference (Efficient Influence Curve)
-	// Binary: two-eps (Q1star/Q0star) consistent with ATE above
-	// Continuous: single-eps (Qa1star/Qa0star) centred on their own means
-	gen d1 = cond($flag == 1, ///
-		(A * (Y - Q1star)  / ps)      + Q1star  - `Q1',  ///
-		(A * (Y - Qa1star) / ps)      + Qa1star - `Qa1', .)
-	gen d0 = cond($flag == 1, ///
-		(1 - A) * (Y - Q0star)  / (1 - ps) + Q0star  - `Q0',  ///
-		(1 - A) * (Y - Qa0star) / (1 - ps) + Qa0star - `Qa0', .)
-	gen IC = cond($flag == 1, (d1 - d0), ///
-		((d1 * ($b - $a)) + $a) - ((d0 * ($b - $a)) + $a), .)
+	// Efficient Influence Curve for the ATE (canonical form):
+	//   IC = (A/ps)*(Y - Q1*) + Q1* - mu1
+	//        - { ((1-A)/(1-ps))*(Y - Q0*) + Q0* - mu0 }
+	// computed on the [0,1] scale; for continuous Y multiply by (b-a) to
+	// back-transform to the original outcome scale.
+	gen d1 = (A * (Y - Q1star) / ps)             + Q1star - `Q1'
+	gen d0 = ((1 - A) * (Y - Q0star) / (1 - ps)) + Q0star - `Q0'
+	gen IC = cond($flag == 1, (d1 - d0), (d1 - d0) * ($b - $a), .)
 	qui sum IC
 	return scalar ATE_SE_tmle = sqrt(r(Var)/r(N))
 
@@ -662,8 +771,8 @@ program _eltmle_tmle_estimate, rclass
 	return scalar ATE_LCIa   = return(ATEtmle) - 1.96 * return(ATE_SE_tmle)
 	return scalar ATE_UCIa   = return(ATEtmle) + 1.96 * return(ATE_SE_tmle)
 
-	// Statistical inference RR
-	gen `ICrr' = (1/`Q1' * d1) + ((1/`Q0') * d0)
+	// Statistical inference for log-RR (sign matches R tmle::calcParameters)
+	gen `ICrr' = (1/`Q1' * d1) - ((1/`Q0') * d0)
 	qui sum `ICrr'
 	local varICrr = r(Var)/r(N)
 	local LCIrr   = exp(`logRRtmle' - 1.96 * sqrt(`varICrr'))
@@ -697,15 +806,22 @@ program _eltmle_tmle_estimate, rclass
 		disp as text " "
 	}
 	else {
-		disp as text "{hline 63}"
-		di "         {c |}" "     ATE        SE    P-value           95% CI"
-		disp as text "{hline 63}"
-		disp as text "TMLE:    {c |}" %8.1f as result return(ATEtmle) "  " ///
-			%8.1f as result return(ATE_SE_tmle) "    " ///
+		// Continuous outcomes: choose %g-style formatting that adapts to
+		// magnitude (bweight-style hundreds and sim.do-style fractions).
+		disp as text "{hline 71}"
+		di "         {c |}" "      ATE         SE     P-value             95% CI"
+		disp as text "{hline 71}"
+		// %9.0g right-justifies the lower CI bound inside the trailing
+		// width of the format spec, so leaving an extra leading space
+		// after "(" or before ")" makes the bracket appear visually
+		// detached.  Trim the trailing " )" -> ")" so the upper bound
+		// abuts the closing bracket cleanly for continuous outcomes.
+		disp as text "TMLE:    {c |}" %9.0g as result return(ATEtmle) "  " ///
+			%9.0g as result return(ATE_SE_tmle) "    " ///
 			%6.4f as result return(ATE_pvalue) as text "     (" ///
-			%8.1f as result return(ATE_LCIa) as text "," ///
-			%8.1f as result return(ATE_UCIa) as text " )"
-		disp as text "{hline 63}"
+			%9.0g as result return(ATE_LCIa) as text "," ///
+			%9.0g as result return(ATE_UCIa) as text ")"
+		disp as text "{hline 71}"
 		disp as text " "
 	}
 
@@ -754,18 +870,25 @@ end
 // Creates _ipw. Requires: ps in dataset, $variablelist global set.
 // ---------------------------------------------------------------------------
 program _eltmle_covbal_table
+	// data2.dta is what is in memory here, and inside data2.dta the
+	// outcome and exposure columns are always named "Y" and "A" (the
+	// R-side script drops the user's original outcome/exposure columns
+	// from fulldata before cbind, then adds explicit Y and A; see
+	// _eltmle_write_r_noncv and changelog v4.0.2 Bug 0).  So we cannot
+	// reference the user's original exposure name (e.g. "mbsmoke" with
+	// cattaneo2.dta) here -- it does not exist in data2.dta.  Use "A".
+	// $variablelist is parsed only to recover the covariate names for
+	// the per-row table; outcome/exposure tokens are discarded.
 	tokenize $variablelist
-	local outcome `1'
-	macro shift
-	local exposure `1'
-	macro shift
+	macro shift                  // drop outcome
+	macro shift                  // drop exposure
 	local covars `*'
 
 	// Inverse probability weights
 	capture drop _ipw
 	qui gen _ipw = .
-	qui replace _ipw = (`exposure'==1) / ps       if `exposure'==1
-	qui replace _ipw = (`exposure'==0) / (1 - ps) if `exposure'==0
+	qui replace _ipw = (A==1) / ps       if A==1
+	qui replace _ipw = (A==0) / (1 - ps) if A==0
 
 	// Display table header
 	di as text "{hline 67}"
@@ -778,34 +901,34 @@ program _eltmle_covbal_table
 		di as text "`var'"
 
 		// Raw SMD
-		qui summarize `var' if `exposure'==1
+		qui summarize `var' if A==1
 		local m1 = r(mean)
 		local v1 = r(Var)
-		qui summarize `var' if `exposure'==0
+		qui summarize `var' if A==0
 		local m0 = r(mean)
 		local v0 = r(Var)
 		local rSMD = (`m1' - `m0') / sqrt((`v1' + `v0') / 2)
 
 		// Weighted SMD
-		qui summarize `var' [iw=_ipw] if `exposure'==1
+		qui summarize `var' [iw=_ipw] if A==1
 		local m1 = r(mean)
 		local v1 = r(Var)
-		qui summarize `var' [iw=_ipw] if `exposure'==0
+		qui summarize `var' [iw=_ipw] if A==0
 		local m0 = r(mean)
 		local v0 = r(Var)
 		local wSMD = (`m1' - `m0') / sqrt((`v1' + `v0') / 2)
 
 		// Raw VR
-		qui sum `var' if `exposure'==1
+		qui sum `var' if A==1
 		local v1 = r(Var)
-		qui sum `var' if `exposure'==0
+		qui sum `var' if A==0
 		local v0 = r(Var)
 		local rVR = `v1' / `v0'
 
 		// Weighted VR
-		qui sum `var' [iw=_ipw] if `exposure'==1
+		qui sum `var' [iw=_ipw] if A==1
 		local v1 = r(Var)
-		qui sum `var' [iw=_ipw] if `exposure'==0
+		qui sum `var' [iw=_ipw] if A==0
 		local v0 = r(Var)
 		local wVR = `v1' / `v0'
 
@@ -825,7 +948,7 @@ end
 // ---------------------------------------------------------------------------
 program _eltmle_label_rename_noncv
 	if $keepvars == 0 {
-		drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A POM1 POM0 ps
+		drop d1 d0 QAW Q1W Q0W Q1star Q0star ATE IC Y A POM1 POM0 ps
 		capture drop ytempvar
 	}
 	if $keepvars == 1 {
@@ -834,10 +957,8 @@ program _eltmle_label_rename_noncv
 		lab var QAW     "Initial prediction of the outcome"
 		lab var Q1W     "Initial prediction of the outcome for A = 1"
 		lab var Q0W     "Initial prediction of the outcome for A = 0"
-		lab var Q1star  "Update of initial plug-in estimate for A=1"
-		lab var Qa1star "Update of the initial prediction for A = 1"
-		lab var Q0star  "Update of initial plug-in estimate for A=0"
-		lab var Qa0star "Update of the initial prediction for A = 0"
+		lab var Q1star  "Targeted update of Q for A = 1"
+		lab var Q0star  "Targeted update of Q for A = 0"
 		lab var A       "Exposure/Treatment"
 		lab var Y       "Outcome"
 		lab var ATE     "Average Treatment Effect"
@@ -846,7 +967,7 @@ program _eltmle_label_rename_noncv
 		lab var POM0    "Potential Outcome Y(0)"
 		lab var ps      "Propensity Score"
 		capture drop ytempvar
-		foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A POM1 POM0 ps {
+		foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Q0star ATE IC Y A POM1 POM0 ps {
 			rename `var' _`var'
 		}
 	}
@@ -860,7 +981,7 @@ end
 // ---------------------------------------------------------------------------
 program _eltmle_label_rename_cv
 	if $keepvars == 0 {
-		drop d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC
+		drop d1 d0 QAW Q1W Q0W Q1star Q0star ATE IC
 		rename Y _Y
 		rename A _A
 		drop _Y _A
@@ -878,10 +999,8 @@ program _eltmle_label_rename_cv
 		lab var QAW     "Initial prediction of the outcome"
 		lab var Q1W     "Initial prediction of the outcome for A = 1"
 		lab var Q0W     "Initial prediction of the outcome for A = 0"
-		lab var Q1star  "Update of initial plug-in estimate for A=1"
-		lab var Qa1star "Update of the initial prediction for A = 1"
-		lab var Q0star  "Update of initial plug-in estimate for A=0"
-		lab var Qa0star "Update of the initial prediction for A = 0"
+		lab var Q1star  "Targeted update of Q for A = 1"
+		lab var Q0star  "Targeted update of Q for A = 0"
 		lab var A       "Exposure/Treatment"
 		lab var Y       "Outcome"
 		lab var ATE     "Average Treatment Effect"
@@ -891,10 +1010,10 @@ program _eltmle_label_rename_cv
 		lab var ps      "Propensity Score"
 		lab var _ipw    "Inverse probability of treatment weights"
 		capture drop ytempvar
-		foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Qa1star Q0star Qa0star ATE IC Y A POM1 POM0 ps {
+		foreach var of varlist d1 d0 QAW Q1W Q0W Q1star Q0star ATE IC Y A POM1 POM0 ps {
 			rename `var' _`var'
 		}
-		keep rowid _d1 _d0 _QAW _Q1W _Q0W _Q1star _Qa1star _Q0star _Qa0star ///
+		keep rowid _d1 _d0 _QAW _Q1W _Q0W _Q1star _Q0star ///
 			_ATE _IC _Y _A _POM1 _POM0 _ps _ipw
 		qui save "elementsdata.dta", replace
 	}
@@ -935,22 +1054,91 @@ end
 //   (optional bal helpers) → estimate → return → label/cleanup
 // ====================================================
 
+// ---------------------------------------------------------------------------
+// _eltmle_make_ipw: generate inverse-probability weights using the exposure
+// column "A" in data2.dta.  We CANNOT reference the user's original exposure
+// name here (e.g. "mbsmoke" with cattaneo2.dta) -- R's cbind in
+// _eltmle_write_r_{cv,noncv} drops the user's original outcome/exposure
+// columns from fulldata before adding explicit Y and A columns, so inside
+// the subprogram the only exposure column is named "A".  Requires `ps' in
+// memory.
+// ---------------------------------------------------------------------------
+program _eltmle_make_ipw
+	capture drop _ipw
+	qui gen _ipw = .
+	qui replace _ipw = (A==1) / ps       if A==1
+	qui replace _ipw = (A==0) / (1 - ps) if A==0
+end
+
+
+// ---------------------------------------------------------------------------
+// _eltmle_merge_elements_cv: post-restore cleanup for CV estimators.
+// When keepvars=1, merges the saved prediction elements onto the user's
+// original dataset by rowid (created in eltmle main, line 281), drops the
+// _merge indicator, and removes the scratch elementsdata.dta file.  In all
+// cases, drops foldid and rowid -- they are bookkeeping vars created in
+// eltmle main that the user should never see in the returned dataset.
+// ---------------------------------------------------------------------------
+program _eltmle_merge_elements_cv
+	if $keepvars == 1 {
+		qui merge 1:1 rowid using "elementsdata.dta", nogenerate
+		capture rm "elementsdata.dta"
+	}
+	qui drop foldid rowid
+end
+
+
+// ---------------------------------------------------------------------------
+// _eltmle_save_elements_noncv: when keepvars=1, persist the renamed prediction
+// vars (with row index) to elementsdata.dta so they can be merged back into
+// the user's original dataset after restore.  Called *inside* the subprogram's
+// preserve block, after _eltmle_label_rename_noncv has applied the _ prefix.
+// ---------------------------------------------------------------------------
+program _eltmle_save_elements_noncv
+	if $keepvars == 1 {
+		qui gen __eltmle_rowid = _n
+		qui keep __eltmle_rowid _d1 _d0 _QAW _Q1W _Q0W _Q1star _Q0star ///
+			_ATE _IC _Y _A _POM1 _POM0 _ps
+		qui save "elementsdata.dta", replace
+	}
+end
+
+// ---------------------------------------------------------------------------
+// _eltmle_merge_elements_noncv: after restore, merge the saved prediction
+// elements onto the user's original dataset by row index, then delete the
+// scratch file.  No-op when keepvars=0.
+// ---------------------------------------------------------------------------
+program _eltmle_merge_elements_noncv
+	if $keepvars == 1 {
+		qui gen __eltmle_rowid = _n
+		qui merge 1:1 __eltmle_rowid using "elementsdata.dta", nogenerate
+		qui drop __eltmle_rowid
+		capture rm "elementsdata.dta"
+	}
+end
+
+
 program tmle, rclass
+preserve
 	_eltmle_write_r_noncv base
 	_eltmle_run_r
-	clear
+	qui clear
 	quietly: use "data2.dta", clear
 	qui cap drop X__000000
 	_eltmle_tmle_estimate
 	return add
 	_eltmle_label_rename_noncv
+	_eltmle_save_elements_noncv
+restore
 	_eltmle_cleanup_noncv
+	_eltmle_merge_elements_noncv
 end
 
 program tmlebal, rclass
+preserve
 	_eltmle_write_r_noncv base
 	_eltmle_run_r
-	clear
+	qui clear
 	quietly: use "data2.dta", clear
 	qui cap drop X__000000
 	_eltmle_positivity_plot
@@ -958,25 +1146,33 @@ program tmlebal, rclass
 	return add
 	_eltmle_covbal_table
 	_eltmle_label_rename_noncv
+	_eltmle_save_elements_noncv
+restore
 	_eltmle_cleanup_noncv
+	_eltmle_merge_elements_noncv
 end
 
 program tmlebgam, rclass
+preserve
 	_eltmle_write_r_noncv bgam
 	_eltmle_run_r
-	clear
+	qui clear
 	quietly: use "data2.dta", clear
 	qui cap drop X__000000
 	_eltmle_tmle_estimate
 	return add
 	_eltmle_label_rename_noncv
+	_eltmle_save_elements_noncv
+restore
 	_eltmle_cleanup_noncv
+	_eltmle_merge_elements_noncv
 end
 
 program tmlebgambal, rclass
+preserve
 	_eltmle_write_r_noncv bgam
 	_eltmle_run_r
-	clear
+	qui clear
 	quietly: use "data2.dta", clear
 	qui cap drop X__000000
 	_eltmle_positivity_plot
@@ -984,25 +1180,33 @@ program tmlebgambal, rclass
 	return add
 	_eltmle_covbal_table
 	_eltmle_label_rename_noncv
+	_eltmle_save_elements_noncv
+restore
 	_eltmle_cleanup_noncv
+	_eltmle_merge_elements_noncv
 end
 
 program tmleglsrf, rclass
+preserve
 	_eltmle_write_r_noncv glsrf
 	_eltmle_run_r
-	clear
+	qui clear
 	quietly: use "data2.dta", clear
 	qui cap drop X__000000
 	_eltmle_tmle_estimate
 	return add
 	_eltmle_label_rename_noncv
+	_eltmle_save_elements_noncv
+restore
 	_eltmle_cleanup_noncv
+	_eltmle_merge_elements_noncv
 end
 
 program tmleglsrfbal, rclass
+preserve
 	_eltmle_write_r_noncv glsrf
 	_eltmle_run_r
-	clear
+	qui clear
 	quietly: use "data2.dta", clear
 	qui cap drop X__000000
 	_eltmle_positivity_plot
@@ -1010,7 +1214,10 @@ program tmleglsrfbal, rclass
 	return add
 	_eltmle_covbal_table
 	_eltmle_label_rename_noncv
+	_eltmle_save_elements_noncv
+restore
 	_eltmle_cleanup_noncv
+	_eltmle_merge_elements_noncv
 end
 
 
@@ -1055,16 +1262,11 @@ preserve
 	_eltmle_tmle_estimate
 	return add
 
-	// IPW weights (always); covbal table and positivity plot (conditional)
+	// IPW weights (always); covbal table and positivity plot (conditional).
+	// _eltmle_make_ipw uses the column "A" in data2.dta -- see helper docs
+	// for why we cannot use the user's original exposure name here.
 	if $covbalancetable == 0 {
-		tokenize $variablelist
-		local outcome `1'
-		macro shift
-		local exposure `1'
-		capture drop _ipw
-		qui gen _ipw = .
-		qui replace _ipw = (`exposure'==1) / ps       if `exposure'==1
-		qui replace _ipw = (`exposure'==0) / (1 - ps) if `exposure'==0
+		_eltmle_make_ipw
 	}
 	if $covbalancetable == 1 {
 		_eltmle_covbal_table
@@ -1089,13 +1291,7 @@ restore
 
 	capture drop ytempvar
 	_eltmle_cleanup_cv
-
-	if $keepvars == 0 {
-		qui drop foldid rowid
-	}
-	if $keepvars == 1 {
-		qui merge 1:1 rowid using "elementsdata.dta"
-	}
+	_eltmle_merge_elements_cv
 end
 
 program cvtmlebgam, rclass
@@ -1132,16 +1328,11 @@ preserve
 	_eltmle_tmle_estimate
 	return add
 
-	// IPW weights (always); covbal table and positivity plot (conditional)
+	// IPW weights (always); covbal table and positivity plot (conditional).
+	// _eltmle_make_ipw uses the column "A" in data2.dta -- see helper docs
+	// for why we cannot use the user's original exposure name here.
 	if $covbalancetable == 0 {
-		tokenize $variablelist
-		local outcome `1'
-		macro shift
-		local exposure `1'
-		capture drop _ipw
-		qui gen _ipw = .
-		qui replace _ipw = (`exposure'==1) / ps       if `exposure'==1
-		qui replace _ipw = (`exposure'==0) / (1 - ps) if `exposure'==0
+		_eltmle_make_ipw
 	}
 	if $covbalancetable == 1 {
 		_eltmle_covbal_table
@@ -1165,13 +1356,7 @@ restore
 
 	capture drop ytempvar
 	_eltmle_cleanup_cv
-
-	if $keepvars == 0 {
-		qui drop foldid rowid
-	}
-	if $keepvars == 1 {
-		qui merge 1:1 rowid using "elementsdata.dta"
-	}
+	_eltmle_merge_elements_cv
 end
 
 program cvtmleglsrf, rclass
@@ -1208,16 +1393,11 @@ preserve
 	_eltmle_tmle_estimate
 	return add
 
-	// IPW weights (always); covbal table and positivity plot (conditional)
+	// IPW weights (always); covbal table and positivity plot (conditional).
+	// _eltmle_make_ipw uses the column "A" in data2.dta -- see helper docs
+	// for why we cannot use the user's original exposure name here.
 	if $covbalancetable == 0 {
-		tokenize $variablelist
-		local outcome `1'
-		macro shift
-		local exposure `1'
-		capture drop _ipw
-		qui gen _ipw = .
-		qui replace _ipw = (`exposure'==1) / ps       if `exposure'==1
-		qui replace _ipw = (`exposure'==0) / (1 - ps) if `exposure'==0
+		_eltmle_make_ipw
 	}
 	if $covbalancetable == 1 {
 		_eltmle_covbal_table
@@ -1241,11 +1421,5 @@ restore
 
 	capture drop ytempvar
 	_eltmle_cleanup_cv
-
-	if $keepvars == 0 {
-		qui drop foldid rowid
-	}
-	if $keepvars == 1 {
-		qui merge 1:1 rowid using "elementsdata.dta"
-	}
+	_eltmle_merge_elements_cv
 end
