@@ -6,7 +6,7 @@
 *! Bug reports:
 *! miguel-angel.luque at lshtm.ac.uk
 *! matt.smith at lshtm.ac.uk
-*! camille.maringe at lshtm.ac.uk
+*! camille.maringe at lshtm.ac.
 
 
 /*
@@ -525,86 +525,80 @@ end
 // Arg: learner = base | bgam | glsrf
 // ---------------------------------------------------------------------------
 program _eltmle_write_r_noncv
-	args learner
-	set more off
-	qui: file close _all
-	qui: file open rcode using SLS.R, write replace
-	qui: file write rcode `"set.seed(123)"' _newline
-	local wdir = c(pwd)
-	local wdir = subinstr("`wdir'","\","/",.)
-	qui: file write rcode `"setwd("`wdir'")"' _newline
-	// Learner-specific package list
-	if "`learner'" == "base" {
-		qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner")"' _newline
-	}
-	else if "`learner'" == "bgam" {
-		qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","gam","arm")"' _newline
-	}
-	else if "`learner'" == "glsrf" {
-		qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","glmnet","ranger")"' _newline
-	}
-	qui: file write rcode `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline
-	qui: file write rcode `"userlib <- Sys.getenv('R_LIBS_USER')"' _newline
-	qui: file write rcode `"if (!dir.exists(userlib)) dir.create(userlib, recursive = TRUE)"' _newline
-	qui: file write rcode `".libPaths(c(userlib, .libPaths()))"' _newline
-	qui: file write rcode `"if(length(new.packages)) install.packages(new.packages, repos='https://cran.r-project.org', lib=userlib)"' _newline
-	qui: file write rcode `"library(SuperLearner)"' _newline
-	qui: file write rcode `"library(foreign)"' _newline
-	// Learner-specific extra libraries
-	if "`learner'" == "bgam" {
-		qui: file write rcode `"library(gam)"' _newline
-		qui: file write rcode `"library(arm)"' _newline
-	}
-	else if "`learner'" == "glsrf" {
-		qui: file write rcode `"library(glmnet)"' _newline
-		qui: file write rcode `"library(ranger)"' _newline
-	}
-	qui: file write rcode `"data <- read.csv("data.csv", sep=",")"' _newline
-	qui: file write rcode `"fulldata <- read.csv("fulldata.csv", sep=",")"' _newline
-	qui: file write rcode `"attach(data)"' _newline
-	// Learner-specific SL library
-	if "`learner'" == "base" {
-		qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction")"' _newline
-	}
-	else if "`learner'" == "bgam" {
-		qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.bayesglm")"' _newline
-	}
-	else if "`learner'" == "glsrf" {
-		qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.glmnet","SL.ranger")"' _newline
-	}
-	// Common R code
-	qui: file write rcode `"n <- nrow(data)"' _newline
-	qui: file write rcode `"nvar <- dim(data)[[2]]"' _newline
-	qui: file write rcode `"Y <- data[,1]"' _newline
-	qui: file write rcode `"A <- data[,2]"' _newline
-	qui: file write rcode `"X <- data[,2:nvar]"' _newline
-	qui: file write rcode `"W <- as.data.frame(data[,3:nvar])"' _newline
-	qui: file write rcode `"X1 <- X0 <- X"' _newline
-	qui: file write rcode `"X1[,1] <- 1"' _newline
-	qui: file write rcode `"X0[,1] <- 0"' _newline
-	qui: file write rcode `"newdata <- rbind(X,X1,X0)"' _newline
-	qui: file write rcode `"Q <- try(SuperLearner(Y = data[,1] ,X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS"), silent=TRUE)"' _newline
-	qui: file write rcode `"Q <- as.data.frame(Q[[4]])"' _newline
-	qui: file write rcode `"QAW <- Q[1:n,]"' _newline
-	qui: file write rcode `"Q1W <- Q[((n+1):(2*n)),]"' _newline
-	qui: file write rcode `"Q0W <- Q[((2*n+1):(3*n)),]"' _newline
-	qui: file write rcode `"g <- suppressWarnings(SuperLearner(Y = data[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"))"' _newline
-	qui: file write rcode `"ps <- g[[4]]"' _newline
-	qui: file write rcode `"ps[ps<0.025] <- 0.025"' _newline
-	qui: file write rcode `"ps[ps>0.975] <- 0.975"' _newline
-	// Drop user's outcome/treatment columns from fulldata before cbind so
-	// data2.dta does not end up with two columns named "Y" and "A" when the
-	// user's varlist literally uses those names.  Without this, foreign's
-	// write.dta keeps both, Stata loads two same-named columns, and any
-	// reference to `Y' downstream in _eltmle_tmle_estimate resolves to the
-	// FIRST occurrence (the unscaled original from fulldata) instead of the
-	// scaled outcome the SuperLearner Q's were trained on -- silently
-	// producing biased ATE and undercoverage.  See changelog v4.0.2.
-	qui: file write rcode `"yname <- colnames(data)[1]; aname <- colnames(data)[2]"' _newline
-	qui: file write rcode `"fulldata <- fulldata[, !(colnames(fulldata) %in% c(yname, aname)), drop = FALSE]"' _newline
-	qui: file write rcode `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline
-	qui: file write rcode `"write.dta(data, "data2.dta")"' _newline
-	qui: file close rcode
+    args learner
+    set more off
+    qui: file close _all
+    qui: file open rcode using SLS.R, write replace
+    qui: file write rcode `"set.seed(123)"' _newline
+    local wdir = c(pwd)
+    local wdir = subinstr("`wdir'","\","/",.)
+    qui: file write rcode `"setwd("`wdir'")"' _newline
+    // Learner-specific package list
+    if "`learner'" == "base" {
+        qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner")"' _newline
+    }
+    else if "`learner'" == "bgam" {
+        qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","gam","arm")"' _newline
+    }
+    else if "`learner'" == "glsrf" {
+        qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","glmnet","randomForest")"' _newline
+    }
+    qui: file write rcode `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline
+    qui: file write rcode `"userlib <- Sys.getenv('R_LIBS_USER')"' _newline
+    qui: file write rcode `"if (!dir.exists(userlib)) dir.create(userlib, recursive = TRUE)"' _newline
+    qui: file write rcode `".libPaths(c(userlib, .libPaths()))"' _newline
+    qui: file write rcode `"if(length(new.packages)) install.packages(new.packages, repos='https://cran.r-project.org', lib=userlib)"' _newline
+    qui: file write rcode `"library(SuperLearner)"' _newline
+    qui: file write rcode `"library(foreign)"' _newline
+    // Learner-specific extra libraries
+    if "`learner'" == "bgam" {
+        qui: file write rcode `"library(gam)"' _newline
+        qui: file write rcode `"library(arm)"' _newline
+    }
+    else if "`learner'" == "glsrf" {
+        qui: file write rcode `"library(glmnet)"' _newline
+        qui: file write rcode `"library(randomForest)"' _newline
+    }
+    qui: file write rcode `"data <- read.csv("data.csv", sep=",")"' _newline
+    qui: file write rcode `"fulldata <- read.csv("fulldata.csv", sep=",")"' _newline
+    qui: file write rcode `"attach(data)"' _newline
+    // Learner-specific SL library
+    if "`learner'" == "base" {
+        qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction")"' _newline
+    }
+    else if "`learner'" == "bgam" {
+        qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.bayesglm")"' _newline
+    }
+    else if "`learner'" == "glsrf" {
+        qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.glmnet","SL.randomForest")"' _newline
+    }
+    // Common R code
+    qui: file write rcode `"n <- nrow(data)"' _newline
+    qui: file write rcode `"nvar <- dim(data)[[2]]"' _newline
+    qui: file write rcode `"Y <- data[,1]"' _newline
+    qui: file write rcode `"A <- data[,2]"' _newline
+    qui: file write rcode `"X <- data[,2:nvar]"' _newline
+    qui: file write rcode `"W <- as.data.frame(data[,3:nvar])"' _newline
+    qui: file write rcode `"X1 <- X0 <- X"' _newline
+    qui: file write rcode `"X1[,1] <- 1"' _newline
+    qui: file write rcode `"X0[,1] <- 0"' _newline
+    qui: file write rcode `"newdata <- rbind(X,X1,X0)"' _newline
+    // SMART STRATIFICATION 
+    qui: file write rcode `"is_bin_Y <- length(unique(data[,1])) == 2"' _newline
+    qui: file write rcode `"Q <- SuperLearner(Y = as.numeric(data[,1]), X = X, SL.library=SL.library, family = "binomial", newX=newdata, method ="method.NNLS", cvControl = list(V = 10, stratifyCV = is_bin_Y))"' _newline
+    qui: file write rcode `"Q <- as.data.frame(Q[[4]])"' _newline
+    qui: file write rcode `"QAW <- Q[1:n,]"' _newline
+    qui: file write rcode `"Q1W <- Q[((n+1):(2*n)),]"' _newline
+    qui: file write rcode `"Q0W <- Q[((2*n+1):(3*n)),]"' _newline
+    qui: file write rcode `"g <- SuperLearner(Y = as.numeric(data[,2]), X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS", cvControl = list(V = 10, stratifyCV = TRUE))"' _newline
+    qui: file write rcode `"ps <- g[[4]]"' _newline
+    qui: file write rcode `"ps[ps<0.025] <- 0.025"' _newline
+    qui: file write rcode `"ps[ps>0.975] <- 0.975"' _newline
+    qui: file write rcode `"yname <- colnames(data)[1]; aname <- colnames(data)[2]"' _newline
+    qui: file write rcode `"fulldata <- fulldata[, !(colnames(fulldata) %in% c(yname, aname)), drop = FALSE]"' _newline
+    qui: file write rcode `"data <- cbind(fulldata,QAW,Q1W,Q0W,ps,Y,A)"' _newline
+    qui: file write rcode `"write.dta(data, "data2.dta")"' _newline
+    qui: file close rcode
 end
 
 
@@ -613,85 +607,89 @@ end
 // Arg: learner = base | bgam | glsrf
 // ---------------------------------------------------------------------------
 program _eltmle_write_r_cv
-	args learner
-	qui: set more off
-	qui: file close _all
-	qui: file open rcode using SLS.R, write replace
-	qui: file write rcode `"set.seed(123)"' _newline
-	local wdir = c(pwd)
-	local wdir = subinstr("`wdir'","\","/",.)
-	qui: file write rcode `"setwd("`wdir'")"' _newline
-	// Learner-specific package list (all CV variants include dplyr)
-	if "`learner'" == "base" {
-		qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","dplyr")"' _newline
-	}
-	else if "`learner'" == "bgam" {
-		qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","dplyr","gam","arm")"' _newline
-	}
-	else if "`learner'" == "glsrf" {
-		qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","dplyr","glmnet","ranger")"' _newline
-	}
-	qui: file write rcode `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline
-	qui: file write rcode `"userlib <- Sys.getenv('R_LIBS_USER')"' _newline
-	qui: file write rcode `"if (!dir.exists(userlib)) dir.create(userlib, recursive = TRUE)"' _newline
-	qui: file write rcode `".libPaths(c(userlib, .libPaths()))"' _newline
-	qui: file write rcode `"if(length(new.packages)) install.packages(new.packages, repos='https://cran.r-project.org', lib=userlib)"' _newline
-	qui: file write rcode `"library(SuperLearner)"' _newline
-	qui: file write rcode `"library(foreign)"' _newline
-	qui: file write rcode `"library(dplyr)"' _newline
-	// Learner-specific extra libraries
-	if "`learner'" == "bgam" {
-		qui: file write rcode `"library(gam)"' _newline
-		qui: file write rcode `"library(arm)"' _newline
-	}
-	else if "`learner'" == "glsrf" {
-		qui: file write rcode `"library(glmnet)"' _newline
-		qui: file write rcode `"library(ranger)"' _newline
-	}
-	qui: file write rcode `"data <- read.csv("cvdata.csv", sep=",")"' _newline
-	qui: file write rcode `"attach(data)"' _newline
-	// Learner-specific SL library
-	if "`learner'" == "base" {
-		qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction")"' _newline
-	}
-	else if "`learner'" == "bgam" {
-		qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.bayesglm")"' _newline
-	}
-	else if "`learner'" == "glsrf" {
-		qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.glmnet","SL.ranger")"' _newline
-	}
-	// Common CV R code (cross-validated fold logic)
-	qui: file write rcode `"nvar <- dim(data)[[2]]"' _newline
-	qui: file write rcode `"f <- foldnumber[1]"' _newline
-	qui: file write rcode `"data <- data %>% dplyr::select(-c("foldnumber"))"' _newline
-	qui: file write rcode `"tdata <- data[foldid!=f,]"' _newline
-	qui: file write rcode `"vdataAa <- data[foldid==f,]"' _newline
-	qui: file write rcode `"vdataA1 <- vdataAa; vdataA1[,2] <- 1"' _newline
-	qui: file write rcode `"vdataA0 <- vdataAa; vdataA0[,2] <- 0"' _newline
-	qui: file write rcode `"Vn <- nrow(vdataAa)"' _newline
-	qui: file write rcode `"Tn <- nrow(tdata)"' _newline
-	qui: file write rcode `"Y <- vdataAa[,1]"' _newline
-	qui: file write rcode `"A <- vdataAa[,2]"' _newline
-	qui: file write rcode `"X <- tdata %>% dplyr::select(-c(1, "foldid", "rowid"))"' _newline
-	qui: file write rcode `"W <- tdata %>% dplyr::select(-c(1, 2, "foldid", "rowid"))"' _newline
-	qui: file write rcode `"tset <- try(SuperLearner(Y = tdata[,1], X = X, SL.library = SL.library, family = "binomial", method = "method.NNLS"), silent=TRUE)"' _newline
-	qui: file write rcode `"QAW <- predict(tset, newdata=vdataAa)[[1]]"' _newline
-	qui: file write rcode `"Q1W <- predict(tset, newdata=vdataA1)[[1]]"' _newline
-	qui: file write rcode `"Q0W <- predict(tset, newdata=vdataA0)[[1]]"' _newline
-	qui: file write rcode `"QAWt <- predict(tset)[[1]]"' _newline
-	qui: file write rcode `"g <- try(SuperLearner(Y = tdata[,2], X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS"), silent=TRUE)"' _newline
-	qui: file write rcode `"ps <- predict(g, newdata=vdataAa)[[1]]"' _newline
-	qui: file write rcode `"ps[ps<0.025] <- 0.025"' _newline
-	qui: file write rcode `"ps[ps>0.975] <- 0.975"' _newline
-	// Drop user's outcome/treatment columns from vdataAa to avoid duplicate
-	// "Y" and "A" columns in data2.dta -- see comment in _eltmle_write_r_noncv.
-	qui: file write rcode `"yname <- colnames(vdataAa)[1]; aname <- colnames(vdataAa)[2]"' _newline
-	qui: file write rcode `"vdataAa <- vdataAa[, !(colnames(vdataAa) %in% c(yname, aname)), drop = FALSE]"' _newline
-	qui: file write rcode `"data <- cbind(vdataAa,QAW,Q1W,Q0W,ps,Y,A)"' _newline
-	qui: file write rcode `"write.dta(data, "data2.dta")"' _newline
-	qui: file close rcode
+    args learner
+    qui: set more off
+    qui: file close _all
+    qui: file open rcode using SLS.R, write replace
+    qui: file write rcode `"set.seed(123)"' _newline
+    local wdir = c(pwd)
+    local wdir = subinstr("`wdir'","\","/",.)
+    qui: file write rcode `"setwd("`wdir'")"' _newline
+    // Learner-specific package list (all CV variants include dplyr)
+    if "`learner'" == "base" {
+        qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","dplyr")"' _newline
+    }
+    else if "`learner'" == "bgam" {
+        qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","dplyr","gam","arm")"' _newline
+    }
+    else if "`learner'" == "glsrf" {
+        qui: file write rcode `"list.of.packages <- c("foreign","SuperLearner","dplyr","glmnet","randomForest")"' _newline
+    }
+    qui: file write rcode `"new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]"' _newline
+    qui: file write rcode `"userlib <- Sys.getenv('R_LIBS_USER')"' _newline
+    qui: file write rcode `"if (!dir.exists(userlib)) dir.create(userlib, recursive = TRUE)"' _newline
+    qui: file write rcode `".libPaths(c(userlib, .libPaths()))"' _newline
+    qui: file write rcode `"if(length(new.packages)) install.packages(new.packages, repos='https://cran.r-project.org', lib=userlib)"' _newline
+    qui: file write rcode `"library(SuperLearner)"' _newline
+    qui: file write rcode `"library(foreign)"' _newline
+    qui: file write rcode `"library(dplyr)"' _newline
+    // Learner-specific extra libraries
+    if "`learner'" == "bgam" {
+        qui: file write rcode `"library(gam)"' _newline
+        qui: file write rcode `"library(arm)"' _newline
+    }
+    else if "`learner'" == "glsrf" {
+        qui: file write rcode `"library(glmnet)"' _newline
+        qui: file write rcode `"library(randomForest)"' _newline
+    }
+    qui: file write rcode `"data <- read.csv("cvdata.csv", sep=",")"' _newline
+    qui: file write rcode `"attach(data)"' _newline
+    // Learner-specific SL library
+    if "`learner'" == "base" {
+        qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction")"' _newline
+    }
+    else if "`learner'" == "bgam" {
+        qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.bayesglm")"' _newline
+    }
+    else if "`learner'" == "glsrf" {
+        qui: file write rcode `"SL.library <- c("SL.glm","SL.step","SL.glm.interaction","SL.gam","SL.glmnet","SL.randomForest")"' _newline
+    }
+    // Common CV R code (cross-validated fold logic)
+    qui: file write rcode `"nvar <- dim(data)[[2]]"' _newline
+    qui: file write rcode `"f <- foldnumber[1]"' _newline
+    qui: file write rcode `"data <- data %>% dplyr::select(-c("foldnumber"))"' _newline
+    qui: file write rcode `"tdata <- data[foldid!=f,]"' _newline
+    qui: file write rcode `"vdataAa <- data[foldid==f,]"' _newline
+    qui: file write rcode `"vdataA1 <- vdataAa; vdataA1[,2] <- 1"' _newline
+    qui: file write rcode `"vdataA0 <- vdataAa; vdataA0[,2] <- 0"' _newline
+    qui: file write rcode `"Vn <- nrow(vdataAa)"' _newline
+    qui: file write rcode `"Tn <- nrow(tdata)"' _newline
+    qui: file write rcode `"Y <- vdataAa[,1]"' _newline
+    qui: file write rcode `"A <- vdataAa[,2]"' _newline
+    qui: file write rcode `"X <- tdata %>% dplyr::select(-c(1, "foldid", "rowid"))"' _newline
+    qui: file write rcode `"W <- tdata %>% dplyr::select(-c(1, 2, "foldid", "rowid"))"' _newline
+    
+    // SMART STRATIFICATION 
+    qui: file write rcode `"is_bin_Y <- length(unique(tdata[,1])) == 2"' _newline
+    qui: file write rcode `"tset <- SuperLearner(Y = as.numeric(tdata[,1]), X = X, SL.library = SL.library, family = "binomial", method = "method.NNLS", cvControl = list(V = 10, stratifyCV = is_bin_Y))"' _newline
+    qui: file write rcode `"g <- SuperLearner(Y = as.numeric(tdata[,2]), X = W, SL.library = SL.library, family = "binomial", method = "method.NNLS", cvControl = list(V = 10, stratifyCV = TRUE))"' _newline
+    
+    qui: file write rcode `"QAW <- predict(tset, newdata=vdataAa)[[1]]"' _newline
+    qui: file write rcode `"Q1W <- predict(tset, newdata=vdataA1)[[1]]"' _newline
+    qui: file write rcode `"Q0W <- predict(tset, newdata=vdataA0)[[1]]"' _newline
+    qui: file write rcode `"QAWt <- predict(tset)[[1]]"' _newline
+    qui: file write rcode `"ps <- predict(g, newdata=vdataAa)[[1]]"' _newline
+    qui: file write rcode `"ps[ps<0.025] <- 0.025"' _newline
+    qui: file write rcode `"ps[ps>0.975] <- 0.975"' _newline
+    
+    // Drop user's outcome/treatment columns from vdataAa to avoid duplicate
+    // "Y" and "A" columns in data2.dta
+    qui: file write rcode `"yname <- colnames(vdataAa)[1]; aname <- colnames(vdataAa)[2]"' _newline
+    qui: file write rcode `"vdataAa <- vdataAa[, !(colnames(vdataAa) %in% c(yname, aname)), drop = FALSE]"' _newline
+    qui: file write rcode `"data2 <- cbind(vdataAa, QAW, Q1W, Q0W, ps, Y, A)"' _newline
+    qui: file write rcode `"write.dta(data2, "data2.dta")"' _newline
+    qui: file close rcode
 end
-
 
 // ---------------------------------------------------------------------------
 // _eltmle_tmle_estimate: shared TMLE computation and display

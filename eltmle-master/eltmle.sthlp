@@ -1,5 +1,5 @@
 {smcl}
-{right: version 4.0.0  17.April.2026}
+{right: version 4.0.3  10.May.2026}
 {...}
 
 {title:Title}
@@ -145,7 +145,7 @@ We provide the following examples:
   b) Continuous outcome.
 
 2) Advanced machine-learning techniques (both can be used with binary or continuous outcomes):
-  a) {hi: tmleglsrf}: Lasso (glmnet R package), Random Forest (ranger R package) and the Generalized Additive Models as SuperLearner algorithms for the tmle estimator.
+  a) {hi: tmleglsrf}: Lasso (glmnet R package), Random Forest (randomForest R package) and the Generalized Additive Models as SuperLearner algorithms for the tmle estimator.
   b) {hi: tmlebgam}: Bayes Generalized Linear Models and Generalized Additive Models as SuperLearner algorithms for the tmle 
 estimator.
 
@@ -153,7 +153,7 @@ estimator.
 
 4) Cross-validated TMLE.
   a) {hi: cvtmle}: standard machine learning algorithms.
-  b) {hi: cvtmleglsrf}: Lasso (glmnet R package), Random Forest (ranger R package) and the Generalized Additive Models as SuperLearner algorithms for the tmle estimator.
+  b) {hi: cvtmleglsrf}: Lasso (glmnet R package), Random Forest (randomForest R package) and the Generalized Additive Models as SuperLearner algorithms for the tmle estimator.
   c) {hi: cvtmlebgam}: Bayes Generalized Linear Models and Generalized Additive Models as Super-Learner algorithms for the tmle estimator.
 
 ***********************************************************************************************
